@@ -1,6 +1,6 @@
 # Polarity ThreatConnect Integration
 
-The Polarity ThreatConnect integration allows Polarity to search your instance of ThreatConnect to return found domains, IPs, hashes, and emails.  The integration also allows you to Create and Delete attributes (IOCs) in bulk from ThreatConnect.
+The Polarity ThreatConnect integration allows Polarity to search your instance of ThreatConnect to return found domains, IPs, hashes, and emails.  The integration also allows you to Create and Delete Indicators (IOCs) in bulk from ThreatConnect.
 
 
 <div>
