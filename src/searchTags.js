@@ -12,7 +12,9 @@ const searchTags = async (
       [],
       'body.data.tag',
       await requestWithDefaults({
-        path: `tags?detailed=true${!term ? '' : `&filters=name%5E${term}`}`,
+        path: `tags?detailed=true${
+          !term ? '' : `&filters=name%5E${encodeURIComponent(term)}`
+        }`,
         method: 'GET',
         options
       })
@@ -30,7 +32,6 @@ const searchTags = async (
       fp.sortBy('name'),
       fp.slice(0, 50),
     )(tagResults);
-    Logger.trace({ test: 1111, tagResults, tags});
     callback(null, { tags });
   } catch (error) {
     Logger.error(error, { detail: 'Failed to Get Tags from ThreatConnect' }, 'Get Tags Failed');

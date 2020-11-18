@@ -21,7 +21,6 @@ const createRequestWithDefaults = (Logger) => {
     ...(_configFieldIsValid(passphrase) && { passphrase }),
     ...(_configFieldIsValid(proxy) && { proxy }),
     ...(typeof rejectUnauthorized === 'boolean' && { rejectUnauthorized }),
-    rejectUnauthorized: false,
     json: true
   };
 

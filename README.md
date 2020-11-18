@@ -23,9 +23,9 @@ The API (secret) Key associated with the provided Access ID
 
 ### Allow IOC Deletion
 
-If checked, users will be able to delete an Attribute from ThreatConnect. (this setting must be set to `User can view only`).
+If checked, users will be able to delete an Indicator from ThreatConnect. (this setting must be set to `User can view only`).
 
-> ***NOTE***: When you delete an Attribute you are doing a NOT???? soft delete of the Attribute from the entire system.
+> ***NOTE***: When you delete an Indicator you are doing a deletion of the Indicator from the entire system.
 
 ## Installation Instructions
 
