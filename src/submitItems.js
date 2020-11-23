@@ -8,7 +8,7 @@ const {
 } = require('./constants');
 
 const submitItems = async (
-  { newIocsToSubmit, rating, confidence, submitTags, entitiesThatExistInTC },
+  { newIocsToSubmit, rating, confidence, submitTags, foundEntities },
   requestWithDefaults,
   options,
   Logger,
@@ -27,7 +27,7 @@ const submitItems = async (
     await createTags(newIocsToSubmit, submitTags, options, requestWithDefaults, Logger);
 
     return callback(null, {
-      entitiesThatExistInTC: [...createdIndicators, ...entitiesThatExistInTC]
+      foundEntities: [...createdIndicators, ...foundEntities]
     });
   } catch (error) {
     Logger.error(

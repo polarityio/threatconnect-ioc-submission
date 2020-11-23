@@ -6,21 +6,21 @@ let maxUniqueKeyNumber = 0;
 const createLookupResults = (
   options,
   entities,
-  _entitiesThatExistInTC,
+  _foundEntities,
   myOwner,
   Logger
 ) => {
-  const entitiesThatExistInTC = fp.flow(
+  const foundEntities = fp.flow(
     fp.filter(fp.get('resultsFound')),
     fp.map((foundEntity) => ({
       ...foundEntity,
       displayedType: ENTITY_TYPES[foundEntity.type] || 'hash'
     }))
-  )(_entitiesThatExistInTC);
+  )(_foundEntities);
 
-  const notFoundEntities = getNotFoundEntities(entitiesThatExistInTC, entities);
+  const notFoundEntities = getNotFoundEntities(foundEntities, entities);
   const summary = [
-    ...(entitiesThatExistInTC.length ? ['Entities Found'] : []),
+    ...(foundEntities.length ? ['Entities Found'] : []),
     ...(notFoundEntities.length ? ['New Entites'] : [])
   ];
   maxUniqueKeyNumber++;
@@ -34,7 +34,7 @@ const createLookupResults = (
       isVolatile: true,
       data: {
         summary: [
-          ...(entitiesThatExistInTC.length ? ['Entities Found'] : []),
+          ...(foundEntities.length ? ['Entities Found'] : []),
           ...(notFoundEntities.length ? ['New Entites'] : [])
         ],
         details: {
@@ -42,7 +42,7 @@ const createLookupResults = (
           maxUniqueKeyNumber,
           owner: myOwner,
           [`summary${maxUniqueKeyNumber}`]: summary,
-          [`entitiesThatExistInTC${maxUniqueKeyNumber}`]: entitiesThatExistInTC,
+          [`foundEntities${maxUniqueKeyNumber}`]: foundEntities,
           [`notFoundEntities${maxUniqueKeyNumber}`]: notFoundEntities
         }
       }
@@ -50,12 +50,12 @@ const createLookupResults = (
   ];
 };
 
-const getNotFoundEntities = (entitiesThatExistInTC, entities) =>
+const getNotFoundEntities = (foundEntities, entities) =>
   fp.reduce(
     (agg, entity) =>
       !fp.any(
         ({ value }) => fp.lowerCase(entity.value) === fp.lowerCase(value),
-        entitiesThatExistInTC
+        foundEntities
       )
         ? agg.concat({
             ...entity,

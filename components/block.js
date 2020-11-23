@@ -6,7 +6,7 @@ polarity.export = PolarityComponent.extend({
   ratingHuman: 'Unknown',
   confidence: 0,
   confidenceHuman: 'Unassessed',
-  entitiesThatExistInTC: [],
+  foundEntities: [],
   newIocs: [],
   newIocsToSubmit: [],
   selectedTags: [],
@@ -34,8 +34,8 @@ polarity.export = PolarityComponent.extend({
     );
 
     this.set(
-      'entitiesThatExistInTC',
-      this.get(`details.entitiesThatExistInTC${this.get('maxUniqueKeyNumber')}`)
+      'foundEntities',
+      this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
     );
 
     this.set('selectedTags', [
@@ -57,8 +57,8 @@ polarity.export = PolarityComponent.extend({
         );
 
         this.set(
-          'entitiesThatExistInTC',
-          this.get(`details.entitiesThatExistInTC${this.get('maxUniqueKeyNumber')}`)
+          'foundEntities',
+          this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
         );
 
         this.set('newIocsToSubmit', []);
@@ -129,12 +129,12 @@ polarity.export = PolarityComponent.extend({
             action: 'deleteItem',
             entity: outerThis.get('entityToDelete'),
             newIocs: outerThis.get('newIocs'),
-            entitiesThatExistInTC: outerThis.get('entitiesThatExistInTC')
+            foundEntities: outerThis.get('foundEntities')
           }
         })
         .then(({ newIocs, newList }) => {
           outerThis.set('newIocs', newIocs);
-          outerThis.set('entitiesThatExistInTC', newList);
+          outerThis.set('foundEntities', newList);
           outerThis.set('deleteMessage', 'Successfully Deleted IOC');
         })
         .catch((err) => {
@@ -160,12 +160,12 @@ polarity.export = PolarityComponent.extend({
     },
     removeAllSubmitItems: function () {
       const foundIOCs = this.get('newIocsToSubmit').filter((ioc) => ioc.resultsFound);
-      const allFoundIOCs = this.get('entitiesThatExistInTC').concat(foundIOCs);
+      const allFoundIOCs = this.get('foundEntities').concat(foundIOCs);
       const newIOCs = this.get('newIocsToSubmit').filter((ioc) => !ioc.resultsFound);
       const allNewIOCs = this.get('newIocs').concat(newIOCs);
 
       this.set('newIocs', allNewIOCs);
-      this.set('entitiesThatExistInTC', allFoundIOCs);
+      this.set('foundEntities', allFoundIOCs);
       this.set('newIocsToSubmit', []);
 
       this.get('block').notifyPropertyChange('data');
@@ -180,8 +180,8 @@ polarity.export = PolarityComponent.extend({
     removeSubmitItem: function (entity) {
       if (entity.resultsFound) {
         this.set(
-          'entitiesThatExistInTC',
-          this.get('entitiesThatExistInTC').concat(entity)
+          'foundEntities',
+          this.get('foundEntities').concat(entity)
         );
       } else {
         this.set('newIocs', this.get('newIocs').concat(entity));
@@ -195,8 +195,8 @@ polarity.export = PolarityComponent.extend({
     },
     addSubmitItem: function (entity) {
       this.set(
-        'entitiesThatExistInTC',
-        this.get('entitiesThatExistInTC').filter(({ value }) => value !== entity.value)
+        'foundEntities',
+        this.get('foundEntities').filter(({ value }) => value !== entity.value)
       );
       this.set(
         'newIocs',
@@ -244,12 +244,12 @@ polarity.export = PolarityComponent.extend({
             newIocsToSubmit: outerThis.get('newIocsToSubmit'),
             rating: outerThis.get('rating'),
             confidence: outerThis.get('confidence'),
-            entitiesThatExistInTC: outerThis.get('entitiesThatExistInTC'),
+            foundEntities: outerThis.get('foundEntities'),
             submitTags: outerThis.get('selectedTags')
           }
         })
-        .then(({ entitiesThatExistInTC }) => {
-          outerThis.set('entitiesThatExistInTC', entitiesThatExistInTC);
+        .then(({ foundEntities }) => {
+          outerThis.set('foundEntities', foundEntities);
           outerThis.set('newIocsToSubmit', []);
           outerThis.set('createMessage', 'Successfully Created IOCs');
         })

@@ -1,5 +1,5 @@
 <div class={{if (and (not (or newIocs.length newIocsToSubmit.length)) interactionDisabled) "modal-open"}}>
-  {{#if entitiesThatExistInTC.length}}
+  {{#if foundEntities.length}}
     <h1 class="p-title">
       {{fa-icon "info-circle" size="sm"}} Already In ThreatConnect
     </h1>
@@ -24,7 +24,7 @@
     {{/if}}
     <table class="w-100">
       <tbody>
-        {{#each entitiesThatExistInTC as |intel|}}
+        {{#each foundEntities as |intel|}}
           {{#if showOwnershipMessage}}
             <div class="default-owner-modal">
               <div class="note">
@@ -258,7 +258,7 @@
         {{else}}
           {{#each (take maxTagsInBlock selectedTags) as |tag tagIndex|}}
             {{#if tag.isNew}}
-              <span class="tag tc-link-tag d-inline-flex align-items-center">
+              <span class="tag link-tag d-inline-flex align-items-center">
                 <span class="text-container threatconnect-summary-tag {{unless interactionDisabled "rounded-borders"}}">
                   {{tag.name}}
                   {{#if (not interactionDisabled)}}
@@ -269,7 +269,7 @@
                 </span>
               </span>
             {{else}}
-              <a href="{{details.url}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}" class="tag tc-link-tag d-inline-flex align-items-center">
+              <a href="{{details.url}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}" class="tag link-tag d-inline-flex align-items-center">
                 <span class="text-container threatconnect-summary-tag {{unless interactionDisabled "rounded-borders"}}">
                   {{tag.name}}
                   {{#if (not interactionDisabled)}}
@@ -355,7 +355,7 @@
       </div>
   {{/if}}
 </div>
-{{#if (and (not entitiesThatExistInTC.length) (not (or newIocs.length newIocsToSubmit.length)))}}
+{{#if (and (not foundEntities.length) (not (or newIocs.length newIocsToSubmit.length)))}}
   <div class="note">
     <span class="p-key"><em>All Already In ThreatConnect IOCs have been deleted</em></span>
   </div>

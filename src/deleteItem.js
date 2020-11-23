@@ -2,7 +2,7 @@ const fp = require('lodash/fp');
 const { POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
 
 const deleteItem = async (
-  { entity, newIocs: _newIocs, entitiesThatExistInTC },
+  { entity, newIocs: _newIocs, foundEntities },
   requestWithDefaults,
   options,
   Logger,
@@ -40,7 +40,7 @@ const deleteItem = async (
         ? entities
         : entities.concat({ ...entity, canDelete: false })
     )
-  )(entitiesThatExistInTC);
+  )(foundEntities);
 
   const newIocs = [...(shouldRemoveIocFromAlreadyIn ? [entity] : []), ..._newIocs];
 

@@ -13,7 +13,7 @@ const getLookupResults = (entities, options, requestWithDefaults, Logger) =>
 
       const myOwner = await _getMyOwners(options, requestWithDefaults);
 
-      const entitiesThatExistInTC = await _getEntitiesFoundInTC(
+      const foundEntities = await _getEntitiesFoundInTC(
         myOwner,
         entitiesPartition,
         options,
@@ -23,12 +23,12 @@ const getLookupResults = (entities, options, requestWithDefaults, Logger) =>
       const lookupResults = createLookupResults(
         options,
         entitiesPartition,
-        entitiesThatExistInTC,
+        foundEntities,
         myOwner,
         Logger
       );
 
-      Logger.trace({ lookupResults, entitiesThatExistInTC }, 'Lookup Results');
+      Logger.trace({ lookupResults, foundEntities }, 'Lookup Results');
 
       return lookupResults.concat(ignoredIpLookupResults);
     },
