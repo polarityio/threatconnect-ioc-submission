@@ -49,7 +49,7 @@
           <tr>
             <td>
               {{#if (not interactionDisabled)}}
-                <a href="{{details.url}}/auth/indicators/details/{{intel.linkType}}.xhtml?{{intel.linkType}}={{intel.value}}">
+                <a href="{{details.uiUrl}}/auth/indicators/details/{{intel.linkType}}.xhtml?{{intel.linkType}}={{intel.value}}">
                   {{intel.value}}{{if (not intel.canDelete) "*"}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
                 </a>
               {{else}}
@@ -184,7 +184,7 @@
             <td class="intellValue">
               <span>
                 {{#if entity.resultsFound}}
-                  <a href="{{details.url}}/auth/indicators/details/{{entity.linkType}}.xhtml?{{entity.linkType}}={{entity.value}}">
+                  <a href="{{details.uiUrl}}/auth/indicators/details/{{entity.linkType}}.xhtml?{{entity.linkType}}={{entity.value}}">
                     {{entity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
                   </a>
                 {{else}}
@@ -280,7 +280,7 @@
                 </span>
               </span>
             {{else}}
-              <a href="{{details.url}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}" class="tag link-tag d-inline-flex align-items-center">
+              <a href="{{details.uiUrl}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}" class="tag link-tag d-inline-flex align-items-center">
                 <span class="text-container threatconnect-summary-tag {{unless interactionDisabled "rounded-borders"}}">
                   {{tag.name}}
                   {{#if (not interactionDisabled)}}

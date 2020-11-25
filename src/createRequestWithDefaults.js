@@ -71,10 +71,12 @@ const createRequestWithDefaults = (Logger) => {
     path,
     ...requestOptions
   }) => {
-    const uri = `${_url.endsWith('/') ? _url : `${_url}/`}api/v2/${path}`;
+    const uri = `${_url.endsWith('/') ? _url : `${_url}/`}v2/${path}`;
 
+    const signaturePath = /(http[s]?:\/\/)?([^\/\s]+)(\/.*)/g.exec(uri)[3];
+    
     let TimeStamp = Math.floor(Date.now() / 1000);
-    let signature = `/api/v2/${path}` + ':' + requestOptions.method + ':' + TimeStamp;
+    let signature = signaturePath + ':' + requestOptions.method + ':' + TimeStamp;
 
     let hmacSignatureInBase64 = crypto
       .createHmac('sha256', apiKey)

@@ -36,9 +36,9 @@ module.exports = {
   options: [
     {
       key: 'url',
-      name: 'ThreatConnect URL',
+      name: 'ThreatConnect API URL',
       description:
-        'URL of your ThreatConnect instance to include the schema (i.e., https://) and port if applicable',
+        'The API URL of your ThreatConnect instance to include the schema (i.e., https://) and port if applicable',
       default: '',
       type: 'text',
       userCanEdit: true,

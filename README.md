@@ -9,9 +9,9 @@ The Polarity ThreatConnect integration allows Polarity to search your instance o
 
 ## ThreatConnect Integration Options
 
-### ThreatConnect Instance URL
+### ThreatConnect API URL
 
-The URL of the ThreatConnect instance you would like to connect to (including http:// or https://).  If you are running an internal instance of ThreatConnect on a non-default port, please specify the port here as well.
+The API URL of the ThreatConnect instance you would like to connect to (including http:// or https://).  If you are running an internal instance of ThreatConnect on a non-default port, please specify the port here as well.
 
 ### Access ID
 

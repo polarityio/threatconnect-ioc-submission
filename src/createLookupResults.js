@@ -38,7 +38,7 @@ const createLookupResults = (
           ...(notFoundEntities.length ? ['New Entites'] : [])
         ],
         details: {
-          url: options.url,
+          uiUrl: getUiUrl(options.url),
           maxUniqueKeyNumber,
           owner: myOwner,
           [`summary${maxUniqueKeyNumber}`]: summary,
@@ -49,6 +49,11 @@ const createLookupResults = (
     }
   ];
 };
+
+const getUiUrl = fp.flow(
+  fp.thru((x) => /^((http[s]?|ftp):\/)\/?([^:\/\s]+)/g.exec(x)),
+  fp.first
+);
 
 const getNotFoundEntities = (foundEntities, entities) =>
   fp.reduce(
