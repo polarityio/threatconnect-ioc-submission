@@ -1,5 +1,5 @@
 const fp = require('lodash/fp');
-const {} = require('./constants')
+const {} = require('./constants');
 const {
   POLARITY_TYPE_TO_THREATCONNECT,
   SUBMISSION_LABELS,
@@ -8,7 +8,7 @@ const {
 } = require('./constants');
 
 const submitItems = async (
-  { newIocsToSubmit, rating, confidence, submitTags, foundEntities },
+  { newIocsToSubmit, rating, confidence, submitTags, description, foundEntities },
   requestWithDefaults,
   options,
   Logger,
@@ -24,7 +24,19 @@ const submitItems = async (
       Logger
     );
 
-    await createTags(newIocsToSubmit, submitTags, options, requestWithDefaults, Logger);
+    if (description) {
+      await createDescription(
+        newIocsToSubmit,
+        description,
+        options,
+        requestWithDefaults,
+        Logger
+      );
+    }
+
+    if (submitTags.length) {
+      await createTags(newIocsToSubmit, submitTags, options, requestWithDefaults, Logger);
+    }
 
     return callback(null, {
       foundEntities: [...createdIndicators, ...foundEntities]
@@ -90,14 +102,41 @@ const createTags = (newIocsToSubmit, submitTags, options, requestWithDefaults) =
         fp.map(
           (tag) =>
             requestWithDefaults({
-              path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}/${
-                entity.value
-              }/tags/${fp.flow(fp.get('name'), fp.split(' '), fp.join('%20'))(tag)}`,
+              path: `indicators/${
+                POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+              }/${encodeURIComponent(entity.value)}/tags/${fp.flow(
+                fp.get('name'),
+                fp.split(' '),
+                fp.join('%20')
+              )(tag)}`,
               method: 'POST',
               options
             }),
           submitTags
         ),
+      newIocsToSubmit
+    )
+  );
+
+const createDescription = (newIocsToSubmit, description, options, requestWithDefaults) =>
+  Promise.all(
+    fp.flatMap(
+      async (entity) =>
+        requestWithDefaults({
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: 'Description',
+            value: description,
+            displayed: true
+          }),
+          options
+        }),
       newIocsToSubmit
     )
   );

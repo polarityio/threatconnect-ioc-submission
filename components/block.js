@@ -2,6 +2,7 @@ polarity.export = PolarityComponent.extend({
   details: Ember.computed.alias('block.data.details'),
   maxUniqueKeyNumber: Ember.computed.alias('details.maxUniqueKeyNumber'),
   url: Ember.computed.alias('details.url'),
+  description: '',
   rating: 0,
   ratingHuman: 'Unknown',
   confidence: 0,
@@ -242,6 +243,7 @@ polarity.export = PolarityComponent.extend({
           data: {
             action: 'submitItems',
             newIocsToSubmit: outerThis.get('newIocsToSubmit'),
+            description: outerThis.get('description'),
             rating: outerThis.get('rating'),
             confidence: outerThis.get('confidence'),
             foundEntities: outerThis.get('foundEntities'),

@@ -220,6 +220,17 @@
         {{fa-icon "cog" size="sm" fixedWidth=true}} Submission Options
       </h1>
       <div class="select-container">
+        <span class="p-key">Description: &nbsp;</span>
+        <input
+          type="text"
+          class="description"
+          placeholder="Enter description..."
+          onchange={{action (mut description) value="target.value"}}
+          value={{description}}
+          disabled={{interactionDisabled}}
+        />
+      </div>
+      <div class="select-container">
         <span class="p-key">Rating: &nbsp;</span>
         <span>
           {{fa-icon "ban" click=(action "setRating" 0) class="rating-icon"}}
