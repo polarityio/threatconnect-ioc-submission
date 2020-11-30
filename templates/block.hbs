@@ -24,7 +24,7 @@
     {{/if}}
     <table class="w-100">
       <tbody>
-        {{#each foundEntities as |intel|}}
+        {{#each foundEntities as |foundEntity|}}
           {{#if showOwnershipMessage}}
             <div class="default-owner-modal">
               <div class="note">
@@ -32,10 +32,10 @@
                   <em>
                     <span class="p-value"><em><b>NOTE:</b></em></span>
                     This Indicator is currently owned by:
-                    {{#each intel.owners as |owner index|}}
-                      <b>{{owner.name}}</b>{{if (lt index intel.ownersLengthMinus2) ","}} {{if (eq index intel.ownersLengthMinus2) "and"}}
+                    {{#each foundEntity.owners as |owner index|}}
+                      <b>{{owner.name}}</b>{{if (lt index foundEntity.ownersLengthMinus2) ","}} {{if (eq index foundEntity.ownersLengthMinus2) "and"}}
                     {{/each}}
-                    but is not owned by your account owner: <b>{{intel.myOwner.name}}</b>.  
+                    but is not owned by your account owner: <b>{{foundEntity.myOwner.name}}</b>.  
                     If you would like to be able to manipulate this indicator in the dashboard you can add this indicator to the 
                     <b>To Be Submitted to ThreatConnect</b> list using the <b>+</b> icon on the right and submit this Indicator under your account.
                   </em>
@@ -49,21 +49,21 @@
           <tr>
             <td>
               {{#if (not interactionDisabled)}}
-                <a href="{{details.uiUrl}}/auth/indicators/details/{{intel.linkType}}.xhtml?{{intel.linkType}}={{intel.value}}">
-                  {{intel.value}}{{if (not intel.canDelete) "*"}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
+                <a href="{{details.uiUrl}}/auth/indicators/details/{{foundEntity.linkType}}.xhtml?{{foundEntity.linkType}}={{foundEntity.uriEncodedValue}}">
+                  {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
                 </a>
               {{else}}
-                <a>{{intel.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}</a>
+                <a>{{foundEntity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}</a>
               {{/if}}
             </td>
             <td class="type">
-              <span>{{intel.displayedType}}</span>
+              <span>{{foundEntity.displayedType}}</span>
             </td>
-            {{#if (and block.userOptions.allowDelete intel.canDelete)}}
+            {{#if (and block.userOptions.allowDelete foundEntity.canDelete)}}
               <td class="icon deletable">
                 <button
                   class="no-style-button delete"
-                  {{action "initiateItemDeletion" intel}}
+                  {{action "initiateItemDeletion" foundEntity}}
                   title="Delete IOC from ThreatConnect"
                   disabled={{interactionDisabled}}
                 >
@@ -71,7 +71,7 @@
                 </button>
               </td>
             {{/if}}
-            {{#if (not intel.canDelete)}}
+            {{#if (not foundEntity.canDelete)}}
               <td class="icon addable">
                 <a
                   href="#"
@@ -83,7 +83,7 @@
                 </a>
                 <button
                   class="no-style-button add-found"
-                  {{action "addSubmitItem" intel}}
+                  {{action "addSubmitItem" foundEntity}}
                   title="Add IOC from Submission List for your Instance"
                   disabled={{interactionDisabled}}
                 >
@@ -181,10 +181,10 @@
       <tbody>
         {{#each newIocsToSubmit as |entity|}}
           <tr>
-            <td class="intellValue">
+            <td>
               <span>
                 {{#if entity.resultsFound}}
-                  <a href="{{details.uiUrl}}/auth/indicators/details/{{entity.linkType}}.xhtml?{{entity.linkType}}={{entity.value}}">
+                  <a href="{{details.uiUrl}}/auth/indicators/details/{{entity.linkType}}.xhtml?{{entity.linkType}}={{entity.uriEncodedValue}}">
                     {{entity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
                   </a>
                 {{else}}

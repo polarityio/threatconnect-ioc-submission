@@ -85,6 +85,7 @@ const _getEntitiesFoundInTC = async (
           ownersSearchResults &&
           ownersSearchResults.length && {
             ...entity,
+            uriEncodedValue: encodeURIComponent(entity.value),
             linkType,
             owners: ownersSearchResults,
             ownersLengthMinus2: ownersSearchResults.length - 2,

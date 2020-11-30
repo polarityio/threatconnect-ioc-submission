@@ -2,7 +2,7 @@ const IGNORED_IPS = new Set(['127.0.0.1', '255.255.255.255', '0.0.0.0']);
 
 const INDICATOR_TYPES = {
   files: 'file',
-  emailAddresses: 'emailAddress',
+  emailAddresses: 'emailaddress',
   hosts: 'host',
   addresses: 'address'
 };
