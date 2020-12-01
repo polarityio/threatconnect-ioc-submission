@@ -32,6 +32,11 @@ const STATUS_CODE_ERROR_MESSAGE = {
           err: 'Problem with Certificate',
           detail: `A Problem was found with your Certificate -> ${error.message}`
         }
+      : error.message.includes('Unexpected token < in JSON at position 0')
+      ? {
+          err: 'Problem with User Options',
+          detail: `A Problem was found with your User Options -> Verify your Options are correct and your ThreatConnect Dashboard is working correctly.`
+        }
       : {
           err: 'Unknown',
           detail: error.message
