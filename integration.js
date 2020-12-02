@@ -17,7 +17,7 @@ const startup = (logger) => {
 };
 
 
-const doLookup = async (entities, { url, uiUrl, ..._options }, cb) => {
+const doLookup = async (entities, { url, ..._options }, cb) => {
   Logger.debug({ entities }, 'Entities');
   const options = {
     ..._options,
