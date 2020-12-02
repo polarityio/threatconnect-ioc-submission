@@ -164,7 +164,19 @@
     {{/if}}
     <div class="title-with-button">
       <h1 class="p-title">
-        {{fa-icon "upload" size="sm" fixedWidth=true}} To Be Submitted to ThreatConnect
+        {{fa-icon "upload" size="sm" fixedWidth=true}} To Be Submitted to&nbsp;
+        {{#if newIocsToSubmit.length}}
+          <span class="show-threatconnect">
+            ThreatConnect
+          </span>
+          <span class="show-tc">
+            TC
+          </span>
+        {{else}}
+          <span>
+            ThreatConnect
+          </span>
+        {{/if}}
       </h1>
       {{#if newIocsToSubmit.length}}
         <button
