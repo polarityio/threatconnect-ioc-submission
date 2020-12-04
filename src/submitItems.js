@@ -51,7 +51,8 @@ const submitItems = async (
       errors: [
         {
           err: error,
-          detail: error.message
+          detail: error.message,
+          ...(error.entityValue && { title: error.entityValue })
         }
       ]
     });
@@ -67,8 +68,7 @@ const createIndicators = async (
   Logger
 ) => {
   await Promise.all(
-    fp.map(
-      (entity) =>
+    fp.map((entity) =>
         requestWithDefaults({
           path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`,
           method: 'POST',
@@ -82,6 +82,9 @@ const createIndicators = async (
             confidence: fp.toSafeInteger(confidence)
           },
           options
+        }).catch((error) => {
+          if (error.message.includes('exclusion list')) error.entityValue = entity.value;
+          throw error;
         }),
       newIocsToSubmit
     )

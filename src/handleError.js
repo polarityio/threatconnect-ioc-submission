@@ -5,7 +5,7 @@ const STATUS_CODE_ERROR_MESSAGE = {
   }),
   401: (error) => ({
     err: 'Unauthorized',
-    detail: 'Unable to retrieve Auth Token -> ' + `${error.description}`
+    detail: `Unable to retrieve Auth Token -> ${error.description}`
   }),
   404: (error) => ({
     err: 'Not Found',
@@ -15,11 +15,11 @@ const STATUS_CODE_ERROR_MESSAGE = {
   }),
   500: (error) => ({
     err: 'Server Error',
-    detail: 'Unexpected Server Error -> ' + `${error.description}`
+    detail: `Unexpected Server Error -> ${error.description}`
   }),
   internalServiceError: (error) => ({
     err: 'Internal Service Error',
-    detail: 'Internal Service Error -> ' + `${error.description}`
+    detail: `Internal Service Error -> ${error.description}`
   }),
   unknown: (error) =>
     error.message.includes('getaddrinfo ENOTFOUND')
