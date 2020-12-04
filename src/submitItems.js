@@ -75,12 +75,12 @@ const createIndicators = async (
           headers: {
             'Content-type': 'application/json'
           },
-          body: JSON.stringify({
+          body: {
             [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]:
               entity.value,
             rating: fp.toSafeInteger(rating),
             confidence: fp.toSafeInteger(confidence)
-          }),
+          },
           options
         }),
       newIocsToSubmit
@@ -130,11 +130,11 @@ const createDescription = (newIocsToSubmit, description, options, requestWithDef
           headers: {
             'Content-type': 'application/json'
           },
-          body: JSON.stringify({
+          body: {
             type: 'Description',
             value: description,
             displayed: true
-          }),
+          },
           options
         }),
       newIocsToSubmit
