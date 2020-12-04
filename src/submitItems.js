@@ -94,7 +94,8 @@ const createIndicators = async (
     linkType: INDICATOR_TYPES[POLARITY_TYPE_TO_THREATCONNECT[createdEntity.type]],
     canDelete: true,
     resultsFound: true,
-    displayedType: ENTITY_TYPES[createdEntity.type]
+    displayedType: ENTITY_TYPES[createdEntity.type],
+    uriEncodedValue: encodeURIComponent(createdEntity.value)
   }))(newIocsToSubmit);
 };
 
