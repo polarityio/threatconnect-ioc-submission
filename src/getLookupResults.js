@@ -4,37 +4,30 @@ const { partitionFlatMap, splitOutIgnoredIps } = require('./dataTransformations'
 const { INDICATOR_TYPES, POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
 const createLookupResults = require('./createLookupResults');
 
-const getLookupResults = (entities, options, requestWithDefaults, Logger) =>
-  partitionFlatMap(
-    async (_entitiesPartition) => {
-      const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(
-        _entitiesPartition
-      );
+const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
+  const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
 
-      const myOwner = await _getMyOwners(options, requestWithDefaults);
+  const myOwner = await _getMyOwners(options, requestWithDefaults);
 
-      const foundEntities = await _getEntitiesFoundInTC(
-        myOwner,
-        entitiesPartition,
-        options,
-        requestWithDefaults
-      );
-
-      const lookupResults = createLookupResults(
-        options,
-        entitiesPartition,
-        foundEntities,
-        myOwner,
-        Logger
-      );
-
-      Logger.trace({ lookupResults, foundEntities }, 'Lookup Results');
-
-      return lookupResults.concat(ignoredIpLookupResults);
-    },
-    20,
-    entities
+  const foundEntities = await _getEntitiesFoundInTC(
+    myOwner,
+    entitiesPartition,
+    options,
+    requestWithDefaults
   );
+
+  const lookupResults = createLookupResults(
+    options,
+    entitiesPartition,
+    foundEntities,
+    myOwner,
+    Logger
+  );
+
+  Logger.trace({ lookupResults, foundEntities }, 'Lookup Results');
+
+  return lookupResults.concat(ignoredIpLookupResults);
+};
 
 const _getMyOwners = async (options, requestWithDefaults) => {
   const myOwners = fp.get(
