@@ -24,7 +24,10 @@ polarity.export = PolarityComponent.extend({
   showOwnershipMessage: false,
   maxTagsInBlock: 10,
   interactionDisabled: Ember.computed('isDeleting', 'createIsRunning', function () {
-    const interactionDisabled = this.get('isDeleting') || this.get('createIsRunning');
+    const interactionDisabled =
+      this.get('isDeleting') ||
+      this.get('showOwnershipMessage') ||
+      this.get('createIsRunning');
 
     return interactionDisabled;
   }),
@@ -180,10 +183,7 @@ polarity.export = PolarityComponent.extend({
     },
     removeSubmitItem: function (entity) {
       if (entity.resultsFound) {
-        this.set(
-          'foundEntities',
-          this.get('foundEntities').concat(entity)
-        );
+        this.set('foundEntities', this.get('foundEntities').concat(entity));
       } else {
         this.set('newIocs', this.get('newIocs').concat(entity));
       }
@@ -258,9 +258,9 @@ polarity.export = PolarityComponent.extend({
         .catch((err) => {
           outerThis.set(
             'createErrorMessage',
-            ('Failed to Create IOC: ' +
-              (err && err.title ? `"${err.title}" - `: '') +
-              (err && (err.detail || err.message || err.title || err.description))) ||
+            'Failed to Create IOC: ' +
+              (err && err.title ? `"${err.title}" - ` : '') +
+              (err && (err.detail || err.message || err.title || err.description)) ||
               'Unknown Reason'
           );
         })
