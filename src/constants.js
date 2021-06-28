@@ -4,6 +4,7 @@ const INDICATOR_TYPES = {
   files: 'file',
   emailAddresses: 'emailaddress',
   hosts: 'host',
+  urls: 'url',
   addresses: 'address'
 };
 const POLARITY_TYPE_TO_THREATCONNECT = {
@@ -11,7 +12,8 @@ const POLARITY_TYPE_TO_THREATCONNECT = {
   IPv6: 'addresses',
   hash: 'files',
   email: 'emailAddresses',
-  domain: 'hosts'
+  domain: 'hosts',
+  url: 'urls'
 };
 
 const SUBMISSION_LABELS = {
@@ -21,7 +23,8 @@ const SUBMISSION_LABELS = {
   SHA1: 'sha1',
   SHA256: 'sha256',
   email: 'address',
-  domain: 'hostName'
+  domain: 'hostName',
+  url: 'text'
 };
 
 const ENTITY_TYPES = {
@@ -31,7 +34,8 @@ const ENTITY_TYPES = {
   email: 'email',
   MD5: 'md5',
   SHA1: 'sha1',
-  SHA256: 'sha256'
+  SHA256: 'sha256',
+  url: 'url'
 };
 
 module.exports = {
