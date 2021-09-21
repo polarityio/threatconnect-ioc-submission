@@ -243,6 +243,34 @@
         />
       </div>
       <div class="select-container">
+        <span class="p-value">Assoc Group Type: </span>
+        <select class="w-100" onchange={{action (mut groupType) value="target.value"}} disabled={{interactionDisabled}}>
+          <option value="reports">Reports</option>
+          <option value="documents">Documents</option>
+          <option value="threats">Threats</option>
+          <option value="adversaries">Adversaries</option>
+          <option value="campaigns">Campaigns</option>
+          <option value="emails">Emails</option>
+          <option value="events">Events</option>
+          <option value="incidents">Incidents</option>
+          <option value="intrusionSets">Intrusion Sets</option>
+          <option value="malware">Malware</option>
+          <option value="signatures">Signatures</option>
+          <option value="vulnerabilities">Vulnerabilities</option>
+        </select>
+      </div>
+      <div class="select-container">
+        <span class="p-key">Description: &nbsp;</span>
+        <input
+          type="text"
+          class="groupID"
+          placeholder="Enter Group ID"
+          onchange={{action (mut description) value="target.value"}}
+          value={{groupID}}
+          disabled={{interactionDisabled}}
+        />
+      </div>
+      <div class="select-container">
         <span class="p-key">Rating: &nbsp;</span>
         <span>
           {{fa-icon "ban" click=(action "setRating" 0) class="rating-icon"}}

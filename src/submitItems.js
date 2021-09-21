@@ -8,7 +8,7 @@ const {
 } = require('./constants');
 
 const submitItems = async (
-  { newIocsToSubmit, rating, confidence, submitTags, description, foundEntities },
+  { newIocsToSubmit, rating, confidence, submitTags, description, foundEntities, groupType, groupID },
   requestWithDefaults,
   options,
   Logger,
@@ -28,6 +28,17 @@ const submitItems = async (
       await createDescription(
         newIocsToSubmit,
         description,
+        options,
+        requestWithDefaults,
+        Logger
+      );
+    }
+
+    if (groupID) {
+      await createAssociations(
+        newIocsToSubmit,
+        groupType,
+        groupID,
         options,
         requestWithDefaults,
         Logger
@@ -138,6 +149,24 @@ const createDescription = (newIocsToSubmit, description, options, requestWithDef
             type: 'Description',
             value: description,
             displayed: true
+          },
+          options
+        }),
+      newIocsToSubmit
+    )
+  );
+
+const createAssociations = (newIocsToSubmit, groupType, groupID, options, requestWithDefaults) =>
+  Promise.all(
+    fp.flatMap(
+      async (entity) =>
+        requestWithDefaults({
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/groups/${groupType}/${groupID}`,
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json'
           },
           options
         }),
