@@ -260,12 +260,12 @@
         </select>
       </div>
       <div class="select-container">
-        <span class="p-key">Description: &nbsp;</span>
+        <span class="p-key">Assoc Group ID: &nbsp;</span>
         <input
           type="text"
           class="groupID"
           placeholder="Enter Group ID"
-          onchange={{action (mut description) value="target.value"}}
+          onchange={{action (mut groupID) value="target.value"}}
           value={{groupID}}
           disabled={{interactionDisabled}}
         />
