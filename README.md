@@ -27,6 +27,10 @@ If checked, users will be able to delete an Indicator from ThreatConnect. (this 
 
 > ***NOTE***: When you delete an Indicator you are doing a deletion of the Indicator from the entire system.
 
+### Allow Group Association
+
+If checked, users will be able to Associate Indicators with Groups from ThreatConnect.
+
 ## Installation Instructions
 
 Installation instructions for integrations are provided on the [PolarityIO GitHub Page](https://polarityio.github.io/).
