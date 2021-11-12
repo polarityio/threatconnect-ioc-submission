@@ -3,6 +3,8 @@ polarity.export = PolarityComponent.extend({
   maxUniqueKeyNumber: Ember.computed.alias('details.maxUniqueKeyNumber'),
   url: Ember.computed.alias('details.url'),
   description: '',
+  groupType: '',
+  groupID: '',
   rating: 0,
   ratingHuman: 'Unknown',
   confidence: 0,
@@ -247,13 +249,16 @@ polarity.export = PolarityComponent.extend({
             rating: outerThis.get('rating'),
             confidence: outerThis.get('confidence'),
             foundEntities: outerThis.get('foundEntities'),
-            submitTags: outerThis.get('selectedTags')
+            submitTags: outerThis.get('selectedTags'),
+            groupType: outerThis.get('groupType'),
+            groupID: outerThis.get('groupID')
           }
         })
         .then(({ foundEntities }) => {
           outerThis.set('foundEntities', foundEntities);
           outerThis.set('newIocsToSubmit', []);
           outerThis.set('createMessage', 'Successfully Created IOCs');
+          outerThis.set('groupID', '');
         })
         .catch((err) => {
           outerThis.set(
