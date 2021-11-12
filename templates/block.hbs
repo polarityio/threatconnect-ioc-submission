@@ -242,44 +242,46 @@
           disabled={{interactionDisabled}}
         />
       </div>
-      <div class="select-container">
-        <span class="p-key">Assoc Group Type: </span>
-        <select class="w-50" onchange={{action (mut groupType) value="target.value"}} disabled={{interactionDisabled}}>
-          <option value="" selected disabled>Select Type</option>
-          <option value="reports">Reports</option>
-          <option value="documents">Documents</option>
-          <option value="threats">Threats</option>
-          <option value="adversaries">Adversaries</option>
-          <option value="campaigns">Campaigns</option>
-          <option value="emails">Emails</option>
-          <option value="events">Events</option>
-          <option value="incidents">Incidents</option>
-          <option value="intrusionSets">Intrusion Sets</option>
-          <option value="malware">Malware</option>
-          <option value="signatures">Signatures</option>
-          <option value="vulnerabilities">Vulnerabilities</option>
-        </select>
-      </div>
-      <div class="select-container">
-        <span class="p-key">Assoc Group ID: &nbsp;</span>
-        {{#if groups.length}}
-          <select class="w-50" onchange={{action (mut groupID) value="target.value"}} disabled={{interactionDisabled}}>
+      {{#if block.userOptions.allowAssociation}}
+        <div class="select-container">
+          <span class="p-key">Assoc Group Type: </span>
+          <select class="w-50" onchange={{action (mut groupType) value="target.value"}} disabled={{interactionDisabled}}>
             <option value="" selected disabled>Select Type</option>
-            {{#each groups as |group|}}
-              <option value={{group.id}}>{{group.name}}({{group.ownerName}})</option>
-            {{/each}}
+            <option value="reports">Reports</option>
+            <option value="documents">Documents</option>
+            <option value="threats">Threats</option>
+            <option value="adversaries">Adversaries</option>
+            <option value="campaigns">Campaigns</option>
+            <option value="emails">Emails</option>
+            <option value="events">Events</option>
+            <option value="incidents">Incidents</option>
+            <option value="intrusionSets">Intrusion Sets</option>
+            <option value="malware">Malware</option>
+            <option value="signatures">Signatures</option>
+            <option value="vulnerabilities">Vulnerabilities</option>
           </select>
-        {{else}}
-          <input
-            type="text"
-            class="groupID"
-            placeholder="Enter Group ID"
-            onchange={{action (mut groupID) value="target.value"}}
-            value={{groupID}}
-            disabled={{interactionDisabled}}
-          />
-        {{/if}}
-      </div>
+        </div>
+        <div class="select-container">
+          <span class="p-key">Assoc Group ID: &nbsp;</span>
+          {{#if groups.length}}
+            <select class="w-50" onchange={{action (mut groupID) value="target.value"}} disabled={{interactionDisabled}}>
+              <option value="" selected disabled>Select Type</option>
+              {{#each groups as |group|}}
+                <option value={{group.id}}>{{group.name}}({{group.ownerName}})</option>
+              {{/each}}
+            </select>
+          {{else}}
+            <input
+              type="text"
+              class="groupID"
+              placeholder="Enter Group ID"
+              onchange={{action (mut groupID) value="target.value"}}
+              value={{groupID}}
+              disabled={{interactionDisabled}}
+            />
+          {{/if}}
+        </div>
+      {{/if}}
       <div class="select-container">
         <span class="p-key">Rating: &nbsp;</span>
         <span>

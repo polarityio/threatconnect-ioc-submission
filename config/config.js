@@ -65,7 +65,18 @@ module.exports = {
     {
       key: 'allowDelete',
       name: 'Allow IOC Deletion',
-      description: 'If checked, users will be able to delete indicators from ThreatConnect.',
+      description:
+        'If checked, users will be able to delete indicators from ThreatConnect.',
+      default: false,
+      type: 'boolean',
+      userCanEdit: true,
+      adminOnly: false
+    },
+    {
+      key: 'allowAssociation',
+      name: 'Allow Group Association',
+      description:
+        'If checked, users will be able to Associate Indicators with Groups from ThreatConnect.',
       default: false,
       type: 'boolean',
       userCanEdit: true,
