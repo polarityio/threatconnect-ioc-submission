@@ -10,6 +10,7 @@ polarity.export = PolarityComponent.extend({
   confidence: 0,
   confidenceHuman: 'Unassessed',
   foundEntities: [],
+  groups: [],
   newIocs: [],
   newIocsToSubmit: [],
   selectedTags: [],
@@ -43,12 +44,17 @@ polarity.export = PolarityComponent.extend({
       'foundEntities',
       this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
     );
+    this.set(
+      'groups',
+      this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
+    );
 
     this.set('selectedTags', [
       {
         name: 'Submitted By Polarity'
       }
     ]);
+
     this._super(...arguments);
   },
   observer: Ember.on(
@@ -65,6 +71,11 @@ polarity.export = PolarityComponent.extend({
         this.set(
           'foundEntities',
           this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
+        );
+
+        this.set(
+          'groups',
+          this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
         );
 
         this.set('newIocsToSubmit', []);

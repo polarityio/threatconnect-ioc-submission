@@ -6,6 +6,7 @@ let maxUniqueKeyNumber = 0;
 const createLookupResults = (
   options,
   entities,
+  groups,
   _foundEntities,
   myOwner,
   Logger
@@ -42,6 +43,7 @@ const createLookupResults = (
           maxUniqueKeyNumber,
           owner: myOwner,
           [`summary${maxUniqueKeyNumber}`]: summary,
+          [`groups${maxUniqueKeyNumber}`]: groups,
           [`foundEntities${maxUniqueKeyNumber}`]: foundEntities,
           [`notFoundEntities${maxUniqueKeyNumber}`]: notFoundEntities
         }

@@ -243,7 +243,7 @@
         />
       </div>
       <div class="select-container">
-        <span class="p-value">Assoc Group Type: </span>
+        <span class="p-key">Assoc Group Type: </span>
         <select class="w-50" onchange={{action (mut groupType) value="target.value"}} disabled={{interactionDisabled}}>
           <option value="" selected disabled>Select Type</option>
           <option value="reports">Reports</option>
@@ -262,14 +262,23 @@
       </div>
       <div class="select-container">
         <span class="p-key">Assoc Group ID: &nbsp;</span>
-        <input
-          type="text"
-          class="groupID"
-          placeholder="Enter Group ID"
-          onchange={{action (mut groupID) value="target.value"}}
-          value={{groupID}}
-          disabled={{interactionDisabled}}
-        />
+        {{#if groups.length}}
+          <select class="w-50" onchange={{action (mut groupID) value="target.value"}} disabled={{interactionDisabled}}>
+            <option value="" selected disabled>Select Type</option>
+            {{#each groups as |group|}}
+              <option value={{group.id}}>{{group.name}}({{group.ownerName}})</option>
+            {{/each}}
+          </select>
+        {{else}}
+          <input
+            type="text"
+            class="groupID"
+            placeholder="Enter Group ID"
+            onchange={{action (mut groupID) value="target.value"}}
+            value={{groupID}}
+            disabled={{interactionDisabled}}
+          />
+        {{/if}}
       </div>
       <div class="select-container">
         <span class="p-key">Rating: &nbsp;</span>

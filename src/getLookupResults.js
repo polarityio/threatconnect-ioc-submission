@@ -16,9 +16,12 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     requestWithDefaults
   );
 
+  const groups = await getGroups(options, requestWithDefaults);
+
   const lookupResults = createLookupResults(
     options,
     entitiesPartition,
+    groups,
     foundEntities,
     myOwner,
     Logger
@@ -48,7 +51,6 @@ const _getEntitiesFoundInTC = async (
   options,
   requestWithDefaults
 ) => {
-
   const _searchForOwnersOfThisEntity = async (indicatorValue, indicatorType) => {
     return fp.getOr(
       [],
@@ -93,6 +95,17 @@ const _getEntitiesFoundInTC = async (
 
   return entitiesFoundInTC;
 };
+
+const getGroups = async (options, requestWithDefaults) =>
+  fp.getOr(
+    [],
+    'body.data.group',
+    await requestWithDefaults({
+      path: `groups`,
+      method: 'GET',
+      options
+    })
+  );
 
 module.exports = {
   getLookupResults
