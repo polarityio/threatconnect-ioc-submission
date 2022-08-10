@@ -232,11 +232,22 @@
         {{fa-icon "cog" size="sm" fixedWidth=true}} Submission Options
       </h1>
       <div class="select-container">
+        <span class="p-key">Title: &nbsp;</span>
+        <input
+          type="text"
+          class="description"
+          placeholder="Enter a title..."
+          onchange={{action (mut title) value="target.value"}}
+          value={{title}}
+          disabled={{interactionDisabled}}
+        />
+      </div>
+      <div class="select-container">
         <span class="p-key">Description: &nbsp;</span>
         <input
           type="text"
           class="description"
-          placeholder="Enter description..."
+          placeholder="Enter a description..."
           onchange={{action (mut description) value="target.value"}}
           value={{description}}
           disabled={{interactionDisabled}}

@@ -91,7 +91,11 @@ const createRequestWithDefaults = (Logger) => {
   };
 
   const checkForStatusError = ({ statusCode, body }, requestOptions) => {
-    Logger.trace({ statusCode, body, requestOptions });
+    Logger.trace({
+      statusCode,
+      body,
+      requestOptions: { ...requestOptions, options: '*************' }
+    });
     checkForInternalServiceError(statusCode, body);
     const roundedStatus = Math.round(statusCode / 100) * 100;
     if (roundedStatus !== 200) {

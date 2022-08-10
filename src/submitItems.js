@@ -8,7 +8,17 @@ const {
 } = require('./constants');
 
 const submitItems = async (
-  { newIocsToSubmit, rating, confidence, submitTags, description, foundEntities, groupType, groupID },
+  {
+    newIocsToSubmit,
+    rating,
+    confidence,
+    submitTags,
+    title,
+    description,
+    foundEntities,
+    groupType,
+    groupID
+  },
   requestWithDefaults,
   options,
   Logger,
@@ -24,30 +34,39 @@ const submitItems = async (
       Logger
     );
 
-    if (description) {
-      await createDescription(
-        newIocsToSubmit,
-        description,
-        options,
-        requestWithDefaults,
-        Logger
-      );
-    }
-
-    if (groupID) {
-      await createAssociations(
-        newIocsToSubmit,
-        groupType,
-        groupID,
-        options,
-        requestWithDefaults,
-        Logger
-      );
-    }
-
-    if (submitTags.length) {
-      await createTags(newIocsToSubmit, submitTags, options, requestWithDefaults, Logger);
-    }
+    await Promise.all([
+      ...(description
+        ? await createDescription(
+            newIocsToSubmit,
+            description,
+            options,
+            requestWithDefaults,
+            Logger
+          )
+        : []),
+      ...(title
+        ? await createTitle(newIocsToSubmit, title, options, requestWithDefaults, Logger)
+        : []),
+      ...(groupID
+        ? await createAssociations(
+            newIocsToSubmit,
+            groupType,
+            groupID,
+            options,
+            requestWithDefaults,
+            Logger
+          )
+        : []),
+      ...(submitTags.length
+        ? await createTags(
+            newIocsToSubmit,
+            submitTags,
+            options,
+            requestWithDefaults,
+            Logger
+          )
+        : [])
+    ]);
 
     return callback(null, {
       foundEntities: [...createdIndicators, ...foundEntities]
@@ -79,7 +98,8 @@ const createIndicators = async (
   Logger
 ) => {
   await Promise.all(
-    fp.map((entity) =>
+    fp.map(
+      (entity) =>
         requestWithDefaults({
           path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`,
           method: 'POST',
@@ -156,7 +176,36 @@ const createDescription = (newIocsToSubmit, description, options, requestWithDef
     )
   );
 
-const createAssociations = (newIocsToSubmit, groupType, groupID, options, requestWithDefaults) =>
+const createTitle = (newIocsToSubmit, title, options, requestWithDefaults) =>
+  Promise.all(
+    fp.flatMap(
+      async (entity) =>
+        requestWithDefaults({
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json'
+          },
+          body: {
+            type: 'Title',
+            value: title,
+            displayed: true
+          },
+          options
+        }),
+      newIocsToSubmit
+    )
+  );
+
+const createAssociations = (
+  newIocsToSubmit,
+  groupType,
+  groupID,
+  options,
+  requestWithDefaults
+) =>
   Promise.all(
     fp.flatMap(
       async (entity) =>
