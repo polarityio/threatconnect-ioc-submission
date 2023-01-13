@@ -1,7 +1,7 @@
 {
-  "main": "./integration.js",
   "name": "threatconnect-ioc-submission",
-  "version": "3.0.7-beta",
+  "version": "3.0.8-beta",
+  "main": "./integration.js",
   "private": true,
   "license": "MIT",
   "author": "Polarity",
