@@ -25,9 +25,11 @@ const createRequestWithDefaults = (Logger) => {
   const requestWithDefaults = (
     preRequestFunction = async () => ({}),
     postRequestSuccessFunction = async (x) => x,
-    postRequestFailureFunction = async (e) => { throw e; }
+    postRequestFailureFunction = async (e) => {
+      throw e;
+    }
   ) => {
-    const defaultsRequest = request.defaults(defaults)
+    const defaultsRequest = request.defaults(defaults);
 
     const _requestWithDefault = (requestOptions) =>
       new Promise((resolve, reject) => {
@@ -65,10 +67,10 @@ const createRequestWithDefaults = (Logger) => {
     path,
     ...requestOptions
   }) => {
-    const uri = `${_url.endsWith('/') ? _url : `${_url}/`}v2/${path}`;
+    const uri = `${_url.endsWith('/') ? _url : `${_url}/`}${path}`;
 
     const signaturePath = /(http[s]?:\/\/)?([^\/\s]+)(\/.*)/g.exec(uri)[3];
-    
+
     let TimeStamp = Math.floor(Date.now() / 1000);
     let signature = signaturePath + ':' + requestOptions.method + ':' + TimeStamp;
 
