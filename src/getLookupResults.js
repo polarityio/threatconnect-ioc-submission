@@ -36,7 +36,7 @@ const _getMyOwners = async (options, requestWithDefaults) => {
   const myOwners = fp.get(
     'body.data.owner',
     await requestWithDefaults({
-      path: `owners/mine`,
+      path: `v2/owners/mine`,
       method: 'GET',
       options
     })
@@ -56,7 +56,7 @@ const _getEntitiesFoundInTC = async (
       [],
       'body.data.owner',
       await requestWithDefaults({
-        path: `indicators/${encodeURIComponent(indicatorType)}/${encodeURIComponent(
+        path: `v2/indicators/${encodeURIComponent(indicatorType)}/${encodeURIComponent(
           indicatorValue
         )}/owners`,
         method: 'GET',
@@ -101,7 +101,7 @@ const getGroups = async (options, requestWithDefaults) =>
     [],
     'body.data.group',
     await requestWithDefaults({
-      path: `groups`,
+      path: `v3/groups`,
       method: 'GET',
       options
     })

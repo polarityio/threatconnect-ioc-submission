@@ -31,7 +31,7 @@
     "proxy": ""
   },
   "logging": {
-    "level": "info"
+    "level": "trace"
   },
   "options": [
     {
