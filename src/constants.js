@@ -16,6 +16,15 @@ const POLARITY_TYPE_TO_THREATCONNECT = {
   url: 'urls'
 };
 
+const TYPES = {
+  IPv4: 'Address',
+  IPv6: 'Address',
+  hash: 'File',
+  email: 'EmailAddress',
+  domain: 'Host',
+  url: 'URL'
+};
+
 const SUBMISSION_LABELS = {
   IPv4: 'ip',
   IPv6: 'ip',
@@ -43,5 +52,6 @@ module.exports = {
   INDICATOR_TYPES,
   POLARITY_TYPE_TO_THREATCONNECT,
   SUBMISSION_LABELS,
-  ENTITY_TYPES
+  ENTITY_TYPES,
+  TYPES
 };
