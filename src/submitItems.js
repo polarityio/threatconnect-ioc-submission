@@ -156,6 +156,13 @@ const createTags = (iocIds, submitTags, options, requestWithDefaults) =>
             requestWithDefaults({
               path: `v3/tags`,
               method: 'POST',
+              body: {
+                name: tag,
+                description: tag,
+                associatedIndicators: {
+                  data: [{ id: id }]
+                }
+              },
               options
             }),
           submitTags

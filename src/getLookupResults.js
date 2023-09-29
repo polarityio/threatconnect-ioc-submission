@@ -1,6 +1,6 @@
 const fp = require('lodash/fp');
 
-const { partitionFlatMap, splitOutIgnoredIps } = require('./dataTransformations');
+const { splitOutIgnoredIps } = require('./dataTransformations');
 const { INDICATOR_TYPES, POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
 const createLookupResults = require('./createLookupResults');
 
@@ -9,6 +9,7 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
   const groups = await getGroups(options, requestWithDefaults);
 
   Logger.trace({ groups }, 'Groups');
+
   const myOwner = await _getMyOwners(options, requestWithDefaults);
 
   const foundEntities = await _getEntitiesFoundInTC(
@@ -17,6 +18,8 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     options,
     requestWithDefaults
   );
+
+  Logger.trace({ foundEntities }, 'Found Entities');
 
   const lookupResults = createLookupResults(
     options,
@@ -99,7 +102,7 @@ const _getEntitiesFoundInTC = async (
 const getGroups = async (options, requestWithDefaults) =>
   fp.getOr(
     [],
-    'body.data.group',
+    'body.data',
     await requestWithDefaults({
       path: `v3/groups`,
       method: 'GET',
