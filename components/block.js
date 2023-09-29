@@ -157,6 +157,9 @@ polarity.export = PolarityComponent.extend({
       outerThis.set('deleteIsRunning', true);
       outerThis.get('block').notifyPropertyChange('data');
 
+      console.log(outerThis.get('foundEntities'), 'ENTITY TO DELETE');
+      console.log(outerThis.get('newIocs'), 'ENTITY TO DELETE');
+
       outerThis
         .sendIntegrationMessage({
           data: {
@@ -264,7 +267,7 @@ polarity.export = PolarityComponent.extend({
         return;
       }
 
-      console.log(this.get('selectedGroup'), 'DATGADADSASDASDAS');
+      console.log(this.get('selectedTags'), 'DATGADADSASDASDAS');
 
       outerThis.set('createMessage', '');
       outerThis.set('createErrorMessage', '');
