@@ -10,8 +10,24 @@ polarity.export = PolarityComponent.extend({
   ratingHuman: 'Unknown',
   confidence: 0,
   confidenceHuman: 'Unassessed',
+  groupTypes: [
+    'Report',
+    'Threat',
+    'Adversary',
+    'Incident',
+    'Documents',
+    'Signature',
+    'Malware',
+    'Campaign',
+    'Email',
+    'Event',
+    'Intrustion Set',
+    'Vulnerability'
+  ],
   foundEntities: [],
   groups: [],
+  selectedGroup: [],
+  selectedGroupType: [],
   newIocs: [],
   newIocsToSubmit: [],
   selectedTags: [],
@@ -45,10 +61,7 @@ polarity.export = PolarityComponent.extend({
       'foundEntities',
       this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
     );
-    this.set(
-      'groups',
-      this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
-    );
+    this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
 
     this.set('selectedTags', [
       {
@@ -74,10 +87,7 @@ polarity.export = PolarityComponent.extend({
           this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
         );
 
-        this.set(
-          'groups',
-          this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
-        );
+        this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
 
         this.set('newIocsToSubmit', []);
       }
@@ -123,6 +133,12 @@ polarity.export = PolarityComponent.extend({
       });
   },
   actions: {
+    searchGroups: function (group) {
+      console.log(this.get('groups'));
+      return new Ember.RSVP.Promise((resolve, reject) => {
+        Ember.run.debounce(this, this.searchGroups, group, resolve, reject, 600);
+      });
+    },
     toggleOwnershipMessage: function () {
       this.toggleProperty('showOwnershipMessage');
     },
@@ -248,6 +264,8 @@ polarity.export = PolarityComponent.extend({
         return;
       }
 
+      console.log(this.get('selectedGroup'), 'DATGADADSASDASDAS');
+
       outerThis.set('createMessage', '');
       outerThis.set('createErrorMessage', '');
       outerThis.set('createIsRunning', true);
@@ -263,11 +281,12 @@ polarity.export = PolarityComponent.extend({
             confidence: outerThis.get('confidence'),
             foundEntities: outerThis.get('foundEntities'),
             submitTags: outerThis.get('selectedTags'),
-            groupType: outerThis.get('groupType'),
-            groupID: outerThis.get('groupID')
+            groupType: outerThis.get('selectedGroupType'),
+            groupID: outerThis.get('selectedGroup').name
           }
         })
         .then(({ foundEntities }) => {
+          console.log('foundEntities', foundEntities);
           outerThis.set('foundEntities', foundEntities);
           outerThis.set('newIocsToSubmit', []);
           outerThis.set('createMessage', 'Successfully Created IOCs');
@@ -358,3 +377,39 @@ polarity.export = PolarityComponent.extend({
     }
   }
 });
+
+{
+  /* <div>
+{{#power-select-multiple
+  triggerClass='form-control'
+  selected=selectedTag
+  options=existingTags
+  searchEnabled=true
+  search=(action 'searchTags')
+  placeholder='Search Tags'
+  searchField='name'
+  searchMessage='Loading Tags ...'
+  loadingMessage='Loading Tags ...'
+  searchPlaceholder='Search tags'
+  closeOnSelect=true
+  disabled=interactionDisabled
+  onOpen=(action 'searchTags' '')
+  onChange=(action (mut selectedTag))
+  as |tag|
+}}
+  <span
+    class='p-tag'
+    style='word-break: break-word; margin: 10px 0; display:inline-block; line-height: 1.2em; font-size: 12px; box-shadow: 3px 3px 3px #888888; padding: 4px; border-radius: 4px;background-color: #fff; border: 1px solid #f97b06; padding: 1px 5px 2px 7px; border-radius: 16px; color: #07213a; 5px 0;'
+  >
+    {{tag.name}}
+    <span style='position: relative; top: 1px'>
+      {{#if tag.isNew}}
+        {{fa-icon 'plus-circle' fixedWidth=true}}
+      {{else}}
+        {{fa-icon 'check-circle' fixedWidth=true}}
+      {{/if}}
+    </span>
+  </span>
+{{/power-select-multiple}}
+</div> */
+}
