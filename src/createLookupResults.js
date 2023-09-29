@@ -26,6 +26,9 @@ const createLookupResults = (
   ];
   maxUniqueKeyNumber++;
 
+  // remove this for the real integration
+  const test = (groups[0] = apiResponse.data);
+
   return [
     {
       entity: {
@@ -43,7 +46,7 @@ const createLookupResults = (
           maxUniqueKeyNumber,
           owner: myOwner,
           [`summary${maxUniqueKeyNumber}`]: summary,
-          [`groups${maxUniqueKeyNumber}`]: groups,
+          [`groups${maxUniqueKeyNumber}`]: test,
           [`foundEntities${maxUniqueKeyNumber}`]: foundEntities,
           [`notFoundEntities${maxUniqueKeyNumber}`]: notFoundEntities
         }
@@ -72,5 +75,75 @@ const getNotFoundEntities = (foundEntities, entities) =>
     [],
     entities
   );
+
+const apiResponse = {
+  data: [
+    {
+      id: 21731163,
+      dateAdded: '2023-09-20T17:47:37Z',
+      securityLabels: {},
+      ownerId: 26,
+      ownerName: 'Polarity',
+      webLink:
+        'https://partnerstage.threatconnect.com/#/details/groups/21731163/overview',
+      tags: {},
+      type: 'Report',
+      name: 'Testing Reports',
+      createdBy: {
+        id: 30,
+        userName: 'ed@polarity.io',
+        firstName: 'Ed',
+        lastName: 'Dorsey',
+        pseudonym: 'spline',
+        owner: 'Polarity'
+      },
+      upVoteCount: '0',
+      downVoteCount: '0',
+      generatedReport: true,
+      attributes: {},
+      fileName: 'testing-reports.pdf',
+      fileSize: 10307,
+      status: 'Success',
+      documentType: 'PDF',
+      documentDateAdded: '2023-09-20T17:47:37Z',
+      lastModified: '2023-09-29T15:35:16Z',
+      legacyLink:
+        'https://partnerstage.threatconnect.com/auth/report/report.xhtml?report=21731163'
+    },
+    {
+      id: 21731163,
+      dateAdded: '2023-09-20T17:47:37Z',
+      securityLabels: {},
+      ownerId: 26,
+      ownerName: 'Polarity',
+      webLink:
+        'https://partnerstage.threatconnect.com/#/details/groups/21731163/overview',
+      tags: {},
+      type: 'Report',
+      name: 'Testing Reports',
+      createdBy: {
+        id: 30,
+        userName: 'ed@polarity.io',
+        firstName: 'Ed',
+        lastName: 'Dorsey',
+        pseudonym: 'spline',
+        owner: 'Polarity'
+      },
+      upVoteCount: '0',
+      downVoteCount: '0',
+      generatedReport: true,
+      attributes: {},
+      fileName: 'testing-reports.pdf',
+      fileSize: 10307,
+      status: 'Success',
+      documentType: 'PDF',
+      documentDateAdded: '2023-09-20T17:47:37Z',
+      lastModified: '2023-09-29T15:35:16Z',
+      legacyLink:
+        'https://partnerstage.threatconnect.com/auth/report/report.xhtml?report=21731163'
+    }
+  ],
+  status: 'Success'
+};
 
 module.exports = createLookupResults;

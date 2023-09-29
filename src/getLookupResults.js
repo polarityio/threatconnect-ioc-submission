@@ -6,7 +6,9 @@ const createLookupResults = require('./createLookupResults');
 
 const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
+  const groups = await getGroups(options, requestWithDefaults);
 
+  Logger.trace({ groups }, 'Groups');
   const myOwner = await _getMyOwners(options, requestWithDefaults);
 
   const foundEntities = await _getEntitiesFoundInTC(
@@ -15,8 +17,6 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     options,
     requestWithDefaults
   );
-
-  const groups = await getGroups(options, requestWithDefaults);
 
   const lookupResults = createLookupResults(
     options,

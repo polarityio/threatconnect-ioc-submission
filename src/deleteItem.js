@@ -9,9 +9,11 @@ const deleteItem = async (
   callback
 ) => {
   try {
+    const id = foundEntities[0].id;
+
     await requestWithDefaults({
       method: 'DELETE',
-      path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}/${entity.value}`,
+      path: `/v3/indicators/${id}`,
       options
     });
   } catch (error) {

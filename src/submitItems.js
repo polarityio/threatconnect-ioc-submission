@@ -24,6 +24,20 @@ const submitItems = async (
   Logger,
   callback
 ) => {
+  Logger.trace(
+    {
+      newIocsToSubmit,
+      rating,
+      confidence,
+      submitTags,
+      title,
+      description,
+      foundEntities,
+      groupType,
+      groupID
+    },
+    'LOOK_HERE'
+  );
   try {
     const createdIndicators = await createIndicators(
       newIocsToSubmit,
@@ -33,9 +47,7 @@ const submitItems = async (
       requestWithDefaults,
       Logger
     );
-
     const iocIds = createdIndicators.map((ioc) => ioc.id);
-
     await Promise.all([
       ...(description
         ? await createDescription(
@@ -52,8 +64,8 @@ const submitItems = async (
       ...(groupID
         ? await createAssociations(
             iocIds,
-            groupType,
             groupID,
+            groupType,
             options,
             requestWithDefaults,
             Logger
@@ -63,7 +75,6 @@ const submitItems = async (
         ? await createTags(iocIds, submitTags, options, requestWithDefaults, Logger)
         : [])
     ]);
-
     return callback(null, {
       foundEntities: [...createdIndicators, ...foundEntities]
     });
@@ -136,26 +147,20 @@ const createIndicators = async (
   }));
 };
 
-const createTags = (newIocsToSubmit, submitTags, options, requestWithDefaults) =>
+const createTags = (iocIds, submitTags, options, requestWithDefaults) =>
   Promise.all(
     fp.flatMap(
-      async (entity) =>
+      async (id) =>
         fp.map(
           (tag) =>
             requestWithDefaults({
-              path: `v3/indicators/${
-                POLARITY_TYPE_TO_THREATCONNECT[entity.type]
-              }/${encodeURIComponent(entity.value)}/tags/${fp.flow(
-                fp.get('name'),
-                fp.split(' '),
-                fp.join('%20')
-              )(tag)}`,
+              path: `v3/tags`,
               method: 'POST',
               options
             }),
           submitTags
         ),
-      newIocsToSubmit
+      iocIds
     )
   );
 
@@ -174,7 +179,6 @@ const createDescription = (iocIds, description, options, requestWithDefaults) =>
             type: 'Description',
             value: description,
             pinned: true
-            // displayed: true
           },
           options
         }),
@@ -204,23 +208,21 @@ const createTitle = (iocIds, title, options, requestWithDefaults) =>
     )
   );
 
-const createAssociations = (iocIds, groupType, groupID, options, requestWithDefaults) =>
+const createAssociations = (iocIds, groupID, groupType, options, requestWithDefaults) =>
   Promise.all(
     fp.flatMap(
       async (id) =>
         requestWithDefaults({
-          path: `v3/indicators`,
+          path: `v3/groups`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
           },
           body: {
-            indicatorId: id,
-            pinned: true,
-            associatedGroups: {
-              data: {
-                id: groupID
-              }
+            name: groupID,
+            type: groupType,
+            associatedIndicators: {
+              data: [{ id: id }]
             }
           },
           options
