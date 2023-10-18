@@ -114,9 +114,14 @@ const createIndicators = async (
             'Content-type': 'application/json'
           },
           body: {
-            type: TYPES[entity.type],
-            [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]:
-              entity.value,
+            [SUBMISSION_LABELS[
+              entity.type === 'hash'
+                ? fp.find(
+                    (entityType) => ['MD5', 'SHA1', 'SHA256'].includes(entityType),
+                    entity.types
+                  )
+                : entity.type
+            ]]: entity.value,
             rating: fp.toSafeInteger(rating),
             confidence: fp.toSafeInteger(confidence)
           },
