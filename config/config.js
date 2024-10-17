@@ -3,7 +3,7 @@ module.exports = {
   acronym: 'TC+',
   description:
     'Polarity integration that connects to the ThreatConnect threat intelligence platform using the IOC Submission interface format.',
-  entityTypes: ['domain', 'IPv4', 'IPv6', 'hash', 'email', 'url'],
+  entityTypes: ['domain', 'IPv4', 'IPv6', 'MD5', 'SHA1', 'SHA256', 'email', 'url'],
   defaultColor: 'light-pink',
   styles: ['./styles/styles.less'],
   block: {
@@ -28,7 +28,7 @@ module.exports = {
     key: '',
     passphrase: '',
     ca: '',
-    proxy: ""
+    proxy: ''
   },
   logging: {
     level: 'info' //trace, debug, info, warn, error, fatal
@@ -41,8 +41,8 @@ module.exports = {
         'The API URL of your ThreatConnect instance to include the schema (i.e., https://) and port if applicable',
       default: '',
       type: 'text',
-      userCanEdit: true,
-      adminOnly: false
+      userCanEdit: false,
+      adminOnly: true
     },
     {
       key: 'accessId',
@@ -69,7 +69,7 @@ module.exports = {
         'If checked, users will be able to delete indicators from ThreatConnect.',
       default: false,
       type: 'boolean',
-      userCanEdit: true,
+      userCanEdit: false,
       adminOnly: false
     },
     {
@@ -79,7 +79,7 @@ module.exports = {
         'If checked, users will be able to Associate Indicators with Groups from ThreatConnect.',
       default: false,
       type: 'boolean',
-      userCanEdit: true,
+      userCanEdit: false,
       adminOnly: false
     }
   ]

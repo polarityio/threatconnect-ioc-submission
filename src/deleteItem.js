@@ -9,9 +9,18 @@ const deleteItem = async (
   callback
 ) => {
   try {
+    Logger.trace(
+      { entity, newIocs: _newIocs, foundEntities },
+      requestWithDefaults,
+      options,
+      Logger,
+      callback
+    );
     await requestWithDefaults({
       method: 'DELETE',
-      path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}/${entity.value}`,
+      path: `v2/indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}/${
+        entity.value
+      }`,
       options
     });
   } catch (error) {
