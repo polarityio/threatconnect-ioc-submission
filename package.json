@@ -8,6 +8,6 @@
   "dependencies": {
     "aigle": "^1.14.1",
     "lodash": "^4.17.21",
-    "postman-request": "^2.88.1-postman.33"
+    "postman-request": "^2.88.1-postman.40"
   }
 }
