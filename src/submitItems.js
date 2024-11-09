@@ -1,5 +1,5 @@
 const fp = require('lodash/fp');
-const { TYPES } = require('./constants');
+const {} = require('./constants');
 const {
   POLARITY_TYPE_TO_THREATCONNECT,
   SUBMISSION_LABELS,
@@ -24,20 +24,6 @@ const submitItems = async (
   Logger,
   callback
 ) => {
-  Logger.trace(
-    {
-      newIocsToSubmit,
-      rating,
-      confidence,
-      submitTags,
-      title,
-      description,
-      foundEntities,
-      groupType,
-      groupID
-    },
-    'LOOK_HERE'
-  );
   try {
     const createdIndicators = await createIndicators(
       newIocsToSubmit,
@@ -47,11 +33,11 @@ const submitItems = async (
       requestWithDefaults,
       Logger
     );
-    const iocIds = createdIndicators.map((ioc) => ioc.id);
+
     await Promise.all([
       ...(description
         ? await createDescription(
-            iocIds,
+            newIocsToSubmit,
             description,
             options,
             requestWithDefaults,
@@ -59,22 +45,29 @@ const submitItems = async (
           )
         : []),
       ...(title
-        ? await createTitle(iocIds, title, options, requestWithDefaults, Logger)
+        ? await createTitle(newIocsToSubmit, title, options, requestWithDefaults, Logger)
         : []),
       ...(groupID
         ? await createAssociations(
-            iocIds,
-            groupID,
+            newIocsToSubmit,
             groupType,
+            groupID,
             options,
             requestWithDefaults,
             Logger
           )
         : []),
       ...(submitTags.length
-        ? await createTags(iocIds, submitTags, options, requestWithDefaults, Logger)
+        ? await createTags(
+            newIocsToSubmit,
+            submitTags,
+            options,
+            requestWithDefaults,
+            Logger
+          )
         : [])
     ]);
+
     return callback(null, {
       foundEntities: [...createdIndicators, ...foundEntities]
     });
@@ -104,142 +97,129 @@ const createIndicators = async (
   requestWithDefaults,
   Logger
 ) => {
-  const responseArray = await Promise.all(
-    newIocsToSubmit.map(async (entity) => {
-      try {
-        const response = await requestWithDefaults({
-          path: `v3/indicators`,
+  await Promise.all(
+    fp.map(
+      (entity) =>
+        requestWithDefaults({
+          path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
           },
           body: {
-            [SUBMISSION_LABELS[
-              entity.type === 'hash'
-                ? fp.find(
-                    (entityType) => ['MD5', 'SHA1', 'SHA256'].includes(entityType),
-                    entity.types
-                  )
-                : entity.type
-            ]]: entity.value,
+            [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]:
+              entity.value,
             rating: fp.toSafeInteger(rating),
             confidence: fp.toSafeInteger(confidence)
           },
           options
-        });
-
-        return {
-          response,
-          entity
-        };
-      } catch (error) {
-        if (error.message.includes('exclusion list')) {
-          error.entityValue = entity.value;
-        }
-        throw error;
-      }
-    })
+        }).catch((error) => {
+          if (error.message.includes('exclusion list')) error.entityValue = entity.value;
+          throw error;
+        }),
+      newIocsToSubmit
+    )
   );
-
-  return responseArray.map(({ response, entity }) => ({
-    ...entity,
-    linkType: INDICATOR_TYPES[POLARITY_TYPE_TO_THREATCONNECT[entity.type]],
+  return fp.map((createdEntity) => ({
+    ...createdEntity,
+    linkType: INDICATOR_TYPES[POLARITY_TYPE_TO_THREATCONNECT[createdEntity.type]],
     canDelete: true,
     resultsFound: true,
-    displayedType: ENTITY_TYPES[entity.type],
-    uriEncodedValue: encodeURIComponent(entity.value),
-    id: response.body.data.id
-  }));
+    displayedType: ENTITY_TYPES[createdEntity.type],
+    uriEncodedValue: encodeURIComponent(createdEntity.value)
+  }))(newIocsToSubmit);
 };
 
-const createTags = (iocIds, submitTags, options, requestWithDefaults) =>
+const createTags = (newIocsToSubmit, submitTags, options, requestWithDefaults) =>
   Promise.all(
     fp.flatMap(
-      async (id) =>
+      async (entity) =>
         fp.map(
           (tag) =>
             requestWithDefaults({
-              path: `v3/tags`,
+              path: `indicators/${
+                POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+              }/${encodeURIComponent(entity.value)}/tags/${fp.flow(
+                fp.get('name'),
+                fp.split(' '),
+                fp.join('%20')
+              )(tag)}`,
               method: 'POST',
-              body: {
-                name: tag,
-                description: tag,
-                associatedIndicators: {
-                  data: [{ id: id }]
-                }
-              },
               options
             }),
           submitTags
         ),
-      iocIds
+      newIocsToSubmit
     )
   );
 
-const createDescription = (iocIds, description, options, requestWithDefaults) =>
+const createDescription = (newIocsToSubmit, description, options, requestWithDefaults) =>
   Promise.all(
     fp.flatMap(
-      async (id) =>
+      async (entity) =>
         requestWithDefaults({
-          path: `v3/indicatorAttributes`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
           },
           body: {
-            indicatorId: id,
             type: 'Description',
             value: description,
-            pinned: true
+            displayed: true
           },
           options
         }),
-      iocIds
+      newIocsToSubmit
     )
   );
 
-const createTitle = (iocIds, title, options, requestWithDefaults) =>
+const createTitle = (newIocsToSubmit, title, options, requestWithDefaults) =>
   Promise.all(
     fp.flatMap(
-      async (id) =>
+      async (entity) =>
         requestWithDefaults({
-          path: `v3/indicatorAttributes`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
           },
           body: {
-            indicatorId: id,
             type: 'Title',
             value: title,
-            pinned: true
+            displayed: true
           },
           options
         }),
-      iocIds
+      newIocsToSubmit
     )
   );
 
-const createAssociations = (iocIds, groupID, groupType, options, requestWithDefaults) =>
+const createAssociations = (
+  newIocsToSubmit,
+  groupType,
+  groupID,
+  options,
+  requestWithDefaults
+) =>
   Promise.all(
     fp.flatMap(
-      async (id) =>
+      async (entity) =>
         requestWithDefaults({
-          path: `v3/groups`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/groups/${groupType}/${groupID}`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
           },
-          body: {
-            name: groupID,
-            type: groupType,
-            associatedIndicators: {
-              data: [{ id: id }]
-            }
-          },
           options
         }),
-      iocIds
+      newIocsToSubmit
     )
   );
 

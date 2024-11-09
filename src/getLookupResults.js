@@ -1,14 +1,11 @@
 const fp = require('lodash/fp');
 
-const { splitOutIgnoredIps } = require('./dataTransformations');
+const { partitionFlatMap, splitOutIgnoredIps } = require('./dataTransformations');
 const { INDICATOR_TYPES, POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
 const createLookupResults = require('./createLookupResults');
 
 const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
-  const groups = await getGroups(options, requestWithDefaults);
-
-  Logger.trace({ groups }, 'Groups');
 
   const myOwner = await _getMyOwners(options, requestWithDefaults);
 
@@ -19,7 +16,7 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     requestWithDefaults
   );
 
-  Logger.trace({ foundEntities }, 'Found Entities');
+  const groups = await getGroups(options, requestWithDefaults);
 
   const lookupResults = createLookupResults(
     options,
@@ -39,7 +36,7 @@ const _getMyOwners = async (options, requestWithDefaults) => {
   const myOwners = fp.get(
     'body.data.owner',
     await requestWithDefaults({
-      path: `v2/owners/mine`,
+      path: `owners/mine`,
       method: 'GET',
       options
     })
@@ -59,7 +56,7 @@ const _getEntitiesFoundInTC = async (
       [],
       'body.data.owner',
       await requestWithDefaults({
-        path: `v2/indicators/${encodeURIComponent(indicatorType)}/${encodeURIComponent(
+        path: `indicators/${encodeURIComponent(indicatorType)}/${encodeURIComponent(
           indicatorValue
         )}/owners`,
         method: 'GET',
@@ -102,9 +99,9 @@ const _getEntitiesFoundInTC = async (
 const getGroups = async (options, requestWithDefaults) =>
   fp.getOr(
     [],
-    'body.data',
+    'body.data.group',
     await requestWithDefaults({
-      path: `v3/groups`,
+      path: `groups`,
       method: 'GET',
       options
     })

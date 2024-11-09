@@ -7,7 +7,7 @@ on:
 jobs:
   run-integration-development-checklist:
     runs-on: ubuntu-latest
-    container: 'rockylinux:8'
+    container: 'centos:7'
 
     steps:
     - uses: actions/checkout@v2

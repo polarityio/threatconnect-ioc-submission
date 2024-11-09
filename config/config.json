@@ -3,7 +3,7 @@
   "name": "ThreatConnect IOC Submission",
   "acronym": "TC+",
   "description": "Polarity integration that connects to the ThreatConnect threat intelligence platform using the IOC Submission interface format.",
-  "entityTypes": ["domain", "IPv4", "IPv6", "MD5", "SHA1", "SHA256", "email", "url"],
+  "entityTypes": ["domain", "IPv4", "IPv6", "hash", "email", "url"],
   "defaultColor": "light-pink",
   "styles": ["./styles/styles.less"],
   "block": {
@@ -23,6 +23,13 @@
     }
   },
   "onDemandOnly": true,
+  "request": {
+    "cert": "",
+    "key": "",
+    "passphrase": "",
+    "ca": "",
+    "proxy": ""
+  },
   "logging": {
     "level": "info"
   },
@@ -33,8 +40,8 @@
       "description": "The API URL of your ThreatConnect instance to include the schema (i.e., https://) and port if applicable",
       "default": "",
       "type": "text",
-      "userCanEdit": false,
-      "adminOnly": true
+      "userCanEdit": true,
+      "adminOnly": false
     },
     {
       "key": "accessId",
@@ -60,7 +67,7 @@
       "description": "If checked, users will be able to delete indicators from ThreatConnect.",
       "default": false,
       "type": "boolean",
-      "userCanEdit": false,
+      "userCanEdit": true,
       "adminOnly": false
     },
     {
@@ -69,7 +76,7 @@
       "description": "If checked, users will be able to Associate Indicators with Groups from ThreatConnect.",
       "default": false,
       "type": "boolean",
-      "userCanEdit": false,
+      "userCanEdit": true,
       "adminOnly": false
     }
   ]

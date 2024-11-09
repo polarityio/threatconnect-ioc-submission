@@ -32,7 +32,6 @@ const createLookupResults = (
         ...entities[0],
         value: 'ThreatConnect IOC Submission'
       },
-      displayValue: 'ThreatConnect IOC Submission',
       isVolatile: true,
       data: {
         summary: [
