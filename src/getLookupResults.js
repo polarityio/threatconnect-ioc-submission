@@ -18,6 +18,14 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
 
   const groups = await getGroups(options, requestWithDefaults);
 
+
+  foundEntities.map((entity) => {
+    const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner.id);
+    entity.indicatorId = primaryOwner.itemId;
+    return entity;
+  });
+
+
   const lookupResults = createLookupResults(
     options,
     entitiesPartition,
@@ -58,7 +66,7 @@ const _getEntitiesFoundInTC = async (
       await requestWithDefaults({
         path: `indicators/${encodeURIComponent(indicatorType)}/${encodeURIComponent(
           indicatorValue
-        )}/owners`,
+        )}/owners?includes=additional`,
         method: 'GET',
         options
       })

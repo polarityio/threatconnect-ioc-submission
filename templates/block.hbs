@@ -1,436 +1,414 @@
-<div class="{{if (and (not (or newIocs.length newIocsToSubmit.length)) interactionDisabled) "modal-open"}} {{if showOwnershipMessage "ownership-modal-open"}}">
+<div class="{{if (and (not (or newIocs.length newIocsToSubmit.length)) interactionDisabled) " modal-open"}} {{if
+  showOwnershipMessage "ownership-modal-open" }}">
   {{#if foundEntities.length}}
-    <h1 class="p-title">
-      {{fa-icon "info-circle" size="sm"}} Already In ThreatConnect
-    </h1>
-    {{#if isDeleting}}
-      <div class="ioc-deletion-modal">
+  <h1 class="p-title">
+    {{fa-icon "info-circle" size="sm"}} Already In ThreatConnect
+  </h1>
+  {{#if isDeleting}}
+  <div class="ioc-deletion-modal">
+    <div class="note">
+      <span class="p-key">
+        <span class="p-value"><em><b>DANGER:</b></em></span>
+        <div>
+          <span>Deleting an indicator cannot be undone and will remove all data for the indicator in
+            ThreatConnect.</span>
+        </div>
+        <div>
+          <span>Are you sure you want to delete the indicator <em><b>{{entityToDelete.value}}</b></em>?</span>
+        </div>
+      </span>
+      <div class="delete-confirmation-button">
+        <button class="cancel-delete" {{action "cancelItemDeletion" }}>Cancel</button>
+        <button class="p-btn btn btn-danger m-0" {{action "confirmDelete" }}>Delete</button>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+  <table class="w-100">
+    <tbody>
+      {{#each foundEntities as |foundEntity|}}
+      {{#if showOwnershipMessage}}
+      <div class="default-owner-modal">
         <div class="note">
           <span class="p-key">
-            <span class="p-value"><em><b>DANGER:</b></em></span>
-            <div>
-              <span>Deleting an indicator cannot be undone and will remove all data for the indicator in ThreatConnect.</span>
-            </div>
-            <div>
-              <span>Are you sure you want to delete the indicator <em><b>{{entityToDelete.value}}</b></em>?</span>
-            </div>
+            <em>
+              <span class="p-value"><em><b>NOTE:</b></em></span>
+              This Indicator is currently owned by:
+              {{#each foundEntity.owners as |owner index|}}
+              <b>{{owner.name}}</b>{{if (lt index foundEntity.ownersLengthMinus2) ","}} {{if (eq index
+              foundEntity.ownersLengthMinus2) "and"}}
+              {{/each}}
+              but is not owned by your account owner: <b>{{foundEntity.myOwner.name}}</b>.
+              If you would like to be able to manipulate this indicator in the dashboard you can add this indicator to
+              the
+              <b>To Be Submitted to ThreatConnect</b> list using the <b>+</b> icon on the right and submit this
+              Indicator under your account.
+            </em>
           </span>
-          <div class="delete-confirmation-button">
-            <button class="cancel-delete" {{action "cancelItemDeletion"}}>Cancel</button>
-            <button class="p-btn btn btn-danger m-0" {{action "confirmDelete"}}>Delete</button>
+          <div class="ok-button-container">
+            <button class="ok-button" {{action "toggleOwnershipMessage" }}>OK</button>
           </div>
         </div>
       </div>
-    {{/if}}
-    <table class="w-100">
-      <tbody>
-        {{#each foundEntities as |foundEntity|}}
-          {{#if showOwnershipMessage}}
-            <div class="default-owner-modal">
-              <div class="note">
-                <span class="p-key">
-                  <em>
-                    <span class="p-value"><em><b>NOTE:</b></em></span>
-                    This Indicator is currently owned by:
-                    {{#each foundEntity.owners as |owner index|}}
-                      <b>{{owner.name}}</b>{{if (lt index foundEntity.ownersLengthMinus2) ","}} {{if (eq index foundEntity.ownersLengthMinus2) "and"}}
-                    {{/each}}
-                    but is not owned by your account owner: <b>{{foundEntity.myOwner.name}}</b>.  
-                    If you would like to be able to manipulate this indicator in the dashboard you can add this indicator to the 
-                    <b>To Be Submitted to ThreatConnect</b> list using the <b>+</b> icon on the right and submit this Indicator under your account.
-                  </em>
-                </span>
-                <div class="ok-button-container">
-                  <button class="ok-button" {{action "toggleOwnershipMessage"}}>OK</button>
-                </div>
-              </div>
-            </div>
-          {{/if}}
-          <tr>
-            <td>
-              {{#if (not interactionDisabled)}}
-                <a href="{{details.uiUrl}}/auth/indicators/details/{{foundEntity.linkType}}.xhtml?{{foundEntity.linkType}}={{foundEntity.uriEncodedValue}}">
-                  {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
-                </a>
-              {{else}}
-                <a>{{foundEntity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}</a>
-              {{/if}}
-            </td>
-            <td class="type">
-              <span>{{foundEntity.displayedType}}</span>
-            </td>
-            {{#if (and block.userOptions.allowDelete foundEntity.canDelete)}}
-              <td class="icon deletable">
-                <button
-                  class="no-style-button delete"
-                  {{action "initiateItemDeletion" foundEntity}}
-                  title="Delete IOC from ThreatConnect"
-                  disabled={{interactionDisabled}}
-                >
-                  {{fa-icon "trash" fixedWidth=true}}
-                </button>
-              </td>
-            {{/if}}
-            {{#if (not foundEntity.canDelete)}}
-              <td class="icon addable">
-                <a
-                  href="#"
-                  class="info-found dropdown"
-                  {{on "click" (action "toggleOwnershipMessage")}}
-                  disabled={{interactionDisabled}}
-                >
-                  <span class="text">{{fa-icon "question-circle"}}</span>
-                </a>
-                <button
-                  class="no-style-button add-found"
-                  {{action "addSubmitItem" foundEntity}}
-                  title="Add IOC from Submission List for your Instance"
-                  disabled={{interactionDisabled}}
-                >
-                  {{fa-icon "plus" fixedWidth=true}}
-                </button>
-              </td>
-            {{/if}}
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-
-    <div class="d-flex flex-row justify-content-between align-items-center">
-      <div>
-        {{#if deleteIsRunning}}
-          {{fa-icon "spinner-third" fixedWidth=true spin=true}} Deleting...
-        {{/if}}
-      </div>
-
-      {{#if deleteMessage}}
-        <div class="alert alert-info mt-1">
-          {{deleteMessage}}
-        </div>
       {{/if}}
-      {{#if deleteErrorMessage}}
-        <div class="alert alert-danger mt-1">
-          {{deleteErrorMessage}}
-        </div>
+      <tr>
+        <td>
+          {{#if (not interactionDisabled)}}
+          <a
+            href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdId foundEntity.createdId foundEntity.indicatorId}}/overview">
+            {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}} {{fa-icon "external-link" fixedWidth=true
+            class="external-link-icon"}}
+          </a>
+          {{else}}
+          <a>{{foundEntity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}</a>
+          {{/if}}
+        </td>
+        <td class="type">
+          <span>{{foundEntity.displayedType}}</span>
+        </td>
+        {{#if (and block.userOptions.allowDelete foundEntity.canDelete)}}
+        <td class="icon deletable">
+          <button class="no-style-button delete" {{action "initiateItemDeletion" foundEntity}}
+            title="Delete IOC from ThreatConnect" disabled={{interactionDisabled}}>
+            {{fa-icon "trash" fixedWidth=true}}
+          </button>
+        </td>
+        {{/if}}
+        {{#if (not foundEntity.canDelete)}}
+        <td class="icon addable">
+          <a href="#" class="info-found dropdown" {{on "click" (action "toggleOwnershipMessage" )}}
+            disabled={{interactionDisabled}}>
+            <span class="text">{{fa-icon "question-circle"}}</span>
+          </a>
+          <button class="no-style-button add-found" {{action "addSubmitItem" foundEntity}}
+            title="Add IOC from Submission List for your Instance" disabled={{interactionDisabled}}>
+            {{fa-icon "plus" fixedWidth=true}}
+          </button>
+        </td>
+        {{/if}}
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="d-flex flex-row justify-content-between align-items-center">
+    <div>
+      {{#if deleteIsRunning}}
+      {{fa-icon "spinner-third" fixedWidth=true spin=true}} Deleting...
       {{/if}}
     </div>
+
+    {{#if deleteMessage}}
+    <div class="alert alert-info mt-1">
+      {{deleteMessage}}
+    </div>
+    {{/if}}
+    {{#if deleteErrorMessage}}
+    <div class="alert alert-danger mt-1">
+      {{deleteErrorMessage}}
+    </div>
+    {{/if}}
+  </div>
   {{/if}}
 
   {{#if (or newIocs.length newIocsToSubmit.length)}}
-      <div class="title-with-button">
-        <h1 class="p-title">
-          {{fa-icon "sparkles" size="sm" fixedWidth=true}} Not Currently In ThreatConnect
-        </h1>
-        {{#if newIocs.length}}
-          <button
-            class="no-style-button add"
-            {{action "addAllSubmitItems"}}
-            title="Add all IOCs to Submission List"
-            disabled={{interactionDisabled}}
-          >
-            Add All
-          </button>
-        {{/if}}
-      </div>
-      <table class="w-100">
-        <tbody>
-          {{#each newIocs as |entity|}}
-            <tr>
-              <td>
-                <span>{{entity.value}}</span>
-              </td>
-              <td class="type">
-                <span>{{entity.displayedType}}</span>
-              </td>
-              <td class="icon">
-                <button
-                  class="no-style-button add"
-                  {{action "addSubmitItem" entity}}
-                  title="Add IOC to Submission List"
-                  disabled={{interactionDisabled}}
-                >
-                  {{fa-icon "plus" fixedWidth=true}}
-                </button>
-              </td>
-            </tr>
-          {{/each}}
-        </tbody>
-      </table>
-
-    {{#if (not newIocs.length)}}
-      <div class="note">
-        <span class="p-key"><em>NONE</em></span>
-      </div>
+  <div class="title-with-button">
+    <h1 class="p-title">
+      {{fa-icon "sparkles" size="sm" fixedWidth=true}} Not Currently In ThreatConnect
+    </h1>
+    {{#if newIocs.length}}
+    <button class="no-style-button add" {{action "addAllSubmitItems" }} title="Add all IOCs to Submission List"
+      disabled={{interactionDisabled}}>
+      Add All
+    </button>
     {{/if}}
-    <div class="title-with-button">
-      <h1 class="p-title">
-        {{fa-icon "upload" size="sm" fixedWidth=true}} To Be Submitted to&nbsp;
-        {{#if newIocsToSubmit.length}}
-          <span class="show-threatconnect">
-            ThreatConnect
-          </span>
-          <span class="show-tc">
-            TC
-          </span>
-        {{else}}
-          <span>
-            ThreatConnect
-          </span>
-        {{/if}}
-      </h1>
-      {{#if newIocsToSubmit.length}}
-        <button
-          class="no-style-button remove"
-          title="Remove all IOCs from Submission List"
-          {{action "removeAllSubmitItems"}}
-          disabled={{interactionDisabled}}
-        >
-          Remove All
-        </button>
-      {{/if}}
-    </div>
-    <table class="w-100">
-      <tbody>
-        {{#each newIocsToSubmit as |entity|}}
-          <tr>
-            <td>
-              <span>
-                {{#if entity.resultsFound}}
-                  <a href="{{details.uiUrl}}/auth/indicators/details/{{entity.linkType}}.xhtml?{{entity.linkType}}={{entity.uriEncodedValue}}">
-                    {{entity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
-                  </a>
-                {{else}}
-                  {{entity.value}}
-                {{/if}}
-              </span> 
-            </td>
-            <td class="type">
-              <span>
-                {{entity.displayedType}}
-              </span>
-            </td>
-            <td class="icon">
-              <button
-                class="no-style-button remove"
-                title="Remove IOC from Submission List"
-                {{action "removeSubmitItem" entity}}
-                disabled={{interactionDisabled}}
-              >
-                {{fa-icon "minus" fixedWidth=true}}
-              </button>
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-      {{#if (not newIocsToSubmit.length)}}
-        <div class="note">
-          <span class="p-key"><em>NONE</em></span>
-        </div>
-      {{/if}}
-      <h1 class="p-title submission-options py-1">
-        {{fa-icon "cog" size="sm" fixedWidth=true}} Submission Options
-      </h1>
-      <div class="select-container">
-        <span class="p-key">Title: &nbsp;</span>
-        <input
-          type="text"
-          class="description"
-          placeholder="Enter a title..."
-          onchange={{action (mut title) value="target.value"}}
-          value={{title}}
-          disabled={{interactionDisabled}}
-        />
-      </div>
-      <div class="select-container">
-        <span class="p-key">Description: &nbsp;</span>
-        <input
-          type="text"
-          class="description"
-          placeholder="Enter a description..."
-          onchange={{action (mut description) value="target.value"}}
-          value={{description}}
-          disabled={{interactionDisabled}}
-        />
-      </div>
-      {{#if block.userOptions.allowAssociation}}
-        <div class="select-container">
-          <span class="p-key">Assoc Group Type: </span>
-          <select class="w-50" onchange={{action (mut groupType) value="target.value"}} disabled={{interactionDisabled}}>
-            <option value="" selected disabled>Select Type</option>
-            <option value="reports">Reports</option>
-            <option value="documents">Documents</option>
-            <option value="threats">Threats</option>
-            <option value="adversaries">Adversaries</option>
-            <option value="campaigns">Campaigns</option>
-            <option value="emails">Emails</option>
-            <option value="events">Events</option>
-            <option value="incidents">Incidents</option>
-            <option value="intrusionSets">Intrusion Sets</option>
-            <option value="malware">Malware</option>
-            <option value="signatures">Signatures</option>
-            <option value="vulnerabilities">Vulnerabilities</option>
-          </select>
-        </div>
-        <div class="select-container">
-          <span class="p-key">Assoc Group ID: &nbsp;</span>
-          {{#if groups.length}}
-            <select class="w-50" onchange={{action (mut groupID) value="target.value"}} disabled={{interactionDisabled}}>
-              <option value="" selected disabled>Select Type</option>
-              {{#each groups as |group|}}
-                <option value={{group.id}}>{{group.name}}({{group.ownerName}})</option>
-              {{/each}}
-            </select>
-          {{else}}
-            <input
-              type="text"
-              class="groupID"
-              placeholder="Enter Group ID"
-              onchange={{action (mut groupID) value="target.value"}}
-              value={{groupID}}
-              disabled={{interactionDisabled}}
-            />
-          {{/if}}
-        </div>
-      {{/if}}
-      <div class="select-container">
-        <span class="p-key">Rating: &nbsp;</span>
-        <span>
-          {{fa-icon "ban" click=(action "setRating" 0) class="rating-icon"}}
-          {{#each (repeat 5) as |empty ratingIndex|}}
-            {{fa-icon 
-              "skull" 
-              class=(if (lt ratingIndex rating) "rating-icon rating-icon-filled" "rating-icon rating-icon-empty")
-              click=(action "setRating" (inc ratingIndex))
-            }}
-          {{/each}}
-          {{ratingHuman}}
-        </span>
-      </div>
-      <div class="confidence">
-        <span class="p-key">Confidence: &nbsp;</span>
-        <span class="p-value">{{confidence}} - {{confidenceHuman}}</span>
-        <div>
-          <input 
-            type="range"
-            oninput={{action 'setConfidence' value="target.value"}}
-            min="0"
-            max="100"
-            value={{confidence}}
-            steps="1"
-          />
-        </div>
-      </div>
-      <div class="tag-container">
-        <h1 class="p-title">
-          {{fa-icon "tags" fixedWidth=true}} Tags
-        </h1>
-        {{#if (eq selectedTags.length 0)}}
-          <span class="p-footnote mb-2 mt-2">
-            <span><em>&nbsp; No Tags &nbsp;</em></span>
-          </span>
-        {{else}}
-          {{#each (take maxTagsInBlock selectedTags) as |tag tagIndex|}}
-            {{#if tag.isNew}}
-              <span class="tag link-tag d-inline-flex align-items-center">
-                <span class="text-container threatconnect-summary-tag {{unless interactionDisabled "rounded-borders"}}">
-                  {{tag.name}}
-                  {{#if (not interactionDisabled)}}
-                    <span class="remove-icon-container" {{action "deleteTag" tag}}>
-                      {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
-                    </span>
-                  {{/if}}
-                </span>
-              </span>
-            {{else}}
-              <a href="{{details.uiUrl}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}" class="tag link-tag d-inline-flex align-items-center">
-                <span class="text-container threatconnect-summary-tag {{unless interactionDisabled "rounded-borders"}}">
-                  {{tag.name}}
-                  {{#if (not interactionDisabled)}}
-                    <span class="remove-icon-container" {{action "deleteTag" tag}}>
-                      {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
-                    </span>
-                  {{/if}}
-                </span>
-              </a>
-            {{/if}}
-          {{/each}}
-        {{/if}}
-        {{#unless (or editingTags interactionDisabled)}}
-          <button class="open-modal-btn" {{action "editTags"}}>
-            {{fa-icon "plus" class="open-modal-btn-icon" fixedWidth=true}}
+  </div>
+  <table class="w-100">
+    <tbody>
+      {{#each newIocs as |entity|}}
+      <tr>
+        <td>
+          <span>{{entity.value}}</span>
+        </td>
+        <td class="type">
+          <span>{{entity.displayedType}}</span>
+        </td>
+        <td class="icon">
+          <button class="no-style-button add" {{action "addSubmitItem" entity}} title="Add IOC to Submission List"
+            disabled={{interactionDisabled}}>
+            {{fa-icon "plus" fixedWidth=true}}
           </button>
-        {{/unless}}
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
 
-        {{#if editingTags}}
-          <div class="show-tag-modal">
-            <div>
-              {{#power-select-multiple
-                triggerClass="form-control"
-                selected=selectedTag
-                options=existingTags
-                searchEnabled=true
-                search=(action "searchTags")
-                placeholder="Search Tags"
-                searchField="name"
-                searchMessage="Loading Tags ..."
-                loadingMessage="Loading Tags ..."
-                searchPlaceholder="Search tags"
-                closeOnSelect=true
-                disabled=interactionDisabled
-                onOpen=(action "searchTags" "")
-                onChange=(action (mut selectedTag)) as |tag|
-              }}
-                <span
-                  class="p-tag"
-                  style="word-break: break-word; margin: 10px 0; display:inline-block; line-height: 1.2em; font-size: 12px; box-shadow: 3px 3px 3px #888888; padding: 4px; border-radius: 4px;background-color: #fff; border: 1px solid #f97b06; padding: 1px 5px 2px 7px; border-radius: 16px; color: #07213a; 5px 0;"
-                >
-                  {{tag.name}}
-                  <span style="position: relative; top: 1px">
-                    {{#if tag.isNew}}
-                      {{fa-icon "plus-circle" fixedWidth=true}}
-                    {{else}}
-                      {{fa-icon "check-circle" fixedWidth=true}}
-                    {{/if}}
-                  </span>
-                </span>
-              {{/power-select-multiple}}
-            </div>
-            <div class="modal-buttons">
-              <button class="tag-btn" {{action "editTags"}} disabled={{interactionDisabled}}>Cancel</button>
-              <button class="tag-btn" {{action "addTags"}} disabled={{interactionDisabled}}>Add Tags</button>
-            </div>
-          </div>
+  {{#if (not newIocs.length)}}
+  <div class="note">
+    <span class="p-key"><em>NONE</em></span>
+  </div>
+  {{/if}}
+  <div class="title-with-button">
+    <h1 class="p-title">
+      {{fa-icon "upload" size="sm" fixedWidth=true}} To Be Submitted to&nbsp;
+      {{#if newIocsToSubmit.length}}
+      <span class="show-threatconnect">
+        ThreatConnect
+      </span>
+      <span class="show-tc">
+        TC
+      </span>
+      {{else}}
+      <span>
+        ThreatConnect
+      </span>
+      {{/if}}
+    </h1>
+    {{#if newIocsToSubmit.length}}
+    <button class="no-style-button remove" title="Remove all IOCs from Submission List" {{action "removeAllSubmitItems"
+      }} disabled={{interactionDisabled}}>
+      Remove All
+    </button>
+    {{/if}}
+  </div>
+  <table class="w-100">
+    <tbody>
+      {{#each newIocsToSubmit as |entity|}}
+      <tr>
+        <td>
+          <span>
+            {{#if entity.resultsFound}}
+            <a
+              href="{{details.uiUrl}}/auth/indicators/details/{{entity.linkType}}.xhtml?{{entity.linkType}}={{entity.uriEncodedValue}}">
+              {{entity.value}} {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
+            </a>
+            {{else}}
+            {{entity.value}}
+            {{/if}}
+          </span>
+        </td>
+        <td class="type">
+          <span>
+            {{entity.displayedType}}
+          </span>
+        </td>
+        <td class="icon">
+          <button class="no-style-button remove" title="Remove IOC from Submission List" {{action "removeSubmitItem"
+            entity}} disabled={{interactionDisabled}}>
+            {{fa-icon "minus" fixedWidth=true}}
+          </button>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{#if (not newIocsToSubmit.length)}}
+  <div class="note">
+    <span class="p-key"><em>NONE</em></span>
+  </div>
+  {{/if}}
+  <h1 class="p-title submission-options py-1">
+    {{fa-icon "cog" size="sm" fixedWidth=true}} Submission Options
+  </h1>
+  <div class="select-container">
+    <span class="p-key">Title: &nbsp;</span>
+    <input type="text" class="description" placeholder="Enter a title..." onchange={{action (mut title)
+      value="target.value" }} value={{title}} disabled={{interactionDisabled}} />
+  </div>
+  <div class="select-container">
+    <span class="p-key">Description: &nbsp;</span>
+    <input type="text" class="description" placeholder="Enter a description..." onchange={{action (mut description)
+      value="target.value" }} value={{description}} disabled={{interactionDisabled}} />
+  </div>
+  <div class="select-container">
+    <span class="p-key">Source: &nbsp;</span>
+    <input type="text" class="description" placeholder="Enter a source..." onchange={{action (mut source)
+      value="target.value" }} value={{source}} disabled={{interactionDisabled}} />
+  </div>
+  {{#each newIocsToSubmit as |entity|}}
+  {{#if (eq entity.displayedType "domain")}}
+  <h1 class="p-title submission-options py-1">
+    {{fa-icon "filter" size="sm" fixedWidth=true}} Host Specific Filters
+  </h1>
+  <div class="checkbox-container">
+    <label>
+      <input type="checkbox" {{on "change" (action "updateWhoIsValue" )}} disabled={{interactionDisabled}} />
+      <span class="p-key">WhoIs</span>
+    </label>
+  </div>
+  <div class="checkbox-container">
+    <label>
+      <input type="checkbox" {{on "change" (action "updateDNSValue" )}} disabled={{interactionDisabled}} />
+      <span class="p-key">DNS</span>
+    </label>
+  </div>
+  {{/if}}
+  {{/each}}
+
+  {{#if block.userOptions.allowAssociation}}
+  <div class="select-container">
+    <span class="p-key">Assoc Group Type: </span>
+    <select class="w-50" onchange={{action (mut groupType) value="target.value" }} disabled={{interactionDisabled}}>
+      <option value="" selected disabled>Select Type</option>
+      <option value="reports">Reports</option>
+      <option value="documents">Documents</option>
+      <option value="threats">Threats</option>
+      <option value="adversaries">Adversaries</option>
+      <option value="campaigns">Campaigns</option>
+      <option value="emails">Emails</option>
+      <option value="events">Events</option>
+      <option value="incidents">Incidents</option>
+      <option value="intrusionSets">Intrusion Sets</option>
+      <option value="malware">Malware</option>
+      <option value="signatures">Signatures</option>
+      <option value="vulnerabilities">Vulnerabilities</option>
+    </select>
+  </div>
+  <div class="select-container">
+    <span class="p-key">Assoc Group ID: &nbsp;</span>
+    {{#if groups.length}}
+    <select class="w-50" onchange={{action (mut groupID) value="target.value" }} disabled={{interactionDisabled}}>
+      <option value="" selected disabled>Select Type</option>
+      {{#each groups as |group|}}
+      <option value={{group.id}}>{{group.name}}({{group.ownerName}})</option>
+      {{/each}}
+    </select>
+    {{else}}
+    <input type="text" class="groupID" placeholder="Enter Group ID" onchange={{action (mut groupID) value="target.value"
+      }} value={{groupID}} disabled={{interactionDisabled}} />
+    {{/if}}
+  </div>
+  {{/if}}
+  <div class="select-container">
+    <span class="p-key">Rating: &nbsp;</span>
+    <span>
+      {{fa-icon "ban" click=(action "setRating" 0) class="rating-icon"}}
+      {{#each (repeat 5) as |empty ratingIndex|}}
+      {{fa-icon
+      "skull"
+      class=(if (lt ratingIndex rating) "rating-icon rating-icon-filled" "rating-icon rating-icon-empty")
+      click=(action "setRating" (inc ratingIndex))
+      }}
+      {{/each}}
+      {{ratingHuman}}
+    </span>
+  </div>
+  <div class="confidence">
+    <span class="p-key">Confidence: &nbsp;</span>
+    <span class="p-value">{{confidence}} - {{confidenceHuman}}</span>
+    <div>
+      <input type="range" oninput={{action 'setConfidence' value="target.value" }} min="0" max="100"
+        value={{confidence}} steps="1" />
+    </div>
+  </div>
+  <div class="tag-container">
+    <h1 class="p-title">
+      {{fa-icon "tags" fixedWidth=true}} Tags
+    </h1>
+    {{#if (eq selectedTags.length 0)}}
+    <span class="p-footnote mb-2 mt-2">
+      <span><em>&nbsp; No Tags &nbsp;</em></span>
+    </span>
+    {{else}}
+    {{#each (take maxTagsInBlock selectedTags) as |tag tagIndex|}}
+    {{#if tag.isNew}}
+    <span class="tag link-tag d-inline-flex align-items-center">
+      <span class="text-container threatconnect-summary-tag {{unless interactionDisabled " rounded-borders"}}">
+        {{tag.name}}
+        {{#if (not interactionDisabled)}}
+        <span class="remove-icon-container" {{action "deleteTag" tag}}>
+          {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
+        </span>
         {{/if}}
+      </span>
+    </span>
+    {{else}}
+    <a href="{{details.uiUrl}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}"
+      class="tag link-tag d-inline-flex align-items-center">
+      <span class="text-container threatconnect-summary-tag {{unless interactionDisabled " rounded-borders"}}">
+        {{tag.name}}
+        {{#if (not interactionDisabled)}}
+        <span class="remove-icon-container" {{action "deleteTag" tag}}>
+          {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
+        </span>
+        {{/if}}
+      </span>
+    </a>
+    {{/if}}
+    {{/each}}
+    {{/if}}
+    {{#unless (or editingTags interactionDisabled)}}
+    <button class="open-modal-btn" {{action "editTags" }}>
+      {{fa-icon "plus" class="open-modal-btn-icon" fixedWidth=true}}
+    </button>
+    {{/unless}}
+
+    {{#if editingTags}}
+    <div class="show-tag-modal">
+      <div>
+        {{#power-select-multiple
+        triggerClass="form-control"
+        selected=selectedTag
+        options=existingTags
+        searchEnabled=true
+        search=(action "searchTags")
+        placeholder="Search Tags"
+        searchField="name"
+        searchMessage="Loading Tags ..."
+        loadingMessage="Loading Tags ..."
+        searchPlaceholder="Search tags"
+        closeOnSelect=true
+        disabled=interactionDisabled
+        onOpen=(action "searchTags" "")
+        onChange=(action (mut selectedTag)) as |tag|
+        }}
+        <span class="p-tag"
+          style="word-break: break-word; margin: 10px 0; display:inline-block; line-height: 1.2em; font-size: 12px; box-shadow: 3px 3px 3px #888888; padding: 4px; border-radius: 4px;background-color: #fff; border: 1px solid #f97b06; padding: 1px 5px 2px 7px; border-radius: 16px; color: #07213a; 5px 0;">
+          {{tag.name}}
+          <span style="position: relative; top: 1px">
+            {{#if tag.isNew}}
+            {{fa-icon "plus-circle" fixedWidth=true}}
+            {{else}}
+            {{fa-icon "check-circle" fixedWidth=true}}
+            {{/if}}
+          </span>
+        </span>
+        {{/power-select-multiple}}
       </div>
-
-      <div class="d-flex flex-row-reverse justify-content-between align-items-center mt-2">
-        <button {{action "submitItems"}}
-                disabled={{interactionDisabled}}
-                class="p-btn btn btn-secondary m-0">
-          {{#if createIsRunning}}
-            {{fa-icon "spinner-third" fixedWidth=true spin=true}}
-          {{else}}
-            Submit IOCs
-          {{/if}}
-        </button>
-
-        {{#if createMessage}}
-          <div class="create-message alert alert-info m-0">
-            {{createMessage}}
-          </div>
-        {{/if}}
-
-        {{#if createErrorMessage}}
-          <div class="create-message alert alert-danger m-0">
-            {{createErrorMessage}}
-          </div>
-        {{/if}}
+      <div class="modal-buttons">
+        <button class="tag-btn" {{action "editTags" }} disabled={{interactionDisabled}}>Cancel</button>
+        <button class="tag-btn" {{action "addTags" }} disabled={{interactionDisabled}}>Add Tags</button>
       </div>
+    </div>
+    {{/if}}
+  </div>
+
+  <div class="d-flex flex-row-reverse justify-content-between align-items-center mt-2">
+    <button {{action "submitItems" }} disabled={{interactionDisabled}} class="p-btn btn btn-secondary m-0">
+      {{#if createIsRunning}}
+      {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+      {{else}}
+      Submit IOCs
+      {{/if}}
+    </button>
+
+    {{#if createMessage}}
+    <div class="create-message alert alert-info m-0">
+      {{createMessage}}
+    </div>
+    {{/if}}
+
+    {{#if createErrorMessage}}
+    <div class="create-message alert alert-danger m-0">
+      {{createErrorMessage}}
+    </div>
+    {{/if}}
+  </div>
   {{/if}}
 </div>
 {{#if (and (not foundEntities.length) (not (or newIocs.length newIocsToSubmit.length)))}}
-  <div class="note">
-    <span class="p-key"><em>All Already In ThreatConnect IOCs have been deleted</em></span>
-  </div>
+<div class="note">
+  <span class="p-key"><em>All Already In ThreatConnect IOCs have been deleted</em></span>
+</div>
 {{/if}}

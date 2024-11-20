@@ -6,6 +6,9 @@ polarity.export = PolarityComponent.extend({
   groupType: '',
   groupID: '',
   title: '',
+  source: '',
+  whoisActive: false,
+  dnsActive: false,
   rating: 0,
   ratingHuman: 'Unknown',
   confidence: 0,
@@ -107,9 +110,9 @@ polarity.export = PolarityComponent.extend({
         outerThis.set(
           'createErrorMessage',
           'Search Tags Failed: ' +
-            (err &&
-              (err.detail || err.err || err.message || err.title || err.description)) ||
-            'Unknown Reason'
+          (err &&
+            (err.detail || err.err || err.message || err.title || err.description)) ||
+          'Unknown Reason'
         );
       })
       .finally(() => {
@@ -133,6 +136,12 @@ polarity.export = PolarityComponent.extend({
     cancelItemDeletion: function () {
       this.set('isDeleting', false);
       this.set('entityToDelete', {});
+    },
+    updateWhoIsValue: function (event) {
+      this.set('whoisActive', event.target.checked ? 'true' : 'false');
+    },
+    updateDNSValue: function (event) {
+      this.set('dnsActive', event.target.checked ? 'true' : 'false');
     },
     confirmDelete: function () {
       const outerThis = this;
@@ -159,9 +168,9 @@ polarity.export = PolarityComponent.extend({
           outerThis.set(
             'deleteErrorMessage',
             'Failed to Delete IOC: ' +
-              (err &&
-                (err.detail || err.err || err.message || err.title || err.description)) ||
-              'Unknown Reason'
+            (err &&
+              (err.detail || err.err || err.message || err.title || err.description)) ||
+            'Unknown Reason'
           );
         })
         .finally(() => {
@@ -259,6 +268,9 @@ polarity.export = PolarityComponent.extend({
             newIocsToSubmit: outerThis.get('newIocsToSubmit'),
             description: outerThis.get('description'),
             title: outerThis.get('title'),
+            source: outerThis.get('source'),
+            whoisActive: outerThis.get('whoisActive'),
+            dnsActive: outerThis.get('dnsActive'),
             rating: outerThis.get('rating'),
             confidence: outerThis.get('confidence'),
             foundEntities: outerThis.get('foundEntities'),
@@ -277,9 +289,9 @@ polarity.export = PolarityComponent.extend({
           outerThis.set(
             'createErrorMessage',
             'Failed to Create IOC: ' +
-              (err && err.title ? `"${err.title}" - ` : '') +
-              (err && (err.detail || err.message || err.title || err.description)) ||
-              'Unknown Reason'
+            (err && err.title ? `"${err.title}" - ` : '') +
+            (err && (err.detail || err.message || err.title || err.description)) ||
+            'Unknown Reason'
           );
         })
         .finally(() => {
@@ -344,17 +356,20 @@ polarity.export = PolarityComponent.extend({
       const CONFIDENCE_TO_TEXT = !confidence
         ? 'Unassessed'
         : confidence <= 25
-        ? 'Improbable'
-        : confidence <= 49
-        ? 'Doubtful'
-        : confidence <= 69
-        ? 'Possible'
-        : confidence <= 89
-        ? 'Probable'
-        : 'Confirmed';
+          ? 'Improbable'
+          : confidence <= 49
+            ? 'Doubtful'
+            : confidence <= 69
+              ? 'Possible'
+              : confidence <= 89
+                ? 'Probable'
+                : 'Confirmed';
 
       this.set('confidence', confidence);
       this.set('confidenceHuman', CONFIDENCE_TO_TEXT);
+    },
+    updateCheckboxValue: function () {
+      this.set('source', this.get('source') ? false : true);
     }
   }
 });
