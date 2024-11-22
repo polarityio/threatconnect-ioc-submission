@@ -9,6 +9,7 @@
 *.sublime-project
 *.sublime-workspace
 sftp-config.json
+legacy_wrapper.js
 
 # Ignore Eclipse Project Information
 *.settings

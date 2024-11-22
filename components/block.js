@@ -137,12 +137,6 @@ polarity.export = PolarityComponent.extend({
       this.set('isDeleting', false);
       this.set('entityToDelete', {});
     },
-    updateWhoIsValue: function (event) {
-      this.set('whoisActive', event.target.checked ? 'true' : 'false');
-    },
-    updateDNSValue: function (event) {
-      this.set('dnsActive', event.target.checked ? 'true' : 'false');
-    },
     confirmDelete: function () {
       const outerThis = this;
       outerThis.set('deleteMessage', '');
@@ -367,9 +361,6 @@ polarity.export = PolarityComponent.extend({
 
       this.set('confidence', confidence);
       this.set('confidenceHuman', CONFIDENCE_TO_TEXT);
-    },
-    updateCheckboxValue: function () {
-      this.set('source', this.get('source') ? false : true);
     }
   }
 });
