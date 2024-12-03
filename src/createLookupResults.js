@@ -22,7 +22,7 @@ const createLookupResults = (
   const notFoundEntities = getNotFoundEntities(foundEntities, entities);
   const summary = [
     ...(foundEntities.length ? ['Entities Found'] : []),
-    ...(notFoundEntities.length ? ['New Entites'] : [])
+    ...(notFoundEntities.length ? ['New Entities'] : [])
   ];
   maxUniqueKeyNumber++;
 
@@ -37,7 +37,7 @@ const createLookupResults = (
       data: {
         summary: [
           ...(foundEntities.length ? ['Entities Found'] : []),
-          ...(notFoundEntities.length ? ['New Entites'] : [])
+          ...(notFoundEntities.length ? ['New Entities'] : [])
         ],
         details: {
           uiUrl: getUiUrl(options.url),
@@ -66,9 +66,9 @@ const getNotFoundEntities = (foundEntities, entities) =>
         foundEntities
       )
         ? agg.concat({
-            ...entity,
-            displayedType: fp.includes('IP', entity.type) ? 'ip' : fp.toLower(entity.type)
-          })
+          ...entity,
+          displayedType: fp.includes('IP', entity.type) ? 'ip' : fp.toLower(entity.type)
+        })
         : agg,
     [],
     entities

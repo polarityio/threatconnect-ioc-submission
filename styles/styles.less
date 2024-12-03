@@ -6,12 +6,15 @@
 .p-title {
   font-weight: 600;
   padding-top: 3px !important;
+
   &:first-child {
     margin-top: 5px !important;
   }
+
   &.submission-options {
     margin-top: 15px !important;
   }
+
   height: 15px !important;
   min-height: 15px !important;
 }
@@ -25,6 +28,7 @@ table {
     &.addable {
       width: 46px;
     }
+
     width: 25px;
 
     &.deletable {
@@ -95,6 +99,24 @@ table {
   .p-value {
     width: 95px;
   }
+}
+
+.checkbox-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin: 0;
+  vertical-align: middle;
+}
+
+.checkbox-container label {
+  margin-left: 8px;
+  line-height: 1.5;
 }
 
 .confidence {
@@ -216,6 +238,7 @@ a.tag {
     float: right;
     margin-top: 5px;
   }
+
   .ember-power-select-multiple-option {
     margin: 0 2px 2px 0;
     word-break: break-word;
@@ -263,6 +286,7 @@ a.tag {
 .tag-btn:hover {
   background-color: darken(#363636, 10%);
 }
+
 .p-btn {
   height: 30px;
   font-size: 12px !important;
@@ -273,6 +297,7 @@ a.tag {
 .modal-open {
   min-height: 157px;
 }
+
 .ownership-modal-open {
   min-height: 220px;
 }
@@ -311,6 +336,7 @@ a.tag {
       background-color: white;
       border-radius: 2px;
     }
+
     .ok-button {
       font-weight: 600;
       background-color: white;
@@ -327,6 +353,7 @@ a.tag {
   top: 55px;
   bottom: auto;
   word-break: normal;
+
   .p-value {
     color: #5ccd18 !important;
   }
@@ -334,6 +361,7 @@ a.tag {
 
 .dropdown {
   color: #5ccd18 !important;
+
   .text {
     padding-left: 5px;
     color: #5ccd18 !important;
@@ -351,7 +379,8 @@ a.tag {
   justify-content: space-between;
   align-items: center;
   padding-top: 10px;
-  & > button {
+
+  &>button {
     color: #5ccd18 !important;
     padding-right: 5px;
     font-size: 12px;
@@ -377,6 +406,7 @@ a.tag {
 .show-threatconnect {
   display: inline;
 }
+
 .show-tc {
   display: none;
 }
@@ -385,6 +415,7 @@ a.tag {
   .show-threatconnect {
     display: none;
   }
+
   .show-tc {
     display: inline;
   }

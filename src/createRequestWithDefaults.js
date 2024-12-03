@@ -56,6 +56,7 @@ const createRequestWithDefaults = (Logger) => {
           _requestOptions
         );
       }
+
       return postRequestFunctionResults;
     };
   };
@@ -65,10 +66,11 @@ const createRequestWithDefaults = (Logger) => {
     path,
     ...requestOptions
   }) => {
+
     const uri = `${_url.endsWith('/') ? _url : `${_url}/`}v2/${path}`;
 
     const signaturePath = /(http[s]?:\/\/)?([^\/\s]+)(\/.*)/g.exec(uri)[3];
-    
+
     let TimeStamp = Math.floor(Date.now() / 1000);
     let signature = signaturePath + ':' + requestOptions.method + ':' + TimeStamp;
 
