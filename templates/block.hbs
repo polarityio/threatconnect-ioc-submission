@@ -153,6 +153,34 @@
     </div>
   {{/if}}
 
+  {{#if exclusionListEntities.length}}
+    <div
+      class="{{if
+          (and (not (or exclusionListEntities.length)) interactionDisabled)
+          ' modal-open'
+        }}
+        {{if showOwnershipMessage 'ownership-modal-open'}}"
+    >
+      <h1 class="p-title">
+        {{fa-icon "times" size="sm"}}
+        Exclusion List
+      </h1>
+      <table class="w-100">
+        <tbody>
+          {{#each exclusionListEntities as |entity|}}
+            <tr>
+              <td>
+                <span style="color: rgb(249, 123, 6)">
+                  {{entity}}
+                </span>
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{/if}}
+
   {{#if (or newIocs.length newIocsToSubmit.length)}}
     <div class="title-with-button">
       <h1 class="p-title">
@@ -545,7 +573,14 @@
     </div>
   {{/if}}
 </div>
-{{#if (and (not foundEntities.length) (not (or newIocs.length newIocsToSubmit.length)))}}
+
+{{#if
+  (and
+    (not foundEntities.length)
+    (not (or newIocs.length newIocsToSubmit.length))
+    (not exclusionListEntities.length)
+  )
+}}
   <div class="note">
     <span class="p-key"><em>All Already In ThreatConnect IOCs have been deleted</em></span>
   </div>
