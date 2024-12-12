@@ -1,5 +1,5 @@
 const fp = require('lodash/fp');
-const { } = require('./constants');
+const {} = require('./constants');
 const {
   POLARITY_TYPE_TO_THREATCONNECT,
   SUBMISSION_LABELS,
@@ -28,56 +28,62 @@ const submitItems = async (
   callback
 ) => {
   try {
-    const createdIndicators = await createIndicators(
-      newIocsToSubmit,
-      rating,
-      confidence,
-      whoisActive,
-      dnsActive,
-      options,
-      requestWithDefaults,
-      Logger
+    const { enrichedEntities: createdIndicators, exclusionListEntities } =
+      await createIndicators(
+        newIocsToSubmit,
+        rating,
+        confidence,
+        whoisActive,
+        dnsActive,
+        options,
+        requestWithDefaults,
+        Logger
+      );
+
+    const validEntities = newIocsToSubmit.filter(
+      (entity) => !exclusionListEntities.includes(entity.value)
     );
 
     await Promise.all([
       ...(description
         ? await createDescription(
-          newIocsToSubmit,
-          description,
-          options,
-          requestWithDefaults,
-          Logger
-        )
+            validEntities,
+            description,
+            options,
+            requestWithDefaults,
+            Logger
+          )
         : []),
       ...(title
-        ? await createTitle(newIocsToSubmit, title, options, requestWithDefaults, Logger)
+        ? await createTitle(validEntities, title, options, requestWithDefaults, Logger)
         : []),
       ...(source
-        ? await createSource(newIocsToSubmit, source, options, requestWithDefaults, Logger)
+        ? await createSource(validEntities, source, options, requestWithDefaults, Logger)
         : []),
       ...(groupID
         ? await createAssociations(
-          newIocsToSubmit,
-          groupType,
-          groupID,
-          options,
-          requestWithDefaults,
-          Logger
-        )
+            validEntities,
+            groupType,
+            groupID,
+            options,
+            requestWithDefaults,
+            Logger
+          )
         : []),
       ...(submitTags.length
         ? await createTags(
-          newIocsToSubmit,
-          submitTags,
-          options,
-          requestWithDefaults,
-          Logger
-        )
+            validEntities,
+            submitTags,
+            options,
+            requestWithDefaults,
+            Logger
+          )
         : [])
     ]);
 
     return callback(null, {
-      foundEntities: [...createdIndicators, ...foundEntities]
+      foundEntities: [...createdIndicators, ...foundEntities],
+      exclusionListEntities
     });
   } catch (error) {
     Logger.error(
@@ -107,47 +113,59 @@ const createIndicators = async (
   requestWithDefaults,
   Logger
 ) => {
+  const exclusionListEntities = [];
 
   const responses = await Promise.all(
-    fp.map(
-      (entity) => {
-        const body = {
-          [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]: entity.value,
-          rating: fp.toSafeInteger(rating),
-          confidence: fp.toSafeInteger(confidence)
-        };
+    fp.map((entity) => {
+      const body = {
+        [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]:
+          entity.value,
+        rating: fp.toSafeInteger(rating),
+        confidence: fp.toSafeInteger(confidence)
+      };
 
-        if (POLARITY_TYPE_TO_THREATCONNECT[entity.type] === 'hosts') {
-          body.whoisActive = whoisActive;
-          body.dnsActive = dnsActive;
-        }
+      if (POLARITY_TYPE_TO_THREATCONNECT[entity.type] === 'hosts') {
+        body.whoisActive = whoisActive;
+        body.dnsActive = dnsActive;
+      }
 
-        return requestWithDefaults({
-          path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`,
-          method: 'POST',
-          headers: {
-            'Content-type': 'application/json'
-          },
-          body,
-          options
-        }).catch((error) => {
-          if (error.message.includes('exclusion list')) error.entityValue = entity.value;
+      return requestWithDefaults({
+        path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`,
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body,
+        options
+      }).catch((error) => {
+        if (error.message.includes('exclusion list')) {
+          exclusionListEntities.push(entity.value);
+          error.entityValue = entity.value;
+          Logger.warn(
+            `This Indicator is contained on a system-wide exclusion list: ${entity.value}`
+          );
+        } else {
           throw error;
-        });
-      },
-      newIocsToSubmit
-    )
+        }
+      });
+    }, newIocsToSubmit)
   );
 
   const createdIds = responses.map((response) => {
-    if (response.statusCode === 201 && response.body && response.body.data) {
+    if (
+      response &&
+      response.statusCode &&
+      response.statusCode === 201 &&
+      response.body &&
+      response.body.data
+    ) {
       const data = response.body.data;
       const indicatorKey = Object.keys(data).find((key) => data[key] && data[key].id);
       if (indicatorKey) {
         return data[indicatorKey].id;
       }
     }
-    Logger.error(`Unexpected response format: ${JSON.stringify(response)}`);
+    Logger.warn(`Unexpected response format: ${JSON.stringify(response)}`);
     return null;
   });
 
@@ -161,8 +179,7 @@ const createIndicators = async (
     createdId: createdIds[index]
   }));
 
-  return enrichedEntities;
-
+  return { enrichedEntities, exclusionListEntities };
 };
 
 const createTags = (newIocsToSubmit, submitTags, options, requestWithDefaults) =>
@@ -172,12 +189,13 @@ const createTags = (newIocsToSubmit, submitTags, options, requestWithDefaults) =
         fp.map(
           (tag) =>
             requestWithDefaults({
-              path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]
-                }/${encodeURIComponent(entity.value)}/tags/${fp.flow(
-                  fp.get('name'),
-                  fp.split(' '),
-                  fp.join('%20')
-                )(tag)}`,
+              path: `indicators/${
+                POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+              }/${encodeURIComponent(entity.value)}/tags/${fp.flow(
+                fp.get('name'),
+                fp.split(' '),
+                fp.join('%20')
+              )(tag)}`,
               method: 'POST',
               options
             }),
@@ -192,8 +210,9 @@ const createDescription = (newIocsToSubmit, description, options, requestWithDef
     fp.flatMap(
       async (entity) =>
         requestWithDefaults({
-          path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]
-            }/${encodeURIComponent(entity.value)}/attributes`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
@@ -214,8 +233,9 @@ const createTitle = (newIocsToSubmit, title, options, requestWithDefaults) =>
     fp.flatMap(
       async (entity) =>
         requestWithDefaults({
-          path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]
-            }/${encodeURIComponent(entity.value)}/attributes`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
@@ -236,8 +256,9 @@ const createSource = (newIocsToSubmit, source, options, requestWithDefaults) =>
     fp.flatMap(
       async (entity) =>
         requestWithDefaults({
-          path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]
-            }/${encodeURIComponent(entity.value)}/attributes`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/attributes`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'
@@ -264,8 +285,9 @@ const createAssociations = (
     fp.flatMap(
       async (entity) =>
         requestWithDefaults({
-          path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]
-            }/${encodeURIComponent(entity.value)}/groups/${groupType}/${groupID}`,
+          path: `indicators/${
+            POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+          }/${encodeURIComponent(entity.value)}/groups/${groupType}/${groupID}`,
           method: 'POST',
           headers: {
             'Content-type': 'application/json'

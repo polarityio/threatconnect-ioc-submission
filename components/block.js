@@ -48,10 +48,7 @@ polarity.export = PolarityComponent.extend({
       'foundEntities',
       this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
     );
-    this.set(
-      'groups',
-      this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
-    );
+    this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
 
     this.set('selectedTags', [
       {
@@ -77,10 +74,7 @@ polarity.export = PolarityComponent.extend({
           this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
         );
 
-        this.set(
-          'groups',
-          this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
-        );
+        this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
 
         this.set('newIocsToSubmit', []);
       }
@@ -110,9 +104,9 @@ polarity.export = PolarityComponent.extend({
         outerThis.set(
           'createErrorMessage',
           'Search Tags Failed: ' +
-          (err &&
-            (err.detail || err.err || err.message || err.title || err.description)) ||
-          'Unknown Reason'
+            (err &&
+              (err.detail || err.err || err.message || err.title || err.description)) ||
+            'Unknown Reason'
         );
       })
       .finally(() => {
@@ -162,9 +156,9 @@ polarity.export = PolarityComponent.extend({
           outerThis.set(
             'deleteErrorMessage',
             'Failed to Delete IOC: ' +
-            (err &&
-              (err.detail || err.err || err.message || err.title || err.description)) ||
-            'Unknown Reason'
+              (err &&
+                (err.detail || err.err || err.message || err.title || err.description)) ||
+              'Unknown Reason'
           );
         })
         .finally(() => {
@@ -273,8 +267,12 @@ polarity.export = PolarityComponent.extend({
             groupID: outerThis.get('groupID')
           }
         })
-        .then(({ foundEntities }) => {
-          outerThis.set('foundEntities', foundEntities);
+        .then(({ foundEntities, exclusionListEntities }) => {
+          const filteredFoundEntities = foundEntities.filter(
+            (entity) => !exclusionListEntities.includes(entity.value)
+          );
+          outerThis.set('foundEntities', filteredFoundEntities);
+          outerThis.set('exclusionListEntities', exclusionListEntities, []);
           outerThis.set('newIocsToSubmit', []);
           outerThis.set('createMessage', 'Successfully Created IOCs');
           outerThis.set('groupID', '');
@@ -283,9 +281,9 @@ polarity.export = PolarityComponent.extend({
           outerThis.set(
             'createErrorMessage',
             'Failed to Create IOC: ' +
-            (err && err.title ? `"${err.title}" - ` : '') +
-            (err && (err.detail || err.message || err.title || err.description)) ||
-            'Unknown Reason'
+              (err && err.title ? `"${err.title}" - ` : '') +
+              (err && (err.detail || err.message || err.title || err.description)) ||
+              'Unknown Reason'
           );
         })
         .finally(() => {
