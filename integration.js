@@ -16,7 +16,6 @@ const startup = (logger) => {
   requestWithDefaults = createRequestWithDefaults(Logger);
 };
 
-
 const doLookup = async (entities, { url, ..._options }, cb) => {
   Logger.debug({ entities }, 'Entities');
   const options = {
@@ -33,7 +32,7 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
       Logger
     );
   } catch (error) {
-    Logger.error(error, 'Get Lookup Results Failed');
+    Logger.error(error, `Get Lookup Results Failed ${Object.keys(entities)}`);
     return cb(handleError(error));
   }
 
@@ -41,7 +40,7 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
   cb(null, lookupResults);
 };
 
-const onMessage = ({ data: { action, ...actionParams} }, options, callback) => {
+const onMessage = ({ data: { action, ...actionParams } }, options, callback) => {
   if (action === 'deleteItem') {
     deleteItem(actionParams, requestWithDefaults, options, Logger, callback);
   } else if (action === 'submitItems') {

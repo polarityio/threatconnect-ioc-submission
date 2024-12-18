@@ -6,10 +6,6 @@
     {{if showOwnershipMessage 'ownership-modal-open'}}"
 >
   {{#if foundEntities.length}}
-    <h1 class="p-title">
-      {{fa-icon "info-circle" size="sm"}}
-      Already In ThreatConnect
-    </h1>
     {{#if isDeleting}}
       <div class="ioc-deletion-modal">
         <div class="note">
@@ -70,30 +66,40 @@
               </div>
             </div>
           {{/if}}
+          {{#if (eq ownershipStatus "alreadyInOwner")}}
+            <h1 class="p-title">
+              {{fa-icon "info-circle" size="sm"}}
+              Already in ThreatConnect
+            </h1>
+          {{else if (eq ownershipStatus "notInOwner")}}
+            <h1 class="p-title">
+              {{fa-icon "info-circle" size="sm"}}
+              Already in ThreatConnect but not in your owner
+            </h1>
+          {{/if}}
           <tr>
             <td>
               {{#if (not interactionDisabled)}}
-                <a
-                  href="{{details.uiUrl}}/#/details/indicators/{{if
-                    foundEntity.createdId
-                    foundEntity.createdId
-                    foundEntity.indicatorId
-                  }}/overview"
-                >
-                  {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
+              <div class="url-column">
+                {{#each foundEntity.owners as |owner|}}
+                  <span>{{owner.name}}</span>
+                  <div class="owner-row">
+                    <a
+                      href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdId foundEntity.createdId owner.itemId}}/overview"
+                    >
+                      {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
+                      {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
+                    </a>
+                    <span class="type">{{foundEntity.displayedType}}</span>
+                  </div>
+                {{/each}}
+              </div>
+              {{else}}
+                <a>
+                  {{foundEntity.value}}
                   {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
                 </a>
-              {{else}}
-                <a>{{foundEntity.value}}
-                  {{fa-icon
-                    "external-link"
-                    fixedWidth=true
-                    class="external-link-icon"
-                  }}</a>
               {{/if}}
-            </td>
-            <td class="type">
-              <span>{{foundEntity.displayedType}}</span>
             </td>
             {{#if (and block.userOptions.allowDelete foundEntity.canDelete)}}
               <td class="icon deletable">
@@ -107,26 +113,32 @@
                 </button>
               </td>
             {{/if}}
-            {{#if (not foundEntity.canDelete)}}
-              <td class="icon addable">
-                <a
-                  href="#"
-                  class="info-found dropdown"
-                  {{on "click" (action "toggleOwnershipMessage")}}
-                  disabled={{interactionDisabled}}
-                >
-                  <span class="text">{{fa-icon "question-circle"}}</span>
-                </a>
-                <button
-                  class="no-style-button add-found"
-                  {{action "addSubmitItem" foundEntity}}
-                  title="Add IOC from Submission List for your Instance"
-                  disabled={{interactionDisabled}}
-                >
-                  {{fa-icon "plus" fixedWidth=true}}
-                </button>
-              </td>
-            {{/if}}
+            
+            {{#each foundEntity.owners as |owner index|}}
+              {{#if (eq index 0)}} <!-- Check if it's the first owner -->
+                {{#if (not foundEntity.canDelete)}}
+                  <td class="icon addable">
+                    <a
+                      href="#"
+                      class="info-found dropdown"
+                      {{on "click" (action "toggleOwnershipMessage")}}
+                      disabled={{interactionDisabled}}
+                    >
+                      <span class="text">{{fa-icon "question-circle"}}</span>
+                    </a>
+                    <button
+                      class="no-style-button add-found"
+                      {{action "addSubmitItem" foundEntity}}
+                      title="Add IOC from Submission List for your Instance"
+                      disabled={{interactionDisabled}}
+                    >
+                      {{fa-icon "plus" fixedWidth=true}}
+                    </button>
+                  </td>
+                {{/if}}
+              {{/if}}
+            {{/each}}
+
           </tr>
         {{/each}}
       </tbody>

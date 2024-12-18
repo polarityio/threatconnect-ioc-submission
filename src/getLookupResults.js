@@ -8,6 +8,7 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
 
   const myOwner = await _getMyOwners(options, requestWithDefaults);
+  Logger.info({ myOwner }, 'My Owner Retrieved');
 
   const foundEntities = await _getEntitiesFoundInTC(
     myOwner,
@@ -16,15 +17,9 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     requestWithDefaults
   );
 
+  Logger.info({ foundEntities }, 'Found Entities');
+
   const groups = await getGroups(options, requestWithDefaults);
-
-
-  foundEntities.map((entity) => {
-    const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner.id);
-    entity.indicatorId = primaryOwner.itemId;
-    return entity;
-  });
-
 
   const lookupResults = createLookupResults(
     options,

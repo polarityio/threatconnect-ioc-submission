@@ -38,6 +38,18 @@ polarity.export = PolarityComponent.extend({
 
     return interactionDisabled;
   }),
+  ownershipStatus: Ember.computed(
+    'foundEntities.myOwner.id',
+    'foundEntities.owners.[]',
+    function () {
+      const myOwnerId = this.get('foundEntities.myOwner.id');
+      const owners = this.get('foundEntities.owners') || [];
+
+      const isInArray = owners.some((owner) => owner.id === myOwnerId);
+
+      return isInArray ? 'alreadyInOwner' : 'notInOwner';
+    }
+  ),
   init() {
     this.set(
       'newIocs',
@@ -348,14 +360,14 @@ polarity.export = PolarityComponent.extend({
       const CONFIDENCE_TO_TEXT = !confidence
         ? 'Unassessed'
         : confidence <= 25
-          ? 'Improbable'
-          : confidence <= 49
-            ? 'Doubtful'
-            : confidence <= 69
-              ? 'Possible'
-              : confidence <= 89
-                ? 'Probable'
-                : 'Confirmed';
+        ? 'Improbable'
+        : confidence <= 49
+        ? 'Doubtful'
+        : confidence <= 69
+        ? 'Possible'
+        : confidence <= 89
+        ? 'Probable'
+        : 'Confirmed';
 
       this.set('confidence', confidence);
       this.set('confidenceHuman', CONFIDENCE_TO_TEXT);
