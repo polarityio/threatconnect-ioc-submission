@@ -179,6 +179,8 @@ const createIndicators = async (
     createdId: createdIds[index]
   }));
 
+  // Logger.info(`Enriched Entities: ${JSON.stringify(enrichedEntities, null, 2)}`);
+
   return { enrichedEntities, exclusionListEntities };
 };
 

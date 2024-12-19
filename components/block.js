@@ -38,18 +38,16 @@ polarity.export = PolarityComponent.extend({
 
     return interactionDisabled;
   }),
-  ownershipStatus: Ember.computed(
-    'foundEntities.myOwner.id',
-    'foundEntities.owners.[]',
-    function () {
-      const myOwnerId = this.get('foundEntities.myOwner.id');
-      const owners = this.get('foundEntities.owners') || [];
-
-      const isInArray = owners.some((owner) => owner.id === myOwnerId);
-
-      return isInArray ? 'alreadyInOwner' : 'notInOwner';
-    }
-  ),
+  isInMyOwner: Ember.computed('foundEntities.@each.ownershipStatus', function () {
+    return this.foundEntities.some(
+      (foundEntity) => foundEntity.ownershipStatus === 'inMyOwner'
+    );
+  }),
+  isNotInMyOwner: Ember.computed('foundEntities.@each.ownershipStatus', function () {
+    return this.foundEntities.some(
+      (foundEntity) => foundEntity.ownershipStatus === 'notInMyOwner'
+    );
+  }),
   init() {
     this.set(
       'newIocs',
@@ -283,6 +281,13 @@ polarity.export = PolarityComponent.extend({
           const filteredFoundEntities = foundEntities.filter(
             (entity) => !exclusionListEntities.includes(entity.value)
           );
+          filteredFoundEntities.forEach((entity) => {
+            if (
+              outerThis.get('newIocsToSubmit').some((ioc) => ioc.value === entity.value)
+            ) {
+              entity.ownershipStatus = 'inMyOwner';
+            }
+          });
           outerThis.set('foundEntities', filteredFoundEntities);
           outerThis.set('exclusionListEntities', exclusionListEntities, []);
           outerThis.set('newIocsToSubmit', []);

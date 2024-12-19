@@ -21,6 +21,16 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
 
   const groups = await getGroups(options, requestWithDefaults);
 
+  foundEntities.forEach((entity) => {
+    const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner?.id);
+
+    if (!primaryOwner) {
+      entity.ownershipStatus = 'notInMyOwner';
+    } else {
+      entity.ownershipStatus = 'inMyOwner';
+    }
+  });
+
   const lookupResults = createLookupResults(
     options,
     entitiesPartition,
