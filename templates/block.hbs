@@ -43,12 +43,11 @@
                 <td>
                   {{#if (not interactionDisabled)}}
                     <div class="url-column">
-                      {{#each foundEntity.owners as |owner|}}
-                        {{#if (eq owner.id foundEntity.myOwner.id)}}
-                          <span>{{owner.name}}</span>
+                        {{#if (eq foundEntity.ownershipStatus "inMyOwner")}}
+                          <span>{{foundEntity.owner.name}}</span>
                           <div class="owner-row">
                             <a
-                              href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdId owner.itemId foundEntity.indicatorId}}/overview"
+                              href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdIndicatorsId owner.itemId foundEntity.indicatorId}}/overview"
                             >
                               {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
                               {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
@@ -66,7 +65,6 @@
                             {{/if}}
                           </div>
                         {{/if}}
-                      {{/each}}
                     </div>
                   {{else}}
                     <a>
@@ -99,7 +97,7 @@
                           <span>{{owner.name}}</span>
                           <div class="owner-row">
                             <a
-                              href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdId owner.itemId foundEntity.indicatorId}}/overview"
+                              href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdIndicatorsId owner.itemId foundEntity.indicatorId}}/overview"
                             >
                               {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
                               {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
@@ -132,8 +130,6 @@
         </tbody>
       </table>
     {{/if}}
-
-
 
     <div class="d-flex flex-row justify-content-between align-items-center">
       <div>
@@ -183,6 +179,7 @@
       </table>
     </div>
   {{/if}}
+
   {{#if (or newIocs.length newIocsToSubmit.length isNotInMyOwner)}}
     <div class="title-with-button">
       <h1 class="p-title">

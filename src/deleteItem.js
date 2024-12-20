@@ -33,16 +33,22 @@ const deleteItem = async (
       fp.size
     )(entity) === 0;
 
+  let updatedEntity = { ...entity, canDelete: false };
+  if (!shouldRemoveIocFromAlreadyIn) {
+    updatedEntity.ownershipStatus = 'notInMyOwner'; // Keep in `foundEntities` as "notInMyOwner"
+  }
+
   const newList = fp.flow(
     fp.filter(({ value }) => value !== entity.value),
     fp.thru((entities) =>
-      shouldRemoveIocFromAlreadyIn
-        ? entities
-        : entities.concat({ ...entity, canDelete: false })
+      shouldRemoveIocFromAlreadyIn ? entities : entities.concat(updatedEntity)
     )
   )(foundEntities);
 
-  const newIocs = [...(shouldRemoveIocFromAlreadyIn ? [entity] : []), ..._newIocs];
+  const newIocs = [
+    ...(shouldRemoveIocFromAlreadyIn ? [{ ...entity, ownershipStatus: 'new' }] : []),
+    ..._newIocs
+  ];
 
   return callback(null, { newList, newIocs });
 };

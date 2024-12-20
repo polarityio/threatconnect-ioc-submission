@@ -80,6 +80,8 @@ const submitItems = async (
           )
         : [])
     ]);
+    const combinedEntities = [...createdIndicators];
+    Logger.info({ combinedEntities }, 'Found Entities Before Return');
 
     return callback(null, {
       foundEntities: [...createdIndicators, ...foundEntities],
@@ -150,8 +152,8 @@ const createIndicators = async (
       });
     }, newIocsToSubmit)
   );
-
-  const createdIds = responses.map((response) => {
+  Logger.info(`Responses: ${JSON.stringify(responses, null, 2)}`);
+  const createdIndicatorsIds = responses.map((response) => {
     if (
       response &&
       response.statusCode &&
@@ -169,6 +171,24 @@ const createIndicators = async (
     return null;
   });
 
+  const createdIndicatorsOwners = responses.map((response) => {
+    if (
+      response &&
+      response.statusCode &&
+      response.statusCode === 201 &&
+      response.body &&
+      response.body.data
+    ) {
+      const data = response.body.data;
+      const indicatorKey = Object.keys(data).find((key) => data[key] && data[key].owner);
+      if (indicatorKey) {
+        return data[indicatorKey].owner;
+      }
+    }
+    Logger.warn(`Unexpected response format: ${JSON.stringify(response)}`);
+    return null;
+  });
+
   const enrichedEntities = newIocsToSubmit.map((createdEntity, index) => ({
     ...createdEntity,
     linkType: INDICATOR_TYPES[POLARITY_TYPE_TO_THREATCONNECT[createdEntity.type]],
@@ -176,10 +196,12 @@ const createIndicators = async (
     resultsFound: true,
     displayedType: ENTITY_TYPES[createdEntity.type],
     uriEncodedValue: encodeURIComponent(createdEntity.value),
-    createdId: createdIds[index]
+    createdIndicatorsId: createdIndicatorsIds[index],
+    createdIndicatorsOwner: createdIndicatorsOwners[index],
+    ownershipStatus: 'inMyOwner' //To be removed or set accordingly when creating IOCs in other owners will be supported
   }));
 
-  // Logger.info(`Enriched Entities: ${JSON.stringify(enrichedEntities, null, 2)}`);
+  Logger.info(`Enriched Entities: ${JSON.stringify(enrichedEntities, null, 2)}`);
 
   return { enrichedEntities, exclusionListEntities };
 };

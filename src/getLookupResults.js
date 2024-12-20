@@ -21,26 +21,26 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
 
   const groups = await getGroups(options, requestWithDefaults);
 
-  foundEntities.forEach((entity) => {
+  const updatedEntities = foundEntities.map((entity) => {
     const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner?.id);
 
-    if (!primaryOwner) {
-      entity.ownershipStatus = 'notInMyOwner';
-    } else {
-      entity.ownershipStatus = 'inMyOwner';
-    }
+    return {
+      ...entity,
+      ownershipStatus: primaryOwner ? 'inMyOwner' : 'notInMyOwner',
+      indicatorId: primaryOwner ? primaryOwner.itemId : entity.indicatorId
+    };
   });
 
   const lookupResults = createLookupResults(
     options,
     entitiesPartition,
     groups,
-    foundEntities,
+    updatedEntities,
     myOwner,
     Logger
   );
 
-  Logger.trace({ lookupResults, foundEntities }, 'Lookup Results');
+  Logger.trace({ lookupResults, updatedEntities }, 'Lookup Results');
 
   return lookupResults.concat(ignoredIpLookupResults);
 };
