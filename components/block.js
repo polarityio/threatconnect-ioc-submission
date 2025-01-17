@@ -30,6 +30,7 @@ polarity.export = PolarityComponent.extend({
   editingTags: false,
   showOwnershipMessage: false,
   maxTagsInBlock: 10,
+  isExpanded: true,
   interactionDisabled: Ember.computed('isDeleting', 'createIsRunning', function () {
     const interactionDisabled =
       this.get('isDeleting') ||
@@ -130,6 +131,9 @@ polarity.export = PolarityComponent.extend({
       });
   },
   actions: {
+    toggleIsExpanded: function () {
+      this.toggleProperty('isExpanded');
+    },
     toggleOwnershipMessage: function () {
       this.toggleProperty('showOwnershipMessage');
     },

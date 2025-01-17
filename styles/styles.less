@@ -56,6 +56,7 @@ table {
 
   td.type {
     width: 60px;
+    color: black;
   }
 }
 
@@ -446,5 +447,24 @@ a.tag {
 .owner-row {
   display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 10px;
+}
+
+.owner-row a {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.type {
+  flex-shrink: 0;
+  width: 50px;
+  color: black;
+}
+
+.expand-container {
+  position: relative;
+  width: 100%;
+  margin-top: 10px;
 }
