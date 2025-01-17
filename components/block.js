@@ -131,8 +131,8 @@ polarity.export = PolarityComponent.extend({
       });
   },
   actions: {
-    toggleIsExpanded: function () {
-      this.toggleProperty('isExpanded');
+    toggleIsExpanded(foundEntity) {
+      Ember.set(foundEntity, 'isExpanded', !foundEntity.isExpanded);
     },
     toggleOwnershipMessage: function () {
       this.toggleProperty('showOwnershipMessage');

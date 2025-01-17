@@ -30,7 +30,7 @@
         </div>
       </div>
     {{/if}}
-    
+
     {{#if isInMyOwner}}
       <h1 class="p-title">
         {{fa-icon "info-circle" size="sm"}}
@@ -39,41 +39,49 @@
       <table class="w-100">
         <tbody>
           {{#each foundEntities as |foundEntity|}}
-              <tr>
-                <td>
-                  {{#if (not interactionDisabled)}}
-                    <div class="url-column">
-                        {{#if (eq foundEntity.ownershipStatus "inMyOwner")}}
-                          <span>{{foundEntity.owner.name}}</span>
-                          <div class="owner-row">
-                            <a
-                              href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.createdIndicatorsId owner.itemId foundEntity.indicatorId}}/overview"
-                            >
-                              {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
-                              {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
-                            </a>
-                            <span class="type">{{foundEntity.displayedType}}</span>
-                            {{#if (and block.userOptions.allowDelete foundEntity.canDelete)}}
-                              <button
-                                class="no-style-button delete"
-                                {{action "initiateItemDeletion" foundEntity}}
-                                title="Delete IOC from ThreatConnect"
-                                disabled={{interactionDisabled}}
-                              >
-                                {{fa-icon "trash" fixedWidth=true}}
-                              </button>
-                            {{/if}}
-                          </div>
+            <tr>
+              <td>
+                {{#if (not interactionDisabled)}}
+                  <div class="url-column">
+                    {{#if (eq foundEntity.ownershipStatus "inMyOwner")}}
+                      <span>{{foundEntity.owner.name}}</span>
+                      <div class="owner-row">
+                        <a
+                          href="{{details.uiUrl}}/#/details/indicators/{{if
+                            foundEntity.createdIndicatorsId
+                            owner.itemId
+                            foundEntity.indicatorId
+                          }}/overview"
+                        >
+                          {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
+                          {{fa-icon
+                            "external-link"
+                            fixedWidth=true
+                            class="external-link-icon"
+                          }}
+                        </a>
+                        <span class="type">{{foundEntity.displayedType}}</span>
+                        {{#if (and block.userOptions.allowDelete foundEntity.canDelete)}}
+                          <button
+                            class="no-style-button delete"
+                            {{action "initiateItemDeletion" foundEntity}}
+                            title="Delete IOC from ThreatConnect"
+                            disabled={{interactionDisabled}}
+                          >
+                            {{fa-icon "trash" fixedWidth=true}}
+                          </button>
                         {{/if}}
-                    </div>
-                  {{else}}
-                    <a>
-                      {{foundEntity.value}}
-                      {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
-                    </a>
-                  {{/if}}
-                </td>
-              </tr>
+                      </div>
+                    {{/if}}
+                  </div>
+                {{else}}
+                  <a>
+                    {{foundEntity.value}}
+                    {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
+                  </a>
+                {{/if}}
+              </td>
+            </tr>
           {{/each}}
         </tbody>
       </table>
@@ -84,61 +92,79 @@
         {{fa-icon "info-square" size="sm"}}
         Found in ThreatConnect but not in owner account
       </h1>
-          {{#each foundEntities as |foundEntity|}}
-            {{#if (eq foundEntity.ownershipStatus "notInMyOwner")}}
-              <div>  
-                <div class="p-action expand-container" {{action "toggleIsExpanded"}}>
-                  <span>{{foundEntity.value}}</span>
-                  {{#if isExpanded}}
-                    {{fa-icon icon="chevron-up" fixedWidth=true}}
-                    <table class="w-100">
-                    <tbody>
-                      <tr>
-                        <td>
-                          {{#if (not interactionDisabled)}}
-                            <div class="url-column">
-                              {{#each foundEntity.owners as |owner|}}
-                                {{#if (eq foundEntity.ownershipStatus "notInMyOwner")}}
-                                  <span style="color: black;">{{owner.name}}</span>
-                                  <div class="owner-row">
-                                    <a
-                                      href="{{details.uiUrl}}/#/details/indicators/{{if foundEntity.rawValue owner.itemId foundEntity.indicatorId}}/overview"
+      {{#each foundEntities as |foundEntity|}}
+        {{#if (eq foundEntity.ownershipStatus "notInMyOwner")}}
+          <div>
+            <div
+              class="p-action expand-container"
+              {{action "toggleIsExpanded" foundEntity}}
+            >
+              <span>{{foundEntity.value}}</span>
+              {{#if foundEntity.isExpanded}}
+                {{fa-icon icon="chevron-up" fixedWidth=true}}
+                <table class="w-100">
+                  <tbody>
+                    <tr>
+                      <td>
+                        {{#if (not interactionDisabled)}}
+                          <div class="url-column">
+                            {{#each foundEntity.owners as |owner|}}
+                              {{#if (eq foundEntity.ownershipStatus "notInMyOwner")}}
+                                <span style="color: black;">{{owner.name}}</span>
+                                <div class="owner-row">
+                                  <a
+                                    href="{{details.uiUrl}}/#/details/indicators/{{if
+                                      foundEntity.rawValue
+                                      owner.itemId
+                                      foundEntity.indicatorId
+                                    }}/overview"
+                                  >
+                                    {{foundEntity.value}}{{if
+                                      (not foundEntity.canDelete)
+                                      "*"
+                                    }}
+                                    {{fa-icon
+                                      "external-link"
+                                      fixedWidth=true
+                                      class="external-link-icon"
+                                    }}
+                                  </a>
+                                  <span class="type">{{foundEntity.displayedType}}</span>
+                                  {{#if (not foundEntity.canDelete)}}
+                                    <button
+                                      class="no-style-button add-found"
+                                      {{action "addSubmitItem" foundEntity}}
+                                      title="Add IOC from Submission List for your Instance"
+                                      disabled={{interactionDisabled}}
                                     >
-                                      {{foundEntity.value}}{{if (not foundEntity.canDelete) "*"}}
-                                      {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
-                                    </a>
-                                    <span class="type">{{foundEntity.displayedType}}</span>
-                                    {{#if (not foundEntity.canDelete)}}
-                                      <button
-                                        class="no-style-button add-found"
-                                        {{action "addSubmitItem" foundEntity}}
-                                        title="Add IOC from Submission List for your Instance"
-                                        disabled={{interactionDisabled}}
-                                      >
-                                        {{fa-icon "plus" fixedWidth=true}}
-                                      </button>
-                                    {{/if}}
-                                  </div>
-                                {{/if}}
-                              {{/each}}
-                            </div>
-                          {{else}}
-                            <a>
-                              {{foundEntity.value}}
-                              {{fa-icon "external-link" fixedWidth=true class="external-link-icon"}}
-                            </a>
-                          {{/if}}
-                        </td>
-                      </tr>
-                    </tbody>
-                    </table>
-                  {{else}}
-                    {{fa-icon icon="chevron-down" fixedWidth=true}}
-                  {{/if}}
-                </div>
-              </div>
-            {{/if}}
-          {{/each}}
+                                      {{fa-icon "plus" fixedWidth=true}}
+                                    </button>
+                                  {{/if}}
+                                </div>
+                              {{/if}}
+                            {{/each}}
+                          </div>
+                        {{else}}
+                          <a>
+                            {{foundEntity.value}}
+                            {{fa-icon
+                              "external-link"
+                              fixedWidth=true
+                              class="external-link-icon"
+                            }}
+                          </a>
+                        {{/if}}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              {{else}}
+                {{fa-icon icon="chevron-down" fixedWidth=true}}
+              {{/if}}
+            </div>
+          </div>
+        {{/if}}
+      {{/each}}
     {{/if}}
 
     <div class="d-flex flex-row justify-content-between align-items-center">

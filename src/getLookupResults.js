@@ -23,11 +23,13 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
 
   const updatedEntities = foundEntities.map((entity) => {
     const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner?.id);
+    const ownershipStatus = primaryOwner ? 'inMyOwner' : 'notInMyOwner';
 
     return {
       ...entity,
-      ownershipStatus: primaryOwner ? 'inMyOwner' : 'notInMyOwner',
-      indicatorId: primaryOwner ? primaryOwner.itemId : entity.indicatorId
+      ownershipStatus: ownershipStatus,
+      indicatorId: primaryOwner ? primaryOwner.itemId : entity.indicatorId,
+      ...(ownershipStatus === 'notInMyOwner' && { isExpanded: false })
     };
   });
 
