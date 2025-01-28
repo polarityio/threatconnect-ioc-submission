@@ -32,7 +32,7 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
       Logger
     );
   } catch (error) {
-    Logger.error(error, `Get Lookup Results Failed ${Object.keys(entities)}`);
+    Logger.error(error, 'Get Lookup Results Failed');
     return cb(handleError(error));
   }
 
