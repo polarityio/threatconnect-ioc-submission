@@ -229,7 +229,7 @@ polarity.export = PolarityComponent.extend({
         this.get('newIocs').filter(({ value }) => value !== entity.value)
       );
       const updatedNewIocsToSubmit = this.get('newIocsToSubmit').concat(entity);
-
+      console.log('GROUPS', this.get('groups'));
       this.set('newIocsToSubmit', updatedNewIocsToSubmit);
 
       this.get('block').notifyPropertyChange('data');

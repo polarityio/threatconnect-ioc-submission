@@ -120,8 +120,7 @@ const createIndicators = async (
   const responses = await Promise.all(
     fp.map((entity) => {
       const body = {
-        [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]:
-          entity.value,
+        [SUBMISSION_LABELS[entity.type]]: entity.value,
         rating: fp.toSafeInteger(rating),
         confidence: fp.toSafeInteger(confidence)
       };

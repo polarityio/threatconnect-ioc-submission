@@ -9,7 +9,6 @@
 *.sublime-project
 *.sublime-workspace
 sftp-config.json
-legacy_wrapper.js
 *.history
 
 # Ignore Eclipse Project Information
@@ -37,3 +36,4 @@ test-runner.js
 
 # Other
 .DS_Store
+legacy_wrapper.js
