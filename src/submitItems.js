@@ -7,6 +7,9 @@ const {
   ENTITY_TYPES
 } = require('./constants');
 
+const parseErrorToReadableJson = (error) =>
+  JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
 const submitItems = async (
   {
     newIocsToSubmit,
@@ -44,42 +47,57 @@ const submitItems = async (
       (entity) => !exclusionListEntities.includes(entity.value)
     );
 
-    await Promise.all([
-      ...(description
-        ? await createDescription(
-            validEntities,
-            description,
-            options,
-            requestWithDefaults,
-            Logger
-          )
-        : []),
-      ...(title
-        ? await createTitle(validEntities, title, options, requestWithDefaults, Logger)
-        : []),
-      ...(source
-        ? await createSource(validEntities, source, options, requestWithDefaults, Logger)
-        : []),
-      ...(groupID
-        ? await createAssociations(
-            validEntities,
-            groupType,
-            groupID,
-            options,
-            requestWithDefaults,
-            Logger
-          )
-        : []),
-      ...(submitTags.length
-        ? await createTags(
-            validEntities,
-            submitTags,
-            options,
-            requestWithDefaults,
-            Logger
-          )
-        : [])
-    ]);
+    try {
+      await Promise.all([
+        ...(description
+          ? await createDescription(
+              validEntities,
+              description,
+              options,
+              requestWithDefaults,
+              Logger
+            )
+          : []),
+        ...(title
+          ? await createTitle(validEntities, title, options, requestWithDefaults, Logger)
+          : []),
+        ...(source
+          ? await createSource(
+              validEntities,
+              source,
+              options,
+              requestWithDefaults,
+              Logger
+            )
+          : []),
+        ...(groupID
+          ? await createAssociations(
+              validEntities,
+              groupType,
+              groupID,
+              options,
+              requestWithDefaults,
+              Logger
+            )
+          : []),
+        ...(submitTags.length
+          ? await createTags(
+              validEntities,
+              submitTags,
+              options,
+              requestWithDefaults,
+              Logger
+            )
+          : [])
+      ]);
+    } catch (error) {
+      return callback({
+        meta: parseErrorToReadableJson(error),
+        title: error.message,
+        status: error.status,
+        detail: 'warning'
+      });
+    }
     const combinedEntities = [...createdIndicators];
     Logger.info({ combinedEntities }, 'Found Entities Before Return');
 
@@ -94,13 +112,9 @@ const submitItems = async (
       'IOC Creation Failed'
     );
     return callback({
-      errors: [
-        {
-          err: error,
-          detail: error.message,
-          ...(error.entityValue && { title: error.entityValue })
-        }
-      ]
+      meta: parseErrorToReadableJson(error),
+      title: error.message,
+      status: error.status
     });
   }
 };

@@ -605,6 +605,12 @@
           {{createErrorMessage}}
         </div>
       {{/if}}
+
+      {{#if createWarningMessage}}
+        <div class="create-message alert alert-warning m-0">
+          {{createWarningMessage}}
+        </div>
+      {{/if}}
     </div>
   {{/if}}
 </div>

@@ -298,14 +298,20 @@ polarity.export = PolarityComponent.extend({
           outerThis.set('createMessage', 'Successfully Created IOCs');
           outerThis.set('groupID', '');
         })
-        .catch((err) => {
-          outerThis.set(
-            'createErrorMessage',
-            'Failed to Create IOC: ' +
-              (err && err.title ? `"${err.title}" - ` : '') +
-              (err && (err.detail || err.message || err.title || err.description)) ||
-              'Unknown Reason'
-          );
+        .catch((error) => {
+          if (error.detail === 'warning') {
+            outerThis.set(
+              'createWarningMessage',
+              'Encountered errors while creating IOC: ' +
+                (error && error.title ? `"${error.title}"` : 'Unknown Reason')
+            );
+          } else {
+            outerThis.set(
+              'createErrorMessage',
+              'Failed to Create IOC: ' +
+                (error && error.title ? `"${error.title}"` : 'Unknown Reason')
+            );
+          }
         })
         .finally(() => {
           outerThis.set('createIsRunning', false);
