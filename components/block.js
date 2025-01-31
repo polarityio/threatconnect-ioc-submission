@@ -30,6 +30,7 @@ polarity.export = PolarityComponent.extend({
   editingTags: false,
   showOwnershipMessage: false,
   maxTagsInBlock: 10,
+  isExpanded: true,
   interactionDisabled: Ember.computed('isDeleting', 'createIsRunning', function () {
     const interactionDisabled =
       this.get('isDeleting') ||
@@ -37,6 +38,16 @@ polarity.export = PolarityComponent.extend({
       this.get('createIsRunning');
 
     return interactionDisabled;
+  }),
+  isInMyOwner: Ember.computed('foundEntities.@each.ownershipStatus', function () {
+    return this.foundEntities.some(
+      (foundEntity) => foundEntity.ownershipStatus === 'inMyOwner'
+    );
+  }),
+  isNotInMyOwner: Ember.computed('foundEntities.@each.ownershipStatus', function () {
+    return this.foundEntities.some(
+      (foundEntity) => foundEntity.ownershipStatus === 'notInMyOwner'
+    );
   }),
   init() {
     this.set(
@@ -48,10 +59,7 @@ polarity.export = PolarityComponent.extend({
       'foundEntities',
       this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
     );
-    this.set(
-      'groups',
-      this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
-    );
+    this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
 
     this.set('selectedTags', [
       {
@@ -77,10 +85,7 @@ polarity.export = PolarityComponent.extend({
           this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
         );
 
-        this.set(
-          'groups',
-          this.get(`details.groups${this.get('maxUniqueKeyNumber')}`)
-        );
+        this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
 
         this.set('newIocsToSubmit', []);
       }
@@ -110,9 +115,9 @@ polarity.export = PolarityComponent.extend({
         outerThis.set(
           'createErrorMessage',
           'Search Tags Failed: ' +
-          (err &&
-            (err.detail || err.err || err.message || err.title || err.description)) ||
-          'Unknown Reason'
+            (err &&
+              (err.detail || err.err || err.message || err.title || err.description)) ||
+            'Unknown Reason'
         );
       })
       .finally(() => {
@@ -126,6 +131,9 @@ polarity.export = PolarityComponent.extend({
       });
   },
   actions: {
+    toggleIsExpanded(foundEntity) {
+      Ember.set(foundEntity, 'isExpanded', !foundEntity.isExpanded);
+    },
     toggleOwnershipMessage: function () {
       this.toggleProperty('showOwnershipMessage');
     },
@@ -162,9 +170,9 @@ polarity.export = PolarityComponent.extend({
           outerThis.set(
             'deleteErrorMessage',
             'Failed to Delete IOC: ' +
-            (err &&
-              (err.detail || err.err || err.message || err.title || err.description)) ||
-            'Unknown Reason'
+              (err &&
+                (err.detail || err.err || err.message || err.title || err.description)) ||
+              'Unknown Reason'
           );
         })
         .finally(() => {
@@ -273,20 +281,37 @@ polarity.export = PolarityComponent.extend({
             groupID: outerThis.get('groupID')
           }
         })
-        .then(({ foundEntities }) => {
-          outerThis.set('foundEntities', foundEntities);
+        .then(({ foundEntities, exclusionListEntities }) => {
+          const filteredFoundEntities = foundEntities.filter(
+            (entity) => !exclusionListEntities.includes(entity.value)
+          );
+          filteredFoundEntities.forEach((entity) => {
+            if (
+              outerThis.get('newIocsToSubmit').some((ioc) => ioc.value === entity.value)
+            ) {
+              entity.ownershipStatus = 'inMyOwner';
+            }
+          });
+          outerThis.set('foundEntities', filteredFoundEntities);
+          outerThis.set('exclusionListEntities', exclusionListEntities, []);
           outerThis.set('newIocsToSubmit', []);
           outerThis.set('createMessage', 'Successfully Created IOCs');
           outerThis.set('groupID', '');
         })
-        .catch((err) => {
-          outerThis.set(
-            'createErrorMessage',
-            'Failed to Create IOC: ' +
-            (err && err.title ? `"${err.title}" - ` : '') +
-            (err && (err.detail || err.message || err.title || err.description)) ||
-            'Unknown Reason'
-          );
+        .catch((error) => {
+          if (error.detail === 'warning') {
+            outerThis.set(
+              'createWarningMessage',
+              'Encountered errors while creating IOC: ' +
+                (error && error.title ? `"${error.title}"` : 'Unknown Reason')
+            );
+          } else {
+            outerThis.set(
+              'createErrorMessage',
+              'Failed to Create IOC: ' +
+                (error && error.title ? `"${error.title}"` : 'Unknown Reason')
+            );
+          }
         })
         .finally(() => {
           outerThis.set('createIsRunning', false);
@@ -350,14 +375,14 @@ polarity.export = PolarityComponent.extend({
       const CONFIDENCE_TO_TEXT = !confidence
         ? 'Unassessed'
         : confidence <= 25
-          ? 'Improbable'
-          : confidence <= 49
-            ? 'Doubtful'
-            : confidence <= 69
-              ? 'Possible'
-              : confidence <= 89
-                ? 'Probable'
-                : 'Confirmed';
+        ? 'Improbable'
+        : confidence <= 49
+        ? 'Doubtful'
+        : confidence <= 69
+        ? 'Possible'
+        : confidence <= 89
+        ? 'Probable'
+        : 'Confirmed';
 
       this.set('confidence', confidence);
       this.set('confidenceHuman', CONFIDENCE_TO_TEXT);

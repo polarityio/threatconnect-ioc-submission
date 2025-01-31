@@ -19,6 +19,14 @@
   min-height: 15px !important;
 }
 
+.p-title-exemption {
+  font-weight: 600;
+  padding-top: 3px !important;
+  color: rgb(255, 153, 51);
+  height: 15px !important;
+  min-height: 15px !important;
+}
+
 .p-value {
   word-break: normal;
 }
@@ -48,7 +56,13 @@ table {
 
   td.type {
     width: 60px;
+    color: black;
   }
+}
+
+.delete {
+  color: #ff2753;
+  font-size: 13px;
 }
 
 .no-style-button {
@@ -57,6 +71,9 @@ table {
   border: 0;
   padding: 0;
   background-color: transparent;
+  margin-left: auto;
+  display: inline-block;
+  text-align: right;
 
   &:hover,
   &:focus {
@@ -109,7 +126,7 @@ table {
   padding-bottom: 2px;
 }
 
-.checkbox-container input[type="checkbox"] {
+.checkbox-container input[type='checkbox'] {
   margin: 0;
   vertical-align: middle;
 }
@@ -380,7 +397,7 @@ a.tag {
   align-items: center;
   padding-top: 10px;
 
-  &>button {
+  & > button {
     color: #5ccd18 !important;
     padding-right: 5px;
     font-size: 12px;
@@ -419,4 +436,35 @@ a.tag {
   .show-tc {
     display: inline;
   }
+}
+
+.url-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.owner-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.owner-row a {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.type {
+  flex-shrink: 0;
+  width: 50px;
+  color: black;
+}
+
+.expand-container {
+  position: relative;
+  width: 100%;
+  margin-top: 10px;
 }

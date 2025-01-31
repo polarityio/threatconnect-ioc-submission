@@ -8,6 +8,7 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
 
   const myOwner = await _getMyOwners(options, requestWithDefaults);
+  Logger.info({ myOwner }, 'My Owner Retrieved');
 
   const foundEntities = await _getEntitiesFoundInTC(
     myOwner,
@@ -16,26 +17,32 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     requestWithDefaults
   );
 
+  Logger.info({ foundEntities }, 'Found Entities');
+
   const groups = await getGroups(options, requestWithDefaults);
 
+  const updatedEntities = foundEntities.map((entity) => {
+    const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner?.id);
+    const ownershipStatus = primaryOwner ? 'inMyOwner' : 'notInMyOwner';
 
-  foundEntities.map((entity) => {
-    const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner.id);
-    entity.indicatorId = primaryOwner.itemId;
-    return entity;
+    return {
+      ...entity,
+      ownershipStatus: ownershipStatus,
+      indicatorId: primaryOwner ? primaryOwner.itemId : entity.indicatorId,
+      ...(ownershipStatus === 'notInMyOwner' && { isExpanded: false })
+    };
   });
-
 
   const lookupResults = createLookupResults(
     options,
     entitiesPartition,
     groups,
-    foundEntities,
+    updatedEntities,
     myOwner,
     Logger
   );
 
-  Logger.trace({ lookupResults, foundEntities }, 'Lookup Results');
+  Logger.trace({ lookupResults, updatedEntities }, 'Lookup Results');
 
   return lookupResults.concat(ignoredIpLookupResults);
 };
