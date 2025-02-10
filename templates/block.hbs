@@ -49,7 +49,7 @@
                         <a
                           href="{{details.uiUrl}}/#/details/indicators/{{if
                             foundEntity.createdIndicatorsId
-                            owner.itemId
+                            foundEntity.createdIndicatorsId
                             foundEntity.indicatorId
                           }}/overview"
                         >
@@ -96,8 +96,7 @@
         {{#if (eq foundEntity.ownershipStatus "notInMyOwner")}}
           <div>
             <div
-              class="p-action expand-container"
-              {{action "toggleIsExpanded" foundEntity}}
+              class="expand-container"
             >
               <span class="p-action" {{action "toggleIsExpanded" foundEntity}}>{{foundEntity.value}}</span>
               {{#if foundEntity.isExpanded}}
