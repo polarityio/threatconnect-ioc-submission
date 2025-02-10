@@ -5,7 +5,7 @@ const createRequestWithDefaults = require('./src/createRequestWithDefaults');
 const submitItems = require('./src/submitItems');
 const searchTags = require('./src/searchTags');
 const deleteItem = require('./src/deleteItem');
-
+const { setLogger } = require('./src/logger');
 const { handleError } = require('./src/handleError');
 const { getLookupResults } = require('./src/getLookupResults');
 
@@ -13,6 +13,7 @@ let Logger;
 let requestWithDefaults;
 const startup = (logger) => {
   Logger = logger;
+  setLogger(logger);
   requestWithDefaults = createRequestWithDefaults(Logger);
 };
 

@@ -99,7 +99,7 @@ const submitItems = async (
       });
     }
     const combinedEntities = [...createdIndicators];
-    Logger.info({ combinedEntities }, 'Found Entities Before Return');
+    Logger.trace({ combinedEntities }, 'Found Entities Before Return');
 
     return callback(null, {
       foundEntities: [...createdIndicators, ...foundEntities],
@@ -166,7 +166,7 @@ const createIndicators = async (
       });
     }, newIocsToSubmit)
   );
-  Logger.info(`Responses: ${JSON.stringify(responses, null, 2)}`);
+  Logger.trace(`Responses: ${JSON.stringify(responses, null, 2)}`);
   const createdIndicatorsIds = responses.map((response) => {
     if (
       response &&
@@ -215,7 +215,7 @@ const createIndicators = async (
     ownershipStatus: 'inMyOwner' //To be removed or set accordingly when creating IOCs in other owners will be supported
   }));
 
-  Logger.info(`Enriched Entities: ${JSON.stringify(enrichedEntities, null, 2)}`);
+  Logger.trace(`Enriched Entities: ${JSON.stringify(enrichedEntities, null, 2)}`);
 
   return { enrichedEntities, exclusionListEntities };
 };
