@@ -43,6 +43,8 @@ const createRequestWithDefaults = (Logger) => {
         ...requestOptions,
         ...preRequestFunctionResults
       };
+      
+      Logger.trace({requestOptions: _requestOptions}, 'Request Options');
 
       let postRequestFunctionResults;
       try {
@@ -97,7 +99,8 @@ const createRequestWithDefaults = (Logger) => {
       statusCode,
       body,
       requestOptions: { ...requestOptions, options: '*************' }
-    });
+    }, 'checkForStatusError');
+    
     checkForInternalServiceError(statusCode, body);
     const roundedStatus = Math.round(statusCode / 100) * 100;
     if (roundedStatus !== 200) {

@@ -1,12 +1,11 @@
 {
   "name": "threatconnect-ioc-submission",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "main": "./integration.js",
   "private": true,
   "license": "MIT",
   "author": "Polarity",
   "dependencies": {
-    "aigle": "^1.14.1",
     "lodash": "^4.17.21",
     "postman-request": "^2.88.1-postman.40"
   }
