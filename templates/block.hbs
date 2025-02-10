@@ -99,9 +99,9 @@
               class="p-action expand-container"
               {{action "toggleIsExpanded" foundEntity}}
             >
-              <span>{{foundEntity.value}}</span>
+              <span class="p-action" {{action "toggleIsExpanded" foundEntity}}>{{foundEntity.value}}</span>
               {{#if foundEntity.isExpanded}}
-                {{fa-icon icon="chevron-up" fixedWidth=true}}
+                {{fa-icon icon="chevron-up" class="p-action" fixedWidth=true}}
                 <table class="w-100">
                   <tbody>
                     <tr>
@@ -159,7 +159,7 @@
                   </tbody>
                 </table>
               {{else}}
-                {{fa-icon icon="chevron-down" fixedWidth=true}}
+                {{fa-icon icon="chevron-down" class="p-action" fixedWidth=true}}
               {{/if}}
             </div>
           </div>
