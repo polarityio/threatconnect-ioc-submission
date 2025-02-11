@@ -1,8 +1,9 @@
 const fp = require('lodash/fp');
 
-const { partitionFlatMap, splitOutIgnoredIps } = require('./dataTransformations');
+const { splitOutIgnoredIps } = require('./dataTransformations');
 const { INDICATOR_TYPES, POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
 const createLookupResults = require('./createLookupResults');
+const { getLogger } = require('./logger');
 
 const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
@@ -16,7 +17,7 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     requestWithDefaults
   );
 
-  Logger.info({ foundEntities }, 'Found Entities');
+  Logger.trace({ foundEntities }, 'Found Entities');
 
   const groups = await getGroups(options, requestWithDefaults);
 
@@ -82,6 +83,7 @@ const _getEntitiesFoundInTC = async (
   const entitiesFoundInTC = fp.compact(
     await Promise.all(
       fp.map(async (entity) => {
+        getLogger().trace({ entity }, 'Entity');
         const indicatorType = POLARITY_TYPE_TO_THREATCONNECT[entity.type];
         const linkType = INDICATOR_TYPES[indicatorType];
         const indicatorValue = entity.value;

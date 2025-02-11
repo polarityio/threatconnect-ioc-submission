@@ -11,6 +11,9 @@ const POLARITY_TYPE_TO_THREATCONNECT = {
   IPv4: 'addresses',
   IPv6: 'addresses',
   hash: 'files',
+  MD5: 'files',
+  SHA1: 'files',
+  SHA256: 'files',
   email: 'emailAddresses',
   domain: 'hosts',
   url: 'urls'

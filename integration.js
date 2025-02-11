@@ -5,7 +5,7 @@ const createRequestWithDefaults = require('./src/createRequestWithDefaults');
 const submitItems = require('./src/submitItems');
 const searchTags = require('./src/searchTags');
 const deleteItem = require('./src/deleteItem');
-
+const { setLogger } = require('./src/logger');
 const { handleError } = require('./src/handleError');
 const { getLookupResults } = require('./src/getLookupResults');
 
@@ -13,6 +13,7 @@ let Logger;
 let requestWithDefaults;
 const startup = (logger) => {
   Logger = logger;
+  setLogger(logger);
   requestWithDefaults = createRequestWithDefaults(Logger);
 };
 
@@ -32,7 +33,7 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
       Logger
     );
   } catch (error) {
-    Logger.error(error, `Get Lookup Results Failed ${Object.keys(entities)}`);
+    Logger.error(error, 'Get Lookup Results Failed');
     return cb(handleError(error));
   }
 
