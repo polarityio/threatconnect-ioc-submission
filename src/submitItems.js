@@ -134,8 +134,7 @@ const createIndicators = async (
   const responses = await Promise.all(
     fp.map((entity) => {
       const body = {
-        [SUBMISSION_LABELS[entity.type === 'hash' ? entity.subtype : entity.type]]:
-          entity.value,
+        [SUBMISSION_LABELS[entity.type]]: entity.value,
         rating: fp.toSafeInteger(rating),
         confidence: fp.toSafeInteger(confidence)
       };
@@ -166,7 +165,7 @@ const createIndicators = async (
       });
     }, newIocsToSubmit)
   );
-  Logger.trace(`Responses: ${JSON.stringify(responses, null, 2)}`);
+  
   const createdIndicatorsIds = responses.map((response) => {
     if (
       response &&
@@ -214,9 +213,7 @@ const createIndicators = async (
     createdIndicatorsOwner: createdIndicatorsOwners[index],
     ownershipStatus: 'inMyOwner' //To be removed or set accordingly when creating IOCs in other owners will be supported
   }));
-
-  Logger.trace(`Enriched Entities: ${JSON.stringify(enrichedEntities, null, 2)}`);
-
+  
   return { enrichedEntities, exclusionListEntities };
 };
 

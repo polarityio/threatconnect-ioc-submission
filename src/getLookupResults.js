@@ -9,7 +9,6 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
 
   const myOwner = await _getMyOwners(options, requestWithDefaults);
-  Logger.trace({ myOwner }, 'My Owner Retrieved');
 
   const foundEntities = await _getEntitiesFoundInTC(
     myOwner,
@@ -113,16 +112,20 @@ const _getEntitiesFoundInTC = async (
   return entitiesFoundInTC;
 };
 
-const getGroups = async (options, requestWithDefaults) =>
-  fp.getOr(
-    [],
-    'body.data.group',
-    await requestWithDefaults({
-      path: `groups`,
-      method: 'GET',
-      options
-    })
-  );
+const getGroups = async (options, requestWithDefaults) => {
+  if (options.allowAssociation === true) {
+    return fp.getOr(
+      [],
+      'body.data.group',
+      await requestWithDefaults({
+        path: `groups`,
+        method: 'GET',
+        options
+      })
+    );
+  }
+  return [];
+};
 
 module.exports = {
   getLookupResults
