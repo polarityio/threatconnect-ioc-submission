@@ -9,13 +9,17 @@ const deleteItem = async (
   callback
 ) => {
   try {
+    let owner = entity.createdIndicatorsOwner.name;
+
     await requestWithDefaults({
       method: 'DELETE',
-      path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}/${entity.value}`,
+      path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}/${
+        entity.value
+      }?owner=${encodeURIComponent(owner)}`,
       options
     });
   } catch (error) {
-    Logger.error(error, 'Attribute Deletion Error');
+    Logger.error(error, `Attribute Deletion Error ${entity.value}`);
     return callback({
       errors: [
         {
