@@ -293,6 +293,7 @@
         </button>
       {{/if}}
     </div>
+
     <table class="w-100">
       <tbody>
         {{#each newIocsToSubmit as |entity|}}
@@ -371,6 +372,21 @@
         value={{source}}
         disabled={{interactionDisabled}}
       />
+    </div>
+    <div class="select-container">
+      <span class="p-key">Owner: &nbsp;</span>
+      {{#if allOwners.length}}
+        <select
+          class="owner-select"
+          onchange={{action (mut ownerName) value="target.value"}}
+          disabled={{interactionDisabled}}
+        >
+          <option value="" selected disabled>Select owner...</option>
+          {{#each allOwners as |owner|}}
+            <option value={{owner.name}}>{{owner.name}} ({{owner.type}})</option>
+          {{/each}}
+        </select>
+      {{/if}}
     </div>
     {{#each newIocsToSubmit as |entity|}}
       {{#if (eq entity.displayedType "domain")}}
