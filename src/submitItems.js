@@ -21,6 +21,7 @@ const submitItems = async (
     source,
     whoisActive,
     dnsActive,
+    owner,
     foundEntities,
     groupType,
     groupID
@@ -38,6 +39,7 @@ const submitItems = async (
         confidence,
         whoisActive,
         dnsActive,
+        owner,
         options,
         requestWithDefaults,
         Logger
@@ -125,6 +127,7 @@ const createIndicators = async (
   confidence,
   whoisActive,
   dnsActive,
+  owner,
   options,
   requestWithDefaults,
   Logger
@@ -144,8 +147,15 @@ const createIndicators = async (
         body.dnsActive = dnsActive;
       }
 
+      let path = `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`;
+      if (owner && owner !== 'undefined') {
+        path = `indicators/${
+          POLARITY_TYPE_TO_THREATCONNECT[entity.type]
+        }?owner=${encodeURIComponent(owner)}`;
+      }
+
       return requestWithDefaults({
-        path: `indicators/${POLARITY_TYPE_TO_THREATCONNECT[entity.type]}`,
+        path: path,
         method: 'POST',
         headers: {
           'Content-type': 'application/json'
@@ -165,7 +175,7 @@ const createIndicators = async (
       });
     }, newIocsToSubmit)
   );
-  
+
   const createdIndicatorsIds = responses.map((response) => {
     if (
       response &&
@@ -213,7 +223,7 @@ const createIndicators = async (
     createdIndicatorsOwner: createdIndicatorsOwners[index],
     ownershipStatus: 'inMyOwner' //To be removed or set accordingly when creating IOCs in other owners will be supported
   }));
-  
+
   return { enrichedEntities, exclusionListEntities };
 };
 

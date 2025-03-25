@@ -10,6 +10,8 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
 
   const myOwner = await _getMyOwners(options, requestWithDefaults);
 
+  const allOwners = await getOwners(options, requestWithDefaults);
+
   const foundEntities = await _getEntitiesFoundInTC(
     myOwner,
     entitiesPartition,
@@ -39,6 +41,7 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     groups,
     updatedEntities,
     myOwner,
+    allOwners,
     Logger
   );
 
@@ -125,6 +128,19 @@ const getGroups = async (options, requestWithDefaults) => {
     );
   }
   return [];
+};
+
+const getOwners = async (options, requestWithDefaults) => {
+  const myOwners = fp.get(
+    'body.data.owner',
+    await requestWithDefaults({
+      path: `owners`,
+      method: 'GET',
+      options
+    })
+  );
+
+  return myOwners;
 };
 
 module.exports = {

@@ -9,6 +9,7 @@ const createLookupResults = (
   groups,
   _foundEntities,
   myOwner,
+  allOwners,
   Logger
 ) => {
   const foundEntities = fp.flow(
@@ -46,7 +47,8 @@ const createLookupResults = (
           [`summary${maxUniqueKeyNumber}`]: summary,
           [`groups${maxUniqueKeyNumber}`]: groups,
           [`foundEntities${maxUniqueKeyNumber}`]: foundEntities,
-          [`notFoundEntities${maxUniqueKeyNumber}`]: notFoundEntities
+          [`notFoundEntities${maxUniqueKeyNumber}`]: notFoundEntities,
+          allOwners: allOwners
         }
       }
     }
@@ -66,9 +68,9 @@ const getNotFoundEntities = (foundEntities, entities) =>
         foundEntities
       )
         ? agg.concat({
-          ...entity,
-          displayedType: fp.includes('IP', entity.type) ? 'ip' : fp.toLower(entity.type)
-        })
+            ...entity,
+            displayedType: fp.includes('IP', entity.type) ? 'ip' : fp.toLower(entity.type)
+          })
         : agg,
     [],
     entities
