@@ -8,8 +8,6 @@ const { getLogger } = require('./logger');
 const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
 
-  getLogger().info({ entitiesPartition, ignoredIpLookupResults }, 'Entities Partition');
-
   if (!entitiesPartition) {
     // If there are no entities to process, return the ignored IPs
     // This can happen if the user only looks up ignored IPs
