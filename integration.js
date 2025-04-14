@@ -17,8 +17,35 @@ const startup = (logger) => {
   requestWithDefaults = createRequestWithDefaults(Logger);
 };
 
+/**
+ * Iterates over the provided entity objects and checks if the `type` property
+ * is set to "string".  If it is, modifies the "type" property to be the first valid
+ * specific type found in the `types` property.  Valid specific types are
+ * "hash", "IPv4", "IPv6", "email", "domain", "url".  This method mutates the provided
+ * entities array.
+ * 
+ * Note: This method is a temporary fix for PL-1017 and can be removed once that fix
+ * is deployed.
+ * @param entities - array of entity objects
+ */
+function fixEntityType(entities){
+  const validTypes = ['hash', 'IPv4', 'IPv6', 'email', 'domain', 'url'];
+
+  entities.forEach((entity) => {
+    if (typeof entity.type === 'string') {
+      const specificType = entity.types.find((type) => validTypes.includes(type));
+      if (specificType) {
+        entity.type = specificType;
+      }
+    }
+  });  
+}
+
 const doLookup = async (entities, { url, ..._options }, cb) => {
-  Logger.debug({ entities }, 'Entities');
+  fixEntityType(entities);
+
+  Logger.debug({ entities }, 'Fixed Entities');
+  
   const options = {
     ..._options,
     url: url.endsWith('/') ? url.slice(0, -1) : url
