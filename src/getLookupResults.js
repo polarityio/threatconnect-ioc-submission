@@ -90,6 +90,11 @@ const _getEntitiesFoundInTC = async (
         const indicatorType = POLARITY_TYPE_TO_THREATCONNECT[entity.type];
         const linkType = INDICATOR_TYPES[indicatorType];
         const indicatorValue = entity.value;
+
+        if (!indicatorType) {
+          getLogger().error({ entity }, 'Invalid entity type');
+        }
+
         const ownersSearchResults = await _searchForOwnersOfThisEntity(
           indicatorValue,
           indicatorType

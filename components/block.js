@@ -93,27 +93,25 @@ polarity.export = PolarityComponent.extend({
     })
   ),
   searchTags: function (term, resolve, reject) {
-    const outerThis = this;
-    outerThis.set('createMessage', '');
-    outerThis.set('createErrorMessage', '');
-    outerThis.get('block').notifyPropertyChange('data');
+    this.set('createMessage', '');
+    this.set('createErrorMessage', '');
 
-    outerThis
-      .sendIntegrationMessage({
-        data: {
-          action: 'searchTags',
-          term,
-          selectedTags: this.get('selectedTags')
-        }
-      })
+    this.sendIntegrationMessage({
+      data: {
+        action: 'searchTags',
+        term,
+        owner: this.get('details.owner.name'),
+        selectedTags: this.get('selectedTags')
+      }
+    })
       .then(({ tags }) => {
-        outerThis.set(
+        this.set(
           'existingTags',
           [...(term ? [{ name: term, isNew: true }] : [])].concat(tags)
         );
       })
       .catch((err) => {
-        outerThis.set(
+        this.set(
           'createErrorMessage',
           'Search Tags Failed: ' +
             (err &&
@@ -122,11 +120,11 @@ polarity.export = PolarityComponent.extend({
         );
       })
       .finally(() => {
-        outerThis.get('block').notifyPropertyChange('data');
         setTimeout(() => {
-          outerThis.set('createMessage', '');
-          outerThis.set('createErrorMessage', '');
-          outerThis.get('block').notifyPropertyChange('data');
+          if (!this.isDestroyed) {
+            this.set('createMessage', '');
+            this.set('createErrorMessage', '');
+          }
         }, 5000);
         resolve();
       });

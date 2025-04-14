@@ -246,6 +246,22 @@ a.tag {
   background-color: darken(#363636, 10%);
 }
 
+
+.p-tag {
+  display: inline-block;
+  font-weight: normal;
+  word-break: break-word;
+  line-height: 1.2em;
+  font-size: 12px;
+  box-shadow: 3px 3px 3px #888888;
+  background-color: #fff;
+  border: 1px solid #f97b06;
+  padding: 1px 5px 2px 7px;
+  border-radius: 16px;
+  color: #07213a;
+}
+
+
 .show-tag-modal {
   overflow: hidden;
   margin-top: 10px;
@@ -258,22 +274,13 @@ a.tag {
     margin-top: 5px;
   }
 
+  .ember-power-select-dropdown {
+    line-height: 30px;
+  }
+
   .ember-power-select-multiple-option {
     margin: 0 2px 2px 0;
     word-break: break-word;
-
-    .p-tag {
-      margin: 1px !important;
-      margin-bottom: 2px !important;
-      background-color: #fff;
-      border: 1px solid #f97b06;
-      padding: 1px 5px 2px;
-      border-radius: 16px;
-      color: #07213a;
-      margin: 0 2px 5px 0;
-      display: inline-block;
-      font-weight: normal;
-    }
   }
 
   .ember-power-select-trigger {

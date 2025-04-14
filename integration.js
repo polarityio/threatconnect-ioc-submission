@@ -3,7 +3,8 @@
 const validateOptions = require('./src/validateOptions');
 const createRequestWithDefaults = require('./src/createRequestWithDefaults');
 const submitItems = require('./src/submitItems');
-const searchTags = require('./src/searchTags');
+//const searchTags = require('./src/searchTags');
+const { searchTags } = require('./src/queries/search-tags');
 const deleteItem = require('./src/deleteItem');
 const { setLogger } = require('./src/logger');
 const { handleError } = require('./src/handleError');
@@ -41,13 +42,16 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
   cb(null, lookupResults);
 };
 
-const onMessage = ({ data: { action, ...actionParams } }, options, callback) => {
+const onMessage = async ({ data: { action, ...actionParams } }, options, callback) => {
   if (action === 'deleteItem') {
     deleteItem(actionParams, requestWithDefaults, options, Logger, callback);
   } else if (action === 'submitItems') {
     submitItems(actionParams, requestWithDefaults, options, Logger, callback);
   } else if (action === 'searchTags') {
-    searchTags(actionParams, requestWithDefaults, options, Logger, callback);
+    const tags = await searchTags(actionParams.term, actionParams.owner, options);
+    callback(null, {
+      tags
+    });
   } else {
     callback(null, {});
   }
