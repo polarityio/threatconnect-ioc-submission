@@ -3,23 +3,45 @@ const { ApiRequestError } = require('../errors');
 const { getLogger } = require('../logger');
 const SUCCESS_CODES = [200];
 
-async function searchGroups(searchTerm, options) {
+async function searchGroups(searchTerm, groupTypes, owners, options) {
   const Logger = getLogger();
+  let tql = '';
 
   const requestOptions = {
     uri: `${options.url}/v3/groups`,
-    qs: {
-      tql: `name STARTSWITH ${searchTerm}`
-    },
     method: 'GET',
     useQuerystring: true
   };
 
-  Logger.trace({ requestOptions }, 'Search Tags Request Options');
+  if (searchTerm) {
+    tql += `summary CONTAINS "${searchTerm}"`;
+  }
+
+  if (groupTypes && groupTypes.length > 0) {
+    if (tql.length > 0) {
+      tql += ' AND ';
+    }
+    tql += `typeName IN (${groupTypes.map((type) => `"${type}"`).join(', ')})`;
+  }
+
+  if (owners && owners.length > 0) {
+    if (tql.length > 0) {
+      tql += ' AND ';
+    }
+    tql += `owner IN (${owners.map((owner) => `"${owner}"`).join(', ')})`;
+  }
+
+  if (tql.length > 0) {
+    requestOptions.qs = {
+      tql
+    };
+  }
+
+  Logger.trace({ requestOptions }, 'Search groups request options');
 
   const apiResponse = await polarityRequest.request(requestOptions, options);
 
-  Logger.trace({ apiResponse }, 'Search API Response when Searching Groups');
+  Logger.trace({ apiResponse }, 'Search groups API Response');
 
   if (
     !SUCCESS_CODES.includes(apiResponse.statusCode) ||
@@ -35,7 +57,7 @@ async function searchGroups(searchTerm, options) {
     );
   }
 
-  return apiResponse.body;
+  return apiResponse.body.data;
 }
 
 module.exports = {

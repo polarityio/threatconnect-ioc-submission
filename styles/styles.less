@@ -3,30 +3,6 @@
   margin-bottom: 1px;
 }
 
-.p-title {
-  font-weight: 600;
-  padding-top: 3px !important;
-
-  &:first-child {
-    margin-top: 5px !important;
-  }
-
-  &.submission-options {
-    margin-top: 15px !important;
-  }
-
-  height: 15px !important;
-  min-height: 15px !important;
-}
-
-.p-title-exemption {
-  font-weight: 600;
-  padding-top: 3px !important;
-  color: rgb(255, 153, 51);
-  height: 15px !important;
-  min-height: 15px !important;
-}
-
 .p-value {
   word-break: normal;
 }
@@ -134,7 +110,6 @@ table {
 }
 
 .checkbox-container label {
-  margin-left: 8px;
   line-height: 1.5;
 }
 
@@ -146,8 +121,13 @@ table {
   }
 }
 
-.tag-container {
-  margin-top: -7px;
+.remove-icon {
+  font-size: 9px;
+  color: #aaa;
+
+  &:hover {
+    color: #ff0000;
+  }
 }
 
 .tag {
@@ -167,10 +147,10 @@ table {
 
     .tag-close-icon {
       font-size: 9px;
-    }
 
-    .tag-close-icon:hover {
-      color: #ff0000;
+      &:hover {
+        color: #ff0000;
+      }
     }
   }
 
@@ -187,10 +167,15 @@ a.tag {
   }
 }
 
+.icon-btn {
+  width: auto !important;
+  height: 20px;
+}
+
 .link-tag {
   .threatconnect-summary-tag {
-    background-color: #fff;
-    border: 1px solid #f97b06;
+    background-color: #f2f4f6;
+    border: 1px solid #e4e9f2;
     padding: 1px 5px 2px;
     border-radius: 16px;
     color: #07213a;
@@ -219,41 +204,12 @@ a.tag {
   text-decoration: none;
 }
 
-.open-modal-btn {
-  border-radius: 4px;
-  background-color: #363636;
-  color: #fff;
-
-  &:hover,
-  &:focus {
-    background: inherit;
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  &:active {
-    transform: none;
-  }
-
-  .open-modal-btn-icon {
-    font-size: 9px;
-  }
-}
-
-.open-modal-btn:hover {
-  background-color: darken(#363636, 10%);
-}
-
-
 .p-tag {
   display: inline-block;
   font-weight: normal;
   word-break: break-word;
   line-height: 1.2em;
   font-size: 12px;
-  box-shadow: 3px 3px 3px #888888;
   background-color: #fff;
   border: 1px solid #f97b06;
   padding: 1px 5px 2px 7px;
@@ -261,6 +217,70 @@ a.tag {
   color: #07213a;
 }
 
+.associated-group-container {
+  border: 1px solid #e4e9f2;
+  padding: 5px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.integration-power-select-trigger {
+  padding: 0px;
+  line-height: 30px;
+  min-height: 30px;
+  white-space: normal;
+  height: 30px;
+  width: 100%;
+  border: none;
+
+  &.integration-power-select-multiple {
+    height: auto;
+    padding-top: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding-bottom: 5px;
+  }
+
+  .ember-power-select-multiple-options .ember-power-select-trigger-multiple-input {
+    padding-left: 5px;
+    font-size: 12px;
+  }
+
+
+  .ember-power-select-placeholder {
+    overflow-y: hidden;
+    font-size: 12px;
+    margin: 0px;
+  }
+
+  .ember-power-select-status-icon:before {
+    height: 8px;
+    width: 8px;
+    top: -6px;
+  }
+
+  .ember-power-select-selected-item {
+    font-size: 12px;
+    margin: 0px;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-right: 10px;
+  }
+
+  &.ifta-field {
+    line-height: 15px !important;
+  }
+}
+
+.add-container {
+  margin-top: 10px;
+  background-color: #eee;
+  padding: 5px;
+  border-radius: 4px;
+}
 
 .show-tag-modal {
   overflow: hidden;
@@ -268,11 +288,6 @@ a.tag {
   background-color: #eee;
   padding: 5px;
   border-radius: 4px;
-
-  .modal-buttons {
-    float: right;
-    margin-top: 5px;
-  }
 
   .ember-power-select-dropdown {
     line-height: 30px;
@@ -295,29 +310,25 @@ a.tag {
   }
 }
 
-.tag-btn {
-  border-radius: 4px;
-  background-color: #363636;
-  color: #fff;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:active {
-    transform: none;
-  }
-}
-
-.tag-btn:hover {
-  background-color: darken(#363636, 10%);
-}
-
 .p-btn {
-  height: 30px;
+  height: 25px;
   font-size: 12px !important;
   font-weight: 500;
-  min-width: 95px;
+  min-width: 100px;
+
+  &.short {
+    min-width: 70px;
+  }
+
+  &.btn-polarity.outline {
+    background-color: transparent;
+    color: #7bc942;
+  }
+
+  &.btn-secondary.outline {
+    background-color: transparent;
+    color: #5a6268;
+  }
 }
 
 .modal-open {
@@ -482,3 +493,236 @@ a.tag {
   width: calc(100% - 80px);
   color: #757575;
 }
+
+
+/* START OF IFTA FORM STYLING */
+@form-red: #FF4559;
+@form-green: #7bc942;
+@form-dark-green: #63a830;
+.form-container {
+  .form-name {
+    margin: 0px 0px 8px 1px;
+    font-weight: 500;
+  }
+
+  .form-description {
+    margin: 0 0 0px 1px;
+  }
+}
+
+.ui-description {
+  margin: -10px 0 15px 3px;
+}
+
+.block-container {
+  margin-left: 1px;
+  margin-bottom: 15px;
+
+  label {
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  .after-icon {
+    font-size: 9px;
+  }
+
+  .link {
+    margin-bottom: 5px;
+
+    &:last-child {
+      margin-bottom: 0px
+    }
+  }
+
+
+}
+
+.input-container {
+  width: 100%;
+  position: relative;
+
+  .email-input-container {
+    border-radius: 6px;
+    margin: 0 0 15px;
+    width: 100%;
+    border: 1px solid #ccc;
+    line-height: 12px;
+
+    &.error {
+      border-color: @form-red;
+    }
+
+    &:focus-within {
+      -webkit-appearance: none;
+      outline: none;
+      color: #000000;
+      border-color: @form-green;
+      box-shadow: 0 0 0 0.2rem rgba(123, 201, 66, 0.25);
+    }
+
+    input {
+      flex: 1 1 auto;
+      border: none;
+      margin-bottom: 0;
+      padding: 15px 0px 5px 10px;
+
+      &.ifta-field:focus {
+        box-shadow: none;
+        border-color: inherit;
+        color: inherit;
+        outline: inherit;
+        -webkit-appearance: inherit;
+      }
+    }
+
+    .at-sign-container {
+      flex: 0 0 20px;
+      text-align: center;
+      height: 100%;
+      line-height: 100%;
+      margin-top: 9px;
+      font-weight: bold;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .recipient-domain-container {
+      flex: 1 1 auto;
+      margin-right: 3px;
+
+      .ifta-domain-single {
+        margin-top: 9px;
+        padding-right: 5px;
+      }
+
+      .ifta-domain-field {
+        border: 1px solid #eee;
+        padding: 0px 2px;
+        border-radius: 4px;
+        margin-top: 9px;
+      }
+    }
+  }
+
+  &.text-area-container {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    z-index: 1;
+
+    &:focus-within {
+      -webkit-appearance: none;
+      outline: none;
+      color: #000000;
+      border-color: @form-green;
+      box-shadow: 0 0 0 0.2rem rgba(123, 201, 66, 0.25);
+    }
+
+    &.error {
+      border-color: @form-red;
+
+      &:focus-within {
+        border-color: @form-green !important;
+      }
+    }
+
+    textarea {
+      margin: 0px 10px 10px 10px;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      padding: 0px;
+      width: calc(100% - 20px);
+
+      &.ifta-field:focus {
+        -webkit-appearance: none;
+        outline: none;
+        box-shadow: none;
+      }
+    }
+
+    label {
+      padding: 3px 10px 5px;
+      margin: 0px;
+    }
+  }
+
+  label {
+    display: block;
+
+    .required {
+      color: @form-red;
+    }
+  }
+
+  textarea::placeholder, input::placeholder {
+    color: #dfdfdf;
+  }
+
+  textarea:focus::placeholder, input:focus::placeholder {
+    color: transparent;
+  }
+
+  input {
+    cursor: text;
+  }
+
+  .ifta-label {
+    margin-bottom: -15px;
+    z-index: 1;
+    position: relative;
+    padding: 0px 10px 0 10px;
+    pointer-events: none;
+  }
+
+  .ifta-field {
+    border: 0;
+    border-radius: 6px;
+    padding: 15px 10px 5px;
+    margin: 0 0 15px;
+    width: 100%;
+    border: 1px solid #ccc;
+    line-height: 12px;
+    height: 38px;
+
+    &.power-select-ifta {
+      word-wrap: nowrap;
+
+    }
+
+    &.error {
+      border-color: @form-red;
+    }
+  }
+
+  .ifta-field:focus {
+    -webkit-appearance: none;
+    outline: none;
+    color: #000000;
+    border-color: @form-green;
+    box-shadow: 0 0 0 0.2rem rgba(123, 201, 66, 0.25);
+  }
+
+  select.ifta-field {
+    -webkit-appearance: none;
+    outline: none;
+    line-height: 16px;
+  }
+
+  &:focus-within label {
+    color: @form-dark-green !important;
+  }
+
+  .select-arrow {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+  }
+
+  input:disabled, select:disabled, textarea:disabled, &.text-area-container.disabled {
+    background-color: #f6f6f3 !important;
+  }
+}
+
+/* END OF IFTA FORM STYLING */

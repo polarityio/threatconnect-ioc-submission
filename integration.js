@@ -75,7 +75,7 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, callbac
   } else if (action === 'submitItems') {
     submitItems(actionParams, requestWithDefaults, options, Logger, callback);
   } else if (action === 'searchTags') {
-    const tags = await searchTags(actionParams.term, actionParams.owner, options);
+    const tags = await searchTags(actionParams.term, actionParams.ownerId, options);
     callback(null, {
       tags
     });

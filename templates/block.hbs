@@ -336,138 +336,83 @@
         <span class="p-key"><em>NONE</em></span>
       </div>
     {{/if}}
-    <h1 class="p-title submission-options py-1">
-      {{fa-icon "cog" size="sm" fixedWidth=true}}
+    <h1 class="p-title">
       Submission Options
     </h1>
-    <div class="select-container">
-      <span class="p-key">Title: &nbsp;</span>
-      <input
-        type="text"
-        class="description"
-        placeholder="Enter a title..."
-        onchange={{action (mut title) value="target.value"}}
-        value={{title}}
-        disabled={{interactionDisabled}}
-      />
-    </div>
-    <div class="select-container">
-      <span class="p-key">Description: &nbsp;</span>
-      <input
-        type="text"
-        class="description"
-        placeholder="Enter a description..."
-        onchange={{action (mut description) value="target.value"}}
-        value={{description}}
-        disabled={{interactionDisabled}}
-      />
-    </div>
-    <div class="select-container">
-      <span class="p-key">Source: &nbsp;</span>
-      <input
-        type="text"
-        class="description"
-        placeholder="Enter a source..."
-        onchange={{action (mut source) value="target.value"}}
-        value={{source}}
-        disabled={{interactionDisabled}}
-      />
-    </div>
-    <div class="select-container">
-      <span class="p-key">Owner: &nbsp;</span>
+    {{!-- Owner Select --}}
+    <div class="input-container">
+      <label class="small ifta-label">
+        Owner
+      </label>
       {{#if allOwners.length}}
-        <select
-          class="owner-select"
-          onchange={{action (mut ownerName) value="target.value"}}
-          disabled={{interactionDisabled}}
-        >
-          <option value="" selected disabled>Select owner...</option>
-          {{#each allOwners as |owner|}}
-            <option value={{owner.name}}>{{owner.name}} ({{owner.type}})</option>
-          {{/each}}
-        </select>
+        {{#power-select
+                eventType="click"
+                rootEventType="click"
+                triggerClass="form-control ifta-field integration-power-select-trigger"
+                dropdownClass="integration-power-select-dropdown"
+                selected=owner
+                options=allOwners
+                searchEnabled=true
+                searchField="name"
+                placeholder="Select owner"
+                closeOnSelect=true
+                disabled=interactionDisabled
+                onChange=(action (mut owner))
+        as |owner|
+        }}
+          {{owner.name}} ({{owner.type}})
+        {{/power-select}}
       {{/if}}
     </div>
-    {{#each newIocsToSubmit as |entity|}}
-      {{#if (eq entity.displayedType "domain")}}
-        <h1 class="p-title submission-options py-1">
-          {{fa-icon "cog" size="sm" fixedWidth=true}}
-          Host Specific Options
-        </h1>
-        <div class="checkbox-container">
-          <label class="d-flex align-items-center">
-            <input
-              type="checkbox"
-              {{on "change" (action (mut whoisActive) value="target.checked")}}
-              disabled={{interactionDisabled}}
-            />
-            <span class="p-key ml-1">Enable Whois Lookups</span>
-          </label>
-        </div>
-        <div class="checkbox-container">
-          <label class="d-flex align-items-center">
-            <input
-              type="checkbox"
-              {{on "change" (action (mut dnsActive) value="target.checked")}}
-              disabled={{interactionDisabled}}
-            />
-            <span class="p-key ml-1">Enable DNS Tracking</span>
-          </label>
-        </div>
-      {{/if}}
-    {{/each}}
-
-    {{#if block.userOptions.allowAssociation}}
-      <div class="select-container">
-        <span class="p-key">Assoc Group Type: </span>
-        <select
-          class="w-50"
-          onchange={{action (mut groupType) value="target.value"}}
-          disabled={{interactionDisabled}}
-        >
-          <option value="" selected disabled>Select Type</option>
-          <option value="reports">Reports</option>
-          <option value="documents">Documents</option>
-          <option value="threats">Threats</option>
-          <option value="adversaries">Adversaries</option>
-          <option value="campaigns">Campaigns</option>
-          <option value="emails">Emails</option>
-          <option value="events">Events</option>
-          <option value="incidents">Incidents</option>
-          <option value="intrusionSets">Intrusion Sets</option>
-          <option value="malware">Malware</option>
-          <option value="signatures">Signatures</option>
-          <option value="vulnerabilities">Vulnerabilities</option>
-        </select>
-      </div>
-      <div class="select-container">
-        <span class="p-key">Assoc Group ID: &nbsp;</span>
-        {{#if groups.length}}
-          <select
-            class="w-50"
-            onchange={{action (mut groupID) value="target.value"}}
-            disabled={{interactionDisabled}}
-          >
-            <option value="" selected disabled>Select Type</option>
-            {{#each groups as |group|}}
-              <option value={{group.id}}>{{group.name}}({{group.ownerName}})</option>
-            {{/each}}
-          </select>
-        {{else}}
-          <input
-            type="text"
-            class="groupID"
-            placeholder="Enter Group ID"
-            onchange={{action (mut groupID) value="target.value"}}
-            value={{groupID}}
-            disabled={{interactionDisabled}}
-          />
-        {{/if}}
-      </div>
-    {{/if}}
-    <div class="select-container">
-      <span class="p-key">Rating: &nbsp;</span>
-      <span>
+    
+    {{!-- Title Input --}}
+    <div class="input-container">
+      <label class="small ifta-label">
+        Title
+        <span class="required">*</span>
+      </label>
+      {{input
+        class=(concat "ifta-field" (if uiElement.error " error"))
+        value=title
+        placeholder="Enter a title"
+        disabled=interactionDisabled
+        required=true
+      }}
+    </div>
+  
+    {{!-- Description Input --}}
+    <div class="input-container text-area-container {{if interactionDisabled "disabled"}} {{if uiElement.error "error"}}">
+      <label class="small">
+        Description
+      </label>
+      {{textarea
+          class="ifta-field"
+          rows=5
+          placeholder="Enter a description"
+          value=description
+          disabled=interactionDisabled
+          required=false
+      }}
+    </div>
+  
+    {{!-- Source Input --}}
+    <div class="input-container">
+      <label class="small ifta-label">
+        Source
+      </label>
+      {{input
+        class=(concat "ifta-field" (if uiElement.error " error"))
+        value=source
+        placeholder="Enter a source"
+        disabled=interactionDisabled
+        required=false
+      }}
+    </div>
+    
+    {{!-- Rating --}}
+    <div class="mb-2">
+      <div class="p-key">Rating &nbsp;</div>
+      <div>
         {{fa-icon "ban" click=(action "setRating" 0) class="rating-icon"}}
         {{#each (repeat 5) as |empty ratingIndex|}}
           {{fa-icon
@@ -481,8 +426,10 @@
           }}
         {{/each}}
         {{ratingHuman}}
-      </span>
+      </div>
     </div>
+    
+    {{!-- Confidence Slider --}}
     <div class="confidence">
       <span class="p-key">Confidence: &nbsp;</span>
       <span class="p-value">{{confidence}} - {{confidenceHuman}}</span>
@@ -497,15 +444,179 @@
         />
       </div>
     </div>
-    <div class="tag-container">
+
+    {{!-- Associated Groups --}}
+    {{#if block.userOptions.allowAssociation}}
+      <div class="d-flex align-items-center justify-content-start">
+        <h1 class="p-title align-self-baseline">
+          Associated Groups
+        </h1>
+        {{#unless (or editingGroups interactionDisabled)}}
+          <button class="btn icon-btn p-action align-self-baseline" {{action (toggle "editingGroups" this)}} title="Edit Groups">
+            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Groups
+          </button>
+        {{/unless}}
+      </div>
+      {{#if (eq selectedGroups.length 0)}}
+        <div class="p-footnote">
+          No Associated Groups
+        </div>
+      {{else}}
+        {{#each selectedGroups as |group groupIndex|}}
+            <div class="associated-group-container">
+              <div class="d-flex align-items-start justify-content-between">
+                <div class="mr-1">
+                  {{group.name}}
+                </div>
+                {{#if (not interactionDisabled)}}
+                  <div class="remove-icon" {{action "removeGroup" group}}>
+                    {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
+                  </div>
+                {{/if}}
+              </div>
+              <div class="p-footnote">
+                <div>Owner: {{group.ownerName}}</div>
+                <div>Type: {{group.type}}</div>
+              </div>
+            </div>
+        {{/each}}
+      {{/if}}
+      {{#if editingGroups}}
+        <div class="add-container">
+          <h1 class="p-title secondary">
+            Group Filters
+          </h1>
+          <div class="input-container mb-2">
+            <label class="small ifta-label">
+              Owner Filter
+            </label>
+            {{#power-select-multiple
+                eventType="click"
+                rootEventType="click"
+                triggerClass="integration-power-select-trigger integration-power-select-multiple"
+                dropdownClass="integration-power-select-dropdown"
+                selected=ownerFilter
+                options=allOwners
+                searchEnabled=true
+                placeholder="No owner filter applied"
+                closeOnSelect=true
+                disabled=interactionDisabled
+                onChange=(action (mut ownerFilter))
+            as |owner|
+            }}
+              {{owner.name}} ({{owner.type}})
+            {{/power-select-multiple}}
+          </div>
+          
+          <div class="input-container mb-2">
+            <label class="small ifta-label">
+              Group Type Filter
+            </label>
+            {{#power-select-multiple
+              eventType="click"
+              rootEventType="click"
+              triggerClass="integration-power-select-trigger integration-power-select-multiple"
+              dropdownClass="integration-power-select-dropdown"
+              selected=groupTypeFilter
+              options=groupTypeNames
+              searchEnabled=true
+              placeholder="No group type filter applied"
+              closeOnSelect=true
+              disabled=interactionDisabled
+              onChange=(action (mut groupTypeFilter))
+            as |groupType|
+            }}
+              {{groupType}}
+            {{/power-select-multiple}}
+          </div>
+    
+          <div class="input-container">
+            <label class="small ifta-label">
+              Assoc. Group
+            </label>
+            {{#power-select
+              eventType="click"
+              rootEventType="click"
+              triggerClass="form-control ifta-field integration-power-select-trigger"
+              dropdownClass="integration-power-select-dropdown"
+              searchEnabled=true
+              search=(action "searchGroups")
+              selected=selectedGroup
+              options=groups
+              searchEnabled=true
+              searchField="name"
+              placeholder="Select owner"
+              closeOnSelect=true
+              disabled=interactionDisabled
+              onChange=(action (mut selectedGroup))
+            as |group|
+            }}
+              {{group.name}} ({{group.ownerName}})
+            {{/power-select}}
+          </div>
+          <div class="d-flex align-items-center justify-content-end mb-1">
+            <button 
+              class="btn btn-naked p-btn short outline" 
+              {{action (toggle "editingGroups" this)}}
+              disabled={{interactionDisabled}}
+            >
+              Close
+            </button>
+            <button
+              class="btn btn-polarity p-btn short outline"
+              {{action "addGroup"}}
+              disabled={{interactionDisabled}}
+            >
+              Add Group
+            </button>
+          </div>
+        </div>
+      {{/if}}
+    {{/if}}
+
+    {{!-- Host Specific Options --}}
+    {{#if entitiesToSubmitIncludeDomain}}
       <h1 class="p-title">
-        {{fa-icon "tags" fixedWidth=true}}
-        Tags
+        Host Specific Options
       </h1>
+      <div class="checkbox-container">
+        <label class="d-flex align-items-center">
+          <input
+                  type="checkbox"
+            {{on "change" (action (mut whoisActive) value="target.checked")}}
+                  disabled={{interactionDisabled}}
+          />
+          <span class="p-value ml-1">Enable Whois Lookups</span>
+        </label>
+      </div>
+      <div class="checkbox-container">
+        <label class="d-flex align-items-center">
+          <input
+                  type="checkbox"
+            {{on "change" (action (mut dnsActive) value="target.checked")}}
+                  disabled={{interactionDisabled}}
+          />
+          <span class="p-value ml-1">Enable DNS Tracking</span>
+        </label>
+      </div>
+    {{/if}}
+  
+    {{!-- Associated Tags --}}
+    <div>
+      <div class="d-flex align-items-center justify-content-start">
+        <h1 class="p-title align-self-baseline">
+          Associated Tags
+        </h1>
+        {{#unless (or editingTags interactionDisabled)}}
+          <button class="btn icon-btn p-action align-self-baseline" {{action (toggle "editingTags" this)}} title="Edit Tags">
+            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Tags
+          </button>
+        {{/unless}}
+      </div>
       {{#if (eq selectedTags.length 0)}}
-        <span class="p-footnote mb-2 mt-2">
-          <span><em>&nbsp; No Tags &nbsp;</em></span>
-        </span>
+        <div class="p-footnote">
+          No Tags
+        </div>
       {{else}}
         {{#each (take maxTagsInBlock selectedTags) as |tag tagIndex|}}
           {{#if tag.isNew}}
@@ -542,17 +653,15 @@
           {{/if}}
         {{/each}}
       {{/if}}
-      {{#unless (or editingTags interactionDisabled)}}
-        <button class="open-modal-btn" {{action "editTags"}}>
-          {{fa-icon "plus" class="open-modal-btn-icon" fixedWidth=true}}
-        </button>
-      {{/unless}}
 
       {{#if editingTags}}
         <div class="show-tag-modal">
           <div>
             {{#power-select-multiple
-              triggerClass="form-control"
+              eventType="click"
+              rootEventType="click"
+              triggerClass="integration-power-select-trigger integration-power-select-multiple"
+              dropdownClass="integration-power-select-dropdown"
               selected=selectedTag
               options=existingTags
               searchEnabled=true
@@ -574,9 +683,8 @@
                       word-break: break-word;
                       line-height: 1.2em;
                       font-size: 12px;
-                      box-shadow: 3px 3px 3px #888888;
                       background-color: #fff;
-                      border: 1px solid #f97b06;
+                      border: 1px solid #e4e9f2;
                       padding: 2px 10px;
                       border-radius: 16px;
                       margin: 0px;
@@ -588,40 +696,42 @@
                   -
                 {{/if}}
                 {{tag.name}}
-                <span style="position: relative; top: 1px">
+                <span style="position: relative;">
                   {{#if tag.isNew}}
                     {{fa-icon "plus-circle" fixedWidth=true}}
-                  {{else}}
-                    {{fa-icon "check-circle" fixedWidth=true}}
                   {{/if}}
                 </span>
               </span>
             {{/power-select-multiple}}
           </div>
-          <div class="modal-buttons">
+          <div class="d-flex align-items-center justify-content-end mb-1 mt-2">
             <button
-              class="tag-btn"
-              {{action "editTags"}}
+              class="btn btn-naked p-btn short outline"
+              {{action (toggle "editingTags" this)}}
               disabled={{interactionDisabled}}
-            >Cancel</button>
+            >
+              Cancel
+            </button>
             <button
-              class="tag-btn"
+              class="btn btn-polarity p-btn short outline"
               {{action "addTags"}}
               disabled={{interactionDisabled}}
-            >Add Tags</button>
+            >
+              Add Tags
+            </button>
           </div>
         </div>
       {{/if}}
     </div>
 
     <div class="d-flex flex-row-reverse justify-content-between align-items-center mt-2">
-      <button
+      <button 
+        class="btn btn-polarity p-btn"
         {{action "submitItems"}}
         disabled={{interactionDisabled}}
-        class="p-btn btn btn-secondary m-0"
       >
         {{#if createIsRunning}}
-          {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+          {{fa-icon icon="spinner-third" spin=true fixedWidth=true}}
         {{else}}
           Submit IOCs
         {{/if}}

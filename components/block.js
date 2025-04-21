@@ -3,6 +3,21 @@ polarity.export = PolarityComponent.extend({
   maxUniqueKeyNumber: Ember.computed.alias('details.maxUniqueKeyNumber'),
   url: Ember.computed.alias('details.url'),
   allOwners: Ember.computed.alias('details.allOwners'),
+  groupTypeNames: [
+    'Report',
+    'Event',
+    'Document',
+    'Threat',
+    'Adversary',
+    'Campaign',
+    'Email',
+    'Event',
+    'Incident',
+    'Instruction Set',
+    'Malware',
+    'Signature',
+    'Vulnerability'
+  ],
   description: '',
   groupType: '',
   groupID: '',
@@ -19,6 +34,7 @@ polarity.export = PolarityComponent.extend({
   newIocs: [],
   newIocsToSubmit: [],
   selectedTags: [],
+  selectedGroups: [],
   deleteMessage: '',
   deleteErrorMessage: '',
   deleteIsRunning: false,
@@ -32,6 +48,10 @@ polarity.export = PolarityComponent.extend({
   showOwnershipMessage: false,
   maxTagsInBlock: 10,
   isExpanded: true,
+  previousTagSearch: '',
+  entitiesToSubmitIncludeDomain: Ember.computed('newIocsToSubmit.length', function () {
+    return this.get('newIocsToSubmit').find((ioc) => ioc.displayedType === 'domain');
+  }),
   interactionDisabled: Ember.computed('isDeleting', 'createIsRunning', function () {
     const interactionDisabled =
       this.get('isDeleting') ||
@@ -68,6 +88,10 @@ polarity.export = PolarityComponent.extend({
       }
     ]);
 
+    // Default owner to the first owner which is the owner/org that the API key
+    // used to authenticate belongs to.
+    this.set('owner', this.get('details.allOwners.0'));
+
     this._super(...arguments);
   },
   observer: Ember.on(
@@ -92,15 +116,24 @@ polarity.export = PolarityComponent.extend({
       }
     })
   ),
+  searchGroups: function (term, resolve, reject) {
+    resolve();
+  },
   searchTags: function (term, resolve, reject) {
     this.set('createMessage', '');
     this.set('createErrorMessage', '');
+
+    // Prevent running the same search twice in a row.  Can happen if the user opens and closes
+    // the tag search power select (which will run empty string searches repeatedly).
+    if (term === this.get('previousTagSearch') && this.get('existingTags.length') > 0) {
+      return;
+    }
 
     this.sendIntegrationMessage({
       data: {
         action: 'searchTags',
         term,
-        owner: this.get('details.owner.name'),
+        ownerId: this.get('details.owner.id'),
         selectedTags: this.get('selectedTags')
       }
     })
@@ -109,6 +142,7 @@ polarity.export = PolarityComponent.extend({
           'existingTags',
           [...(term ? [{ name: term, isNew: true }] : [])].concat(tags)
         );
+        this.set('previousTagSearch', term);
       })
       .catch((err) => {
         this.set(
@@ -273,11 +307,11 @@ polarity.export = PolarityComponent.extend({
             dnsActive: outerThis.get('dnsActive'),
             rating: outerThis.get('rating'),
             confidence: outerThis.get('confidence'),
-            owner: outerThis.get('ownerName'),
+            owner: outerThis.get('owner'),
             foundEntities: outerThis.get('foundEntities'),
             submitTags: outerThis.get('selectedTags'),
             groupType: outerThis.get('groupType'),
-            groupID: outerThis.get('groupID')
+            groupID: outerThis.get('group.id')
           }
         })
         .then(({ foundEntities, exclusionListEntities }) => {
@@ -322,10 +356,6 @@ polarity.export = PolarityComponent.extend({
           }, 5000);
         });
     },
-    editTags: function () {
-      this.toggleProperty('editingTags');
-      this.get('block').notifyPropertyChange('data');
-    },
     deleteTag: function (tagToDelete) {
       this.set(
         'selectedTags',
@@ -334,12 +364,37 @@ polarity.export = PolarityComponent.extend({
         )
       );
     },
+    searchGroups: function (term) {
+      return new Ember.RSVP.Promise((resolve, reject) => {
+        Ember.run.debounce(this, this.searchGroups, term, resolve, reject, 600);
+      });
+    },
     searchTags: function (term) {
       return new Ember.RSVP.Promise((resolve, reject) => {
         Ember.run.debounce(this, this.searchTags, term, resolve, reject, 600);
       });
     },
-    addTags: function (tags) {
+    removeGroup: function (targetGroup) {
+      const selectedGroups = this.get('selectedGroups');
+      const index = selectedGroups.findIndex((group) => group.id === targetGroup.id);
+      if (index >= 0) {
+        // build the result without the matched element
+        this.set('selectedGroups', [
+          ...selectedGroups.slice(0, index),
+          ...selectedGroups.slice(index + 1)
+        ]);
+      }
+    },
+    addGroup: function () {
+      const selectedGroup = this.get('selectedGroup');
+      const selectedGroups = this.get('selectedGroups');
+
+      if (selectedGroup) {
+        this.set('selectedGroups', selectedGroups.concat(selectedGroup));
+        this.set('selectedGroup', '');
+      }
+    },
+    addTags: function () {
       const selectedTag = this.get('selectedTag');
       const selectedTags = this.get('selectedTags');
 

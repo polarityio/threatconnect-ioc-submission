@@ -3,46 +3,27 @@ const { ApiRequestError } = require('../errors');
 const { getLogger } = require('../logger');
 const SUCCESS_CODES = [200];
 
-async function searchTags(searchTerm, ownerId, options) {
+async function getMyOwner(options) {
   const Logger = getLogger();
 
-  let tql = '';
-
   const requestOptions = {
-    uri: `${options.url}/v3/tags`,
+    uri: `${options.url}/v2/owners/mine`,
     method: 'GET',
     useQuerystring: true
   };
 
-  if (typeof searchTerm === 'string' && searchTerm.length > 0) {
-    tql += `name STARTSWITH "${searchTerm}"`;
-  }
-
-  if (ownerId) {
-    if (tql.length > 0) {
-      tql += ' AND ';
-    }
-    tql += `owner EQ ${ownerId}`;
-  }
-
-  if (tql.length > 0) {
-    requestOptions.qs = {
-      tql
-    };
-  }
-
-  Logger.trace({ requestOptions }, 'Search Tags Request Options');
+  Logger.trace({ requestOptions }, 'Fetch my owner');
 
   const apiResponse = await polarityRequest.request(requestOptions, options);
 
-  Logger.trace({ apiResponse }, 'Search API Response when Searching Tags');
+  Logger.trace({ apiResponse }, 'API Response when fetching my owner');
 
   if (
     !SUCCESS_CODES.includes(apiResponse.statusCode) ||
     (apiResponse.body && apiResponse.body.status && apiResponse.body.status !== 'Success')
   ) {
     throw new ApiRequestError(
-      `Unexpected status code ${apiResponse.statusCode} received when searching tags via ThreatConnect API`,
+      `Unexpected status code ${apiResponse.statusCode} received when fetching my owner via ThreatConnect API`,
       {
         statusCode: apiResponse.statusCode,
         requestOptions: apiResponse.requestOptions,
@@ -51,9 +32,9 @@ async function searchTags(searchTerm, ownerId, options) {
     );
   }
 
-  return apiResponse.body.data;
+  return apiResponse.body.data.owner;
 }
 
 module.exports = {
-  searchTags
+  getMyOwner
 };

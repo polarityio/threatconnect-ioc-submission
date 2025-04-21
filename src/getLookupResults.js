@@ -4,6 +4,10 @@ const { splitOutIgnoredIps } = require('./dataTransformations');
 const { INDICATOR_TYPES, POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
 const createLookupResults = require('./createLookupResults');
 const { getLogger } = require('./logger');
+const { getMyOwner } = require('./queries/get-my-owner');
+const {
+  getOwnersWithIndicatorPerm
+} = require('./queries/get-owners-with-indicator-perm');
 
 const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
@@ -14,9 +18,11 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     return ignoredIpLookupResults;
   }
 
-  const myOwner = await _getMyOwners(options, requestWithDefaults);
+  const myOwner = await getMyOwner(options);
 
-  const allOwners = await getOwners(options, requestWithDefaults);
+  let allOwners = await getOwnersWithIndicatorPerm(options);
+
+  allOwners = moveOwnerToFront(allOwners, myOwner.id);
 
   const foundEntities = await _getEntitiesFoundInTC(
     myOwner,
@@ -56,18 +62,14 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
   return lookupResults.concat(ignoredIpLookupResults);
 };
 
-const _getMyOwners = async (options, requestWithDefaults) => {
-  const myOwners = fp.get(
-    'body.data.owner',
-    await requestWithDefaults({
-      path: `owners/mine`,
-      method: 'GET',
-      options
-    })
-  );
-
-  return myOwners;
-};
+function moveOwnerToFront(allOwners, targetOwnerId) {
+  const index = allOwners.findIndex((owner) => owner.id === targetOwnerId);
+  if (index > -1) {
+    const [owner] = allOwners.splice(index, 1);
+    allOwners.unshift(owner);
+  }
+  return allOwners;
+}
 
 const _getEntitiesFoundInTC = async (
   myOwner,
@@ -139,19 +141,6 @@ const getGroups = async (options, requestWithDefaults) => {
     );
   }
   return [];
-};
-
-const getOwners = async (options, requestWithDefaults) => {
-  const myOwners = fp.get(
-    'body.data.owner',
-    await requestWithDefaults({
-      path: `owners`,
-      method: 'GET',
-      options
-    })
-  );
-
-  return myOwners;
 };
 
 module.exports = {
