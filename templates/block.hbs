@@ -60,6 +60,7 @@
   {{/if}}
   
   {{!-- Display results that are in other orgs but not owner's organization --}}
+  {{!--
   {{#if hasIndicatorNotInMyOwner}}
     <h1 class="p-title">
       {{fa-icon "info-circle" size="sm"}}
@@ -98,51 +99,80 @@
       </tbody>
     </table>
   {{/if}}
-  
+  --}}
   {{!-- Display results that are found in owner's organization --}}
   {{#if hasIndicatorInMyOwner}}
     <h1 class="p-title">
-      {{fa-icon "info-circle" size="sm"}}
-      Found in ThreatConnect {{details.myOwner.name}}
+      Found in ThreatConnect
     </h1>
-    <table class="w-100">
-      <tbody>
-        {{#each details.results as | result |}}
-          {{#if (and result.foundInThreatConnect result.isInMyOwner)}}
-            <tr>
-              <td>
-                <div class="url-column">
-                  <div class="owner-row">
-                    <a href={{result.indicator.webLink}}>
-                      {{result.indicator.summary}}
-                      {{fa-icon icon="external-link" fixedWidth=true class="external-link-icon"}}
-                    </a>
-                    <span class="type">{{result.indicator.type}}</span>
-                    {{#if (and block.userOptions.allowDelete result.canDelete)}}
-                      <button 
-                        class="no-style-button delete"
-                        {{action "initiateItemDeletion" result}}
-                        title="Delete IOC from ThreatConnect"
-                        disabled={{interactionDisabled}}
-                      >
-                        {{fa-icon icon="trash" fixedWidth=true}}
-                      </button>
-                    {{/if}}
-                  </div>                  
-                </div>              
-              </td>
-            </tr>
+    {{#each details.results as | result |}}
+      {{#if result.foundInThreatConnect}}
+        <div class="search-result-container">
+          <div class="search-result-header d-flex align-items-center justify-content-between" {{action (toggle "__viewIndicatorDetails" result)}}>
+            <div class="d-flex align-items-center justify-content-start">
+              <div>
+                {{#if result.isInMyOwner}}
+                  {{fa-icon icon="home" fixedWidth=true class="p-grey"}}
+                  {{bs-tooltip title="This indicator is in your organization"}}
+                {{else}}
+                  {{fa-icon icon="home" class="fa-blank"}}
+                {{/if}}
+              </div>
+              <div class="ml-1">
+                  {{result.entity.value}}
+              </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+              <div class="mr-1">
+                  <span class="p-footnote">{{result.displayType}}</span>
+              </div>
+              <div>
+                {{#if (and block.userOptions.allowDelete result.canDelete)}}
+                  <button 
+                    class="no-style-button delete"
+                    {{action "initiateItemDeletion" result}}
+                    title="Delete indicator from {{details.myOwner.name}}"
+                    disabled={{interactionDisabled}}
+                  >
+                    {{fa-icon icon="trash" fixedWidth=true}}
+                  </button>
+                {{/if}}
+                {{#unless result.isInMyOwner}}
+                  <button
+                    class="no-style-button p-action add"
+                    {{action (set result "__toBeSubmitted" true)}}
+                    disabled={{interactionDisabled}}
+                  >
+                    {{fa-icon icon="plus" fixedWidth=true}}
+                    {{bs-tooltip title="Add indicator to submission list"}}
+                  </button>
+                {{/unless}}
+                {{#if result.__viewIndicatorDetails}}
+                  {{fa-icon icon="chevron-up" fixedWidth=true class="p-grey"}}
+                {{else}}
+                  {{fa-icon icon="chevron-down" fixedWidth=true class="p-grey"}}
+                {{/if}}                
+              </div>
+            </div>
+          </div>
+          {{#if result.__viewIndicatorDetails}}
+            <div class="search-result-content">
+              {{#each result.indicators as | indicator |}}
+                <div>
+                  {{indicator.ownerName}}
+                </div>
+              {{/each}}
+            </div>
           {{/if}}
-        {{/each}}
-      </tbody>
-    </table>
+        </div>
+      {{/if}}
+    {{/each}}
   {{/if}}
   
   {{!-- Display entities that are not in TC --}}
   {{#if hasIndicatorNotInThreatConnect}}
     <div class="d-flex align-items-center justify-content-between">
       <h1 class="p-title">
-        {{fa-icon "sparkles" size="sm" fixedWidth=true}}
         Not in ThreatConnect
       </h1>
       {{#unless hasIndicatorsAvailableToSubmit}}
@@ -186,7 +216,7 @@
                 {{else}}
                   <div class="d-flex align-items-center justify-content-end">
                     {{#if result.__hasSubmissionError}}
-                      <div>
+                      <div class="mr-1">
                         {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red"}}
                         {{bs-tooltip title="An error was encountered submitting this indicator"}}
                       </div>
@@ -229,7 +259,6 @@
   {{#unless allIndicatorsInMyOwner}}
     <div class="d-flex align-items-center justify-content-between">
       <h1 class="p-title">
-        {{fa-icon "upload" size="sm" fixedWidth=true}}
         Submit to ThreatConnect
       </h1>
       {{#if hasIndicatorToBeSubmitted}}

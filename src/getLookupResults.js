@@ -32,20 +32,16 @@ const getLookupResults = async (entities, options) => {
   let entitiesFound = false;
 
   await async.eachLimit(entitiesPartition, 5, async (entity) => {
-    const searchResults = await searchIndicator(entity, options);
+    const indicators = await searchIndicator(entity, options);
 
-    if (searchResults.length === 0) {
-      //  No results for this entity
-      const formattedResult = createFormattedSearchResult(entity, null, myOwner);
-      newEntities = true;
-      results.push(formattedResult);
-    } else {
-      searchResults.forEach((indicator) => {
-        const formattedResult = createFormattedSearchResult(entity, indicator, myOwner);
-        results.push(formattedResult);
-      });
+    if (indicators.length > 0) {
       entitiesFound = true;
+    } else {
+      newEntities = true;
     }
+
+    const formattedResult = createFormattedSearchResult(entity, indicators, myOwner);
+    results.push(formattedResult);
   });
 
   Logger.trace({ results }, 'Search Results');
@@ -78,14 +74,14 @@ const getLookupResults = async (entities, options) => {
   return lookupResults.concat(ignoredIpLookupResults);
 };
 
-function createFormattedSearchResult(entity, indicator, myOwner) {
+function createFormattedSearchResult(entity, indicators, myOwner) {
   return {
     entity,
     displayType: getThreatConnectDisplayTypeFromEntityType(entity),
-    indicator: indicator ? indicator : null,
-    foundInThreatConnect: indicator ? true : false,
-    isInMyOwner: indicator ? indicator.ownerId === myOwner.id : false,
-    canDelete: indicator ? indicator.ownerId === myOwner.id : false
+    indicators,
+    foundInThreatConnect: indicators.length > 0 ? true : false,
+    isInMyOwner: indicators.some((indicator) => indicator.ownerId === myOwner.id),
+    canDelete: indicators.some((indicator) => indicator.ownerId === myOwner.id)
   };
 }
 
