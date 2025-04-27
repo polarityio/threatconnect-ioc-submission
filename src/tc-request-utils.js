@@ -52,6 +52,29 @@ function convertPolarityTypeToThreatConnectPlural(type) {
   }
 }
 
+function getThreatConnectDisplayTypeFromEntityType(entity){
+  switch (entity.type) {
+    case 'IPv4':
+      return 'Address';
+    case 'IPv6':
+      return 'Address';
+    case 'hash':
+      return 'File';
+    case 'MD5':
+      return 'File';
+    case 'SHA1':
+      return 'File';
+    case 'SHA256':
+      return 'File';
+    case 'email':
+      return 'Email';
+    case 'domain':
+      return 'Host';
+    case 'url':
+      return 'URL';
+  }
+}
+
 /**
  * ThreatConnect has limited support for IPv6 formats.  This method converts the value of the provided entityObj
  * into a valid value for ThreatConnect.  If a conversion cannot be done, the method returns null.
@@ -85,5 +108,6 @@ function filterInvalidEntities(entities) {
 module.exports = {
   convertPolarityTypeToThreatConnectPlural,
   convertPolarityTypeToThreatConnectSingular,
+  getThreatConnectDisplayTypeFromEntityType,
   filterInvalidEntities
 };

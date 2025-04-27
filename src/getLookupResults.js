@@ -1,15 +1,17 @@
 const fp = require('lodash/fp');
+const async = require('async');
 
 const { splitOutIgnoredIps } = require('./dataTransformations');
-const { INDICATOR_TYPES, POLARITY_TYPE_TO_THREATCONNECT } = require('./constants');
-const createLookupResults = require('./createLookupResults');
 const { getLogger } = require('./logger');
-const { getMyOwner } = require('./queries/get-my-owner');
+const { getMyOwnerCached } = require('./get-my-owner-cached');
 const {
-  getOwnersWithIndicatorPerm
-} = require('./queries/get-owners-with-indicator-perm');
+  getOwnersWithIndicatorPermissionCached
+} = require('./get-owners-with-indicator-perm-cached');
+const { searchIndicator } = require('./queries/search-indicator');
+const { getThreatConnectDisplayTypeFromEntityType } = require('./tc-request-utils');
 
-const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
+const getLookupResults = async (entities, options) => {
+  const Logger = getLogger();
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(entities);
 
   if (!entitiesPartition) {
@@ -18,131 +20,98 @@ const getLookupResults = async (entities, options, requestWithDefaults, Logger) 
     return ignoredIpLookupResults;
   }
 
-  const myOwner = await getMyOwner(options);
+  // Get the requesting users owner from the cache or fetches it via REST API if it's not cached yet
+  const myOwner = await getMyOwnerCached(options);
 
-  let allOwners = await getOwnersWithIndicatorPerm(options);
+  // Get owners that the requesting user has permission to add indicators to
+  let ownersWithCreatePermission = await getOwnersWithIndicatorPermissionCached(options);
+  ownersWithCreatePermission = moveOwnerToFront(ownersWithCreatePermission, myOwner.id);
 
-  allOwners = moveOwnerToFront(allOwners, myOwner.id);
+  const results = [];
+  let newEntities = false;
+  let entitiesFound = false;
 
-  const foundEntities = await _getEntitiesFoundInTC(
-    myOwner,
-    entitiesPartition,
-    options,
-    requestWithDefaults
-  );
+  await async.eachLimit(entitiesPartition, 5, async (entity) => {
+    const searchResults = await searchIndicator(entity, options);
 
-  Logger.trace({ foundEntities }, 'Found Entities');
-
-  const groups = await getGroups(options, requestWithDefaults);
-
-  const updatedEntities = foundEntities.map((entity) => {
-    const primaryOwner = entity.owners.find((owner) => owner.id === entity.myOwner?.id);
-    const ownershipStatus = primaryOwner ? 'inMyOwner' : 'notInMyOwner';
-
-    return {
-      ...entity,
-      ownershipStatus: ownershipStatus,
-      indicatorId: primaryOwner ? primaryOwner.itemId : entity.indicatorId,
-      ...(ownershipStatus === 'notInMyOwner' && { isExpanded: false })
-    };
+    if (searchResults.length === 0) {
+      //  No results for this entity
+      const formattedResult = createFormattedSearchResult(entity, null, myOwner);
+      newEntities = true;
+      results.push(formattedResult);
+    } else {
+      searchResults.forEach((indicator) => {
+        const formattedResult = createFormattedSearchResult(entity, indicator, myOwner);
+        results.push(formattedResult);
+      });
+      entitiesFound = true;
+    }
   });
 
-  const lookupResults = createLookupResults(
-    options,
-    entitiesPartition,
-    groups,
-    updatedEntities,
-    myOwner,
-    allOwners,
-    Logger
-  );
+  Logger.trace({ results }, 'Search Results');
 
-  Logger.trace({ lookupResults, updatedEntities }, 'Lookup Results');
+  const lookupResults = [
+    {
+      entity: {
+        ...entities[0],
+        value: 'ThreatConnect IOC Submission'
+      },
+      displayValue: 'ThreatConnect IOC Submission',
+      isVolatile: true,
+      data: {
+        summary: [
+          ...(entitiesFound ? ['Entities Found'] : []),
+          ...(newEntities ? ['New Entities'] : [])
+        ],
+        details: {
+          uiUrl: getUiUrl(options.url),
+          myOwner,
+          // Groups gets initialized via onMessage
+          groups: [],
+          results,
+          ownersWithCreatePermission
+        }
+      }
+    }
+  ];
 
   return lookupResults.concat(ignoredIpLookupResults);
 };
 
-function moveOwnerToFront(allOwners, targetOwnerId) {
-  const index = allOwners.findIndex((owner) => owner.id === targetOwnerId);
-  if (index > -1) {
-    const [owner] = allOwners.splice(index, 1);
-    allOwners.unshift(owner);
-  }
-  return allOwners;
+function createFormattedSearchResult(entity, indicator, myOwner) {
+  return {
+    entity,
+    displayType: getThreatConnectDisplayTypeFromEntityType(entity),
+    indicator: indicator ? indicator : null,
+    foundInThreatConnect: indicator ? true : false,
+    isInMyOwner: indicator ? indicator.ownerId === myOwner.id : false,
+    canDelete: indicator ? indicator.ownerId === myOwner.id : false
+  };
 }
 
-const _getEntitiesFoundInTC = async (
-  myOwner,
-  entitiesPartition,
-  options,
-  requestWithDefaults
-) => {
-  const _searchForOwnersOfThisEntity = async (indicatorValue, indicatorType) => {
-    return fp.getOr(
-      [],
-      'body.data.owner',
-      await requestWithDefaults({
-        path: `indicators/${encodeURIComponent(indicatorType)}/${encodeURIComponent(
-          indicatorValue
-        )}/owners?includes=additional`,
-        method: 'GET',
-        options
-      })
-    );
-  };
+const getUiUrl = fp.flow(
+  fp.thru((x) => /^((http[s]?|ftp):\/)\/?([^:\/\s]+)/g.exec(x)),
+  fp.first
+);
 
-  const entitiesFoundInTC = fp.compact(
-    await Promise.all(
-      fp.map(async (entity) => {
-        getLogger().trace({ entity }, 'Entity');
-        const indicatorType = POLARITY_TYPE_TO_THREATCONNECT[entity.type];
-        const linkType = INDICATOR_TYPES[indicatorType];
-        const indicatorValue = entity.value;
-
-        if (!indicatorType) {
-          getLogger().error({ entity }, 'Invalid entity type');
-        }
-
-        const ownersSearchResults = await _searchForOwnersOfThisEntity(
-          indicatorValue,
-          indicatorType
-        );
-
-        return (
-          ownersSearchResults &&
-          ownersSearchResults.length && {
-            ...entity,
-            uriEncodedValue: encodeURIComponent(entity.value),
-            linkType,
-            owners: ownersSearchResults,
-            ownersLengthMinus2: ownersSearchResults.length - 2,
-            myOwner,
-            canDelete: fp.some((owner) => owner.id === myOwner.id, ownersSearchResults),
-            resultsFound: true
-          }
-        );
-      }, entitiesPartition)
-    )
-  );
-
-  return entitiesFoundInTC;
-};
-
-const getGroups = async (options, requestWithDefaults) => {
-  if (options.allowAssociation === true) {
-    return fp.getOr(
-      [],
-      'body.data.group',
-      await requestWithDefaults({
-        path: `groups`,
-        method: 'GET',
-        options
-      })
-    );
+/**
+ * Finds the given targetOwnerId within the provided ownersList and moves that entry to the
+ * front of the ownersList array.
+ *
+ * @param ownersList
+ * @param targetOwnerId
+ * @returns {*}
+ */
+function moveOwnerToFront(ownersList, targetOwnerId) {
+  const index = ownersList.findIndex((owner) => owner.id === targetOwnerId);
+  if (index > -1) {
+    const [owner] = ownersList.splice(index, 1);
+    ownersList.unshift(owner);
   }
-  return [];
-};
+  return ownersList;
+}
 
 module.exports = {
-  getLookupResults
+  getLookupResults,
+  createFormattedSearchResult
 };

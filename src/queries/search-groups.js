@@ -3,7 +3,7 @@ const { ApiRequestError } = require('../errors');
 const { getLogger } = require('../logger');
 const SUCCESS_CODES = [200];
 
-async function searchGroups(searchTerm, groupTypes, owners, options) {
+async function searchGroups(searchTerm, groupTypes, ownerIds, options) {
   const Logger = getLogger();
   let tql = '';
 
@@ -24,11 +24,11 @@ async function searchGroups(searchTerm, groupTypes, owners, options) {
     tql += `typeName IN (${groupTypes.map((type) => `"${type}"`).join(', ')})`;
   }
 
-  if (owners && owners.length > 0) {
+  if (ownerIds && ownerIds.length > 0) {
     if (tql.length > 0) {
       tql += ' AND ';
     }
-    tql += `owner IN (${owners.map((owner) => `"${owner}"`).join(', ')})`;
+    tql += `owner IN (${ownerIds.map((ownerId) => `${ownerId}`).join(', ')})`;
   }
 
   if (tql.length > 0) {

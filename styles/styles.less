@@ -1,3 +1,13 @@
+.modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0,0,0,.2);
+  z-index: 2;
+}
+
 .external-link-icon {
   font-size: 8px;
   margin-bottom: 1px;
@@ -200,6 +210,25 @@ a.tag {
   }
 }
 
+.group-filter-container {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+h2.p-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #607d8b;
+  margin: 10px 0 5px 0;
+}
+
+h3.p-title {
+  font-size: 12px;
+  font-weight: 400;
+  color: #5a6268;
+}
+
 .link-tag:hover {
   text-decoration: none;
 }
@@ -224,28 +253,70 @@ a.tag {
   margin-bottom: 5px;
 }
 
-.integration-power-select-trigger {
-  padding: 0px;
-  line-height: 30px;
-  min-height: 30px;
-  white-space: normal;
-  height: 30px;
-  width: 100%;
-  border: none;
+.error-message {
+  padding: 10px;
 
-  &.integration-power-select-multiple {
-    height: auto;
-    padding-top: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    padding-bottom: 5px;
+  .error-message-title {
+    font-weight: 500;
   }
+
+  .close-icon {
+    cursor: pointer;
+  }
+
+  .error-scrolling-container {
+    overflow-y: scroll;
+    overflow-x: auto;
+    max-height: 200px;
+
+    pre {
+      margin: 0px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  }
+}
+
+/** Custom Power Select Styling **/
+.p-power-select-multiple-trigger {
+  height: auto;
+  padding: 10px 20px 5px 0px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 
   .ember-power-select-multiple-options .ember-power-select-trigger-multiple-input {
     padding-left: 5px;
     font-size: 12px;
   }
 
+  .ember-power-select-multiple-option {
+    margin: 4px 0 0 4px;
+  }
+}
+
+.p-power-select-searching-icon-container {
+  position: absolute;
+  font-size: 10px;
+  top: 1px;
+  right: 10px;
+  z-index: 999;
+
+  .p-power-select-searching-icon {
+    font-size: 9px;
+  }
+}
+
+.p-power-select-trigger {
+  padding: 0px;
+  height: 30px;
+  border: none;
+}
+
+.p-power-select-trigger, .p-power-select-multiple-trigger {
+  line-height: 30px;
+  min-height: 30px;
+  width: 100%;
+  white-space: normal;
 
   .ember-power-select-placeholder {
     overflow-y: hidden;
@@ -254,9 +325,10 @@ a.tag {
   }
 
   .ember-power-select-status-icon:before {
-    height: 8px;
-    width: 8px;
-    top: -6px;
+    height: 7px;
+    width: 7px;
+    top: -5px;
+    border-width: 2px 2px 0 0;
   }
 
   .ember-power-select-selected-item {
@@ -272,42 +344,21 @@ a.tag {
 
   &.ifta-field {
     line-height: 15px !important;
+
+    .ember-power-select-trigger-multiple-input {
+      margin-top: 5px;
+    }
   }
 }
+
+/** End Custom Power Select Styling **/
 
 .add-container {
-  margin-top: 10px;
-  background-color: #eee;
-  padding: 5px;
+  background-color: transparent;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
   border-radius: 4px;
-}
-
-.show-tag-modal {
-  overflow: hidden;
-  margin-top: 10px;
-  background-color: #eee;
+  margin-bottom: 10px;
   padding: 5px;
-  border-radius: 4px;
-
-  .ember-power-select-dropdown {
-    line-height: 30px;
-  }
-
-  .ember-power-select-multiple-option {
-    margin: 0 2px 2px 0;
-    word-break: break-word;
-  }
-
-  .ember-power-select-trigger {
-    padding: 2px 30px 0 2px;
-    line-height: 30px;
-    min-height: 30px;
-    white-space: normal;
-  }
-
-  .ember-power-select-trigger-multiple-input {
-    max-width: 100%;
-  }
 }
 
 .p-btn {
@@ -332,56 +383,46 @@ a.tag {
 }
 
 .modal-open {
-  min-height: 157px;
+  min-height: 200px;
 }
 
-.ownership-modal-open {
-  min-height: 220px;
-}
-
-.ioc-deletion-modal,
-.default-owner-modal {
+.integration-modal {
   position: absolute;
-  background: #ededed;
+  background: #fff;
+  border-radius: 4px;
   border: #cdcdcd 1px solid;
   top: 30px;
   left: 30px;
   width: calc(100% - 60px);
-  z-index: 9999999 !important;
-  padding-top: 6px;
-  padding-bottom: 0px;
-  padding-right: 8px;
-  padding-left: 8px;
+  z-index: 3 !important;
+  
+  .title {
+    border-bottom: 1px solid #cdcdcd;
+    font-size: 13px;
+    font-weight: 600;
+
+    .content {
+      padding: 6px;
+    }
+  }
+  
+  .footer {
+    border-top: 1px solid #cdcdcd;
+    
+    .content {
+      padding: 6px;
+    }
+  }
+
+  .content {
+    padding: 6px 8px;
+  }
 
   .p-key {
     color: #616a71 !important;
 
     div {
       padding-top: 4px;
-    }
-  }
-
-  .delete-confirmation-button,
-  .ok-button-container {
-    padding-top: 6px;
-    display: flex;
-    justify-content: flex-end;
-
-    .cancel-delete,
-    .ok-button {
-      margin-right: 8px;
-      background-color: white;
-      border-radius: 2px;
-    }
-
-    .ok-button {
-      font-weight: 600;
-      background-color: white;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      padding-left: 15px;
-      padding-right: 15px;
-      border-radius: 3px;
     }
   }
 }
@@ -534,8 +575,6 @@ a.tag {
       margin-bottom: 0px
     }
   }
-
-
 }
 
 .input-container {
@@ -685,11 +724,6 @@ a.tag {
     border: 1px solid #ccc;
     line-height: 12px;
     height: 38px;
-
-    &.power-select-ifta {
-      word-wrap: nowrap;
-
-    }
 
     &.error {
       border-color: @form-red;
