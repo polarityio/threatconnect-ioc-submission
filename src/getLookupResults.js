@@ -1,6 +1,5 @@
 const fp = require('lodash/fp');
 const async = require('async');
-
 const { splitOutIgnoredIps } = require('./dataTransformations');
 const { getLogger } = require('./logger');
 const { getMyOwnerCached } = require('./get-my-owner-cached');
@@ -33,6 +32,24 @@ const getLookupResults = async (entities, options) => {
 
   await async.eachLimit(entitiesPartition, 5, async (entity) => {
     const indicators = await searchIndicator(entity, options);
+
+    // Sort indicators by ownerId ensuring that indicators with an ownerId that matches myOwner.id is
+    // first in the list
+    indicators.sort((a, b) => {
+      if (a.ownerId === myOwner.id) {
+        return -1;
+      }
+      if (b.ownerId === myOwner.id) {
+        return -1;
+      }
+      if (a.type < b.type) {
+        return -1;
+      }
+      if (a.type > b.type) {
+        return 1;
+      }
+      return 0;
+    });
 
     if (indicators.length > 0) {
       entitiesFound = true;

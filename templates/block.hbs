@@ -105,17 +105,18 @@
     <h1 class="p-title">
       Found in ThreatConnect
     </h1>
+  <div class="search-results">
     {{#each details.results as | result |}}
-      {{#if result.foundInThreatConnect}}
+      {{#if (and result.foundInThreatConnect (not result.__toBeSubmitted))}}
         <div class="search-result-container">
           <div class="search-result-header d-flex align-items-center justify-content-between" {{action (toggle "__viewIndicatorDetails" result)}}>
             <div class="d-flex align-items-center justify-content-start">
               <div>
                 {{#if result.isInMyOwner}}
-                  {{fa-icon icon="home" fixedWidth=true class="p-grey"}}
+                  {{fa-icon icon="house" fixedWidth=true class="p-grey"}}
                   {{bs-tooltip title="This indicator is in your organization"}}
                 {{else}}
-                  {{fa-icon icon="home" class="fa-blank"}}
+                  {{fa-icon icon="house" class="fa-blank"}}
                 {{/if}}
               </div>
               <div class="ml-1">
@@ -129,18 +130,23 @@
               <div>
                 {{#if (and block.userOptions.allowDelete result.canDelete)}}
                   <button 
-                    class="no-style-button delete"
-                    {{action "initiateItemDeletion" result}}
+                    class="header-button danger delete"
+                    {{action (pipe-action (action "initiateItemDeletion" result)(action (set result "__deleteTooltipIsVisible" false))) bubbles=false}}
                     title="Delete indicator from {{details.myOwner.name}}"
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="trash" fixedWidth=true}}
+                    {{bs-tooltip 
+                            title="Delete indicator from your orgnization" 
+                            visible=result.__deleteTooltipIsVisible
+                            onShow=(action (set result "__deleteTooltipIsVisible" true))
+                    }}
                   </button>
                 {{/if}}
                 {{#unless result.isInMyOwner}}
                   <button
-                    class="no-style-button p-action add"
-                    {{action (set result "__toBeSubmitted" true)}}
+                    class="header-button add p-green"
+                    {{action (set result "__toBeSubmitted" true) bubbles=false}}
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="plus" fixedWidth=true}}
@@ -157,9 +163,10 @@
           </div>
           {{#if result.__viewIndicatorDetails}}
             <div class="search-result-content">
+              <h2 class="p-title mt-0">Owners</h2>
               {{#each result.indicators as | indicator |}}
                 <div>
-                  {{indicator.ownerName}}
+                  <a href={{indicator.webLink}}>{{indicator.ownerName}} {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon"}}</a>
                 </div>
               {{/each}}
             </div>
@@ -167,6 +174,7 @@
         </div>
       {{/if}}
     {{/each}}
+  </div>
   {{/if}}
   
   {{!-- Display entities that are not in TC --}}
