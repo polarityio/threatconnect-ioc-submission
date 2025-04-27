@@ -56,8 +56,8 @@ function createTqlQuery(entity, options) {
     query += ` or value3="${entity.value}"`;
   }
 
-  query += `) and typeName="${indicatorType}"`;
-  
+  query += `) and typeName="${indicatorType}" and (indicatorActive=true or indicatorActive=false)`;
+    
   return query;
 }
 
