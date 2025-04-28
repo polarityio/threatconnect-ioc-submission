@@ -1,4 +1,7 @@
 polarity.export = PolarityComponent.extend({
+  timezone: Ember.computed('Intl', function () {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }),
   flashMessages: Ember.inject.service('flashMessages'),
   details: Ember.computed.alias('block.data.details'),
   maxUniqueKeyNumber: Ember.computed.alias('details.maxUniqueKeyNumber'),
@@ -33,8 +36,6 @@ polarity.export = PolarityComponent.extend({
   groups: Ember.A(),
   groupTypeFilter: [],
   ownerFilter: [],
-  newIocs: [],
-  newIocsToSubmit: [],
   selectedTags: [],
   selectedGroups: [],
   isDeleting: false,
@@ -99,6 +100,14 @@ polarity.export = PolarityComponent.extend({
       );
     }
   ),
+  numberOfIndicatorsToBeSubmitted: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    function () {
+      return this.get('details.results').reduce((count, result) => {
+        return result.__toBeSubmitted ? count + 1 : count;
+      }, 0);
+    }
+  ),
   /**
    * Returns true if any indicators are marked to be submitted
    */
@@ -115,6 +124,12 @@ polarity.export = PolarityComponent.extend({
     'details.results.@each.foundInThreatConnect',
     function () {
       return this.get('details.results').some((result) => !result.foundInThreatConnect);
+    }
+  ),
+  hasIndicatorsInThreatConnect: Ember.computed(
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').some((result) => result.foundInThreatConnect);
     }
   ),
   /**
@@ -240,7 +255,7 @@ polarity.export = PolarityComponent.extend({
    * @param message
    * @param type 'info', 'danger', or 'success'
    */
-  flashMessage(message, type = 'info') {
+  flashMessage(message, type = 'info', duration = 3000) {
     this.flashMessages.add({
       message: `${this.block.acronym}: ${message}`,
       type: `unv-${type}`,
@@ -250,7 +265,7 @@ polarity.export = PolarityComponent.extend({
           : type === 'danger'
           ? 'exclamation-circle'
           : 'info-circle',
-      timeout: 3000
+      timeout: duration
     });
   },
   actions: {
@@ -305,7 +320,7 @@ polarity.export = PolarityComponent.extend({
     },
     addAllCurrentlyInThreatConnectToBeSubmitted: function () {
       this.get('details.results').forEach((result, index) => {
-        if (!result.foundInThreatConnect) {
+        if (!result.foundInThreatConnect && !result.__isOnExclusionList) {
           this.set(`details.results.${index}.__toBeSubmitted`, true);
         }
       });
@@ -371,7 +386,10 @@ polarity.export = PolarityComponent.extend({
             );
 
             if (indexToReplace >= 0) {
-              this.set(`details.results.${indexToReplace}.__errorMessage`, JSON.stringify(error.error, null, 2));
+              this.set(
+                `details.results.${indexToReplace}.__errorMessage`,
+                JSON.stringify(error.error, null, 2)
+              );
               this.set(`details.results.${indexToReplace}.__hasSubmissionError`, true);
               this.set(`details.results.${indexToReplace}.__toBeSubmitted`, false);
             }
@@ -380,9 +398,33 @@ polarity.export = PolarityComponent.extend({
           // We have to change the array reference here to trigger a template update
           this.set('details.results', [...this.get('details.results')]);
 
-          //this.set('exclusionListEntities', exclusionListEntities, []);
-          this.set('newIocsToSubmit', []);
-          this.flashMessage('Successfully created IOCs', 'success');
+          let messageType = 'success';
+          let message = '';
+          if (results.length > 0) {
+            message = `${results.length} IOC${
+                results.length > 1 ? 's were' : ' was'
+            }created`;
+          }
+          if (exclusionListEntities.length > 0) {
+            message += `${message.length > 0 ? ' | ' : ''}${
+              exclusionListEntities.length
+            } IOC${
+              exclusionListEntities.length > 1 ? 's were' : ' was'
+            } on the exclusion list and could not be submitted`;
+            messageType = 'warn';
+          }
+          if (errors.length > 0) {
+            message += `${message.length > 0 ? ' | ' : ''}${errors.length} indicator${
+              errors.length > 1 ? 's ' : ''
+            } encountered submission errors`;
+            messageType = 'danger';
+          }
+
+          this.flashMessage(
+            message,
+            messageType,
+            errors.length > 0 || exclusionListEntities.length > 0 ? 10000 : 3000
+          );
         })
         .catch((error) => {
           console.error('Error creating indicators');

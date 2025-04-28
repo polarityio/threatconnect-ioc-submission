@@ -11,8 +11,9 @@ const { setLogger } = require('./src/logger');
 const {
   getLookupResults,
   createFormattedSearchResult
-} = require('./src/getLookupResults');
+} = require('./src/get-lookup-results');
 const { getMyOwnerCached } = require('./src/get-my-owner-cached');
+const {parseErrorToReadableJSON} = require("./src/errors");
 
 let Logger;
 let requestWithDefaults;
@@ -98,7 +99,7 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
             const myOwner = await getMyOwnerCached(options);
             const formattedSearchResult = createFormattedSearchResult(
               searchResultObject.entity,
-              indicator,
+              [indicator],
               myOwner
             );
             results.push(formattedSearchResult);
@@ -111,7 +112,7 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
             ) {
               exclusionListEntities.push(searchResultObject.entity);
             } else {
-              Logger.error({ createError }, 'Create Indicator Error');
+              Logger.error({ createError, parsedError: parseErrorToReadableJSON(createError) }, 'Create Indicator Error');
               errors.push({
                 entity: searchResultObject.entity,
                 error: createError

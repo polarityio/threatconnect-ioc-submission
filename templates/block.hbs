@@ -59,80 +59,45 @@
     </div>
   {{/if}}
   
-  {{!-- Display results that are in other orgs but not owner's organization --}}
-  {{!--
-  {{#if hasIndicatorNotInMyOwner}}
-    <h1 class="p-title">
-      {{fa-icon "info-circle" size="sm"}}
-      Found in ThreatConnect but not in {{details.myOwner.name}}
-    </h1>
-    <table class="w-100">
-      <tbody>
-      {{#each details.results as | result |}}
-        {{#if (and result.foundInThreatConnect (not result.isInMyOwner))}}
-          <tr>
-            <td>
-              <div class="url-column">
-                <span>{{result.indicator.ownerName}}</span>
-                <div class="owner-row">
-                  <a href={{result.indicator.webLink}}>
-                    {{result.indicator.summary}}
-                    {{fa-icon icon="external-link" fixedWidth=true class="external-link-icon"}}
-                  </a>
-                  <span class="type">{{result.indicator.type}}</span>
-                  {{#if (and block.userOptions.allowDelete result.canDelete)}}
-                    <button
-                      class="no-style-button delete"
-                      {{action "initiateItemDeletion" result}}
-                      title="Delete IOC from ThreatConnect"
-                      disabled={{interactionDisabled}}
-                    >
-                      {{fa-icon icon="trash" fixedWidth=true}}
-                    </button>
-                  {{/if}}
-                </div>
-              </div>            
-            </td>
-          </tr>
-        {{/if}}
-      {{/each}}
-      </tbody>
-    </table>
-  {{/if}}
-  --}}
-  {{!-- Display results that are found in owner's organization --}}
-  {{#if hasIndicatorInMyOwner}}
+  {{!-- Display results that are found --}}
+  {{#if hasIndicatorsInThreatConnect}}
     <h1 class="p-title">
       Found in ThreatConnect
     </h1>
-  <div class="search-results">
+    <div class="search-results">
     {{#each details.results as | result |}}
       {{#if (and result.foundInThreatConnect (not result.__toBeSubmitted))}}
         <div class="search-result-container">
-          <div class="search-result-header d-flex align-items-center justify-content-between" {{action (toggle "__viewIndicatorDetails" result)}}>
-            <div class="d-flex align-items-center justify-content-start">
+          <div class="search-result-header d-flex align-items-start justify-content-between" {{action (toggle "__viewIndicatorDetails" result)}}>
+            <div class="d-flex align-items-start justify-content-start mr-1">
               <div>
-                {{#if result.isInMyOwner}}
-                  {{fa-icon icon="house" fixedWidth=true class="p-grey"}}
-                  {{bs-tooltip title="This indicator is in your organization"}}
+                {{#if result.__viewIndicatorDetails}}
+                  {{fa-icon icon="chevron-up" fixedWidth=true class="p-grey"}}
                 {{else}}
-                  {{fa-icon icon="house" class="fa-blank"}}
+                  {{fa-icon icon="chevron-down" fixedWidth=true class="p-grey"}}
                 {{/if}}
               </div>
-              <div class="ml-1">
-                  {{result.entity.value}}
+              <div class="ml-1 search-result-entity-value {{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
+                {{result.entity.value}}
               </div>
             </div>
             <div class="d-flex align-items-center justify-content-end">
               <div class="mr-1">
                   <span class="p-footnote">{{result.displayType}}</span>
               </div>
+              <div class="mr-1">
+                {{#if result.isInMyOwner}}
+                  {{fa-icon icon="house" fixedWidth=true class="p-grey is-mine-icon icon-small"}}
+                  {{bs-tooltip title="This indicator is in your organization"}}
+                {{else}}
+                  {{fa-icon icon="house" fixedWidth=true class="fa-blank is-mine-icon icon-small"}}
+                {{/if}}
+              </div>
               <div>
                 {{#if (and block.userOptions.allowDelete result.canDelete)}}
                   <button 
-                    class="header-button danger delete"
+                    class="header-button delete"
                     {{action (pipe-action (action "initiateItemDeletion" result)(action (set result "__deleteTooltipIsVisible" false))) bubbles=false}}
-                    title="Delete indicator from {{details.myOwner.name}}"
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="trash" fixedWidth=true}}
@@ -143,32 +108,67 @@
                     }}
                   </button>
                 {{/if}}
-                {{#unless result.isInMyOwner}}
-                  <button
+                {{#if result.__hasSubmissionError}}
+                  <div>
+                    {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red button-width-icon"}}
+                    {{bs-tooltip title="An error was encountered submitting this indicator. Click to view error."}}
+                  </div>
+                {{else if result.__isOnExclusionList}}
+                  <div>
+                    {{fa-icon icon="empty-set" fixedWidth=true class="p-orange button-width-icon"}}
+                    {{bs-tooltip title="This indicator is contained on a system-wide exclusion list and cannot be submitted"}}
+                  </div>
+                {{else if (not result.isInMyOwner)}}
+                  <button 
                     class="header-button add p-green"
                     {{action (set result "__toBeSubmitted" true) bubbles=false}}
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="plus" fixedWidth=true}}
-                    {{bs-tooltip title="Add indicator to submission list"}}
+                    {{bs-tooltip title="Add indicator to your organization"}}
                   </button>
-                {{/unless}}
-                {{#if result.__viewIndicatorDetails}}
-                  {{fa-icon icon="chevron-up" fixedWidth=true class="p-grey"}}
-                {{else}}
-                  {{fa-icon icon="chevron-down" fixedWidth=true class="p-grey"}}
-                {{/if}}                
+                {{/if}}
               </div>
             </div>
           </div>
           {{#if result.__viewIndicatorDetails}}
             <div class="search-result-content">
-              <h2 class="p-title mt-0">Owners</h2>
-              {{#each result.indicators as | indicator |}}
-                <div>
-                  <a href={{indicator.webLink}}>{{indicator.ownerName}} {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon"}}</a>
+              {{#if result.__hasSubmissionError}}
+                <div class="alert alert-danger error-message mt-2">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="error-message-title">
+                      Error submitting indicator
+                    </div>
+                    <div>
+                      {{fa-icon icon="times" fixedWidth=true click=(pipe-action (set result "__errorMessage" "")(set result "__hasSubmissionError" false)(set result "__viewError" false)) class="close-icon"}}
+                    </div>
+                  </div>
+                  <div class="error-scrolling-container">
+                    <pre>{{result.__errorMessage}}</pre>
+                  </div>
                 </div>
-              {{/each}}
+              {{/if}}
+              <h2 class="p-title mt-0">Owners</h2>
+                {{#each result.indicators as | indicator |}}
+                  <div class="search-result-indicator-container">
+                    <div class="d-flex align-items-start justify-content-between">
+                      <div class="mr-1">
+                        <a href={{indicator.webLink}}>{{indicator.ownerName}} {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon"}}</a>
+                      </div>
+                      <div class="flex-shrink-0">
+                        {{#if indicator.active}}
+                          {{fa-icon icon="check" fixedWidth=true class="p-green icon-small"}} Active
+                        {{else}}
+                          {{fa-icon icon="minus-circle" fixedWidth=true class="p-red icon-small"}} Inactive
+                        {{/if}} 
+                      </div>
+                    </div>
+                    <div>
+                      <span class="p-key">Added:</span> <span class="p-value">{{moment-format indicator.dateAdded "YYYY-MM-DD" timeZone=timezone}}</span>
+                      <span class="p-key ml-1">Modified:</span> <span class="p-value">{{moment-format indicator.lastModified "YYYY-MM-DD" timeZone=timezone}}</span>
+                    </div>
+                  </div>
+                {{/each}}
             </div>
           {{/if}}
         </div>
@@ -179,8 +179,8 @@
   
   {{!-- Display entities that are not in TC --}}
   {{#if hasIndicatorNotInThreatConnect}}
-    <div class="d-flex align-items-center justify-content-between">
-      <h1 class="p-title">
+    <div class="d-flex align-items-center justify-content-between mt-2 mb-1">
+      <h1 class="p-title my-0">
         Not in ThreatConnect
       </h1>
       {{#unless hasIndicatorsAvailableToSubmit}}
@@ -194,79 +194,88 @@
         </button>
       {{/unless}}
     </div>
-    <table class="w-100">
-      <tbody>
-        {{#each details.results as | result |}}
-          {{#if (and (not result.foundInThreatConnect) (not result.__toBeSubmitted))}}
-            <tr>
-              <td>
+    <div class="search-results">
+      {{#each details.results as | result |}}
+        {{#if (and (not result.foundInThreatConnect) (not result.__toBeSubmitted))}}
+          <div class="search-result-container">
+            <div class="search-result-header d-flex align-items-start justify-content-between">
+              <div class="{{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
                 {{result.entity.value}}
                 {{#if result.__isOnExclusionList}}
                   <span class="p-footnote">(exclusion listed)</span>
                 {{/if}}
+              </div>
+              <div class="d-flex align-items-start justify-content-end">
+                <div class="mr-1">
+                  <span class="p-footnote">{{result.displayType}}</span>
+                </div>
                 {{#if result.__hasSubmissionError}}
-                  {{#if result.__viewError}}
-                    <span class="p-action ml-1" {{action (toggle "__viewError" result)}}>Hide Error {{fa-icon icon="chevron-up" fixedWidth=true}}</span>
-                  {{else}}
-                    <span class="p-action ml-1" {{action (toggle "__viewError" result)}}>View Error {{fa-icon icon="chevron-down" fixedWidth=true}}</span>
-                  {{/if}}
-                {{/if}}
-              </td>
-              <td class="type">
-                <span>{{result.displayType}}</span>
-              </td>
-              <td class="icon">
+                  <div>
+                    {{#if result.__viewError}}
+                      <span class="p-action ml-1" {{action (toggle "__viewError" result)}}>Hide Error {{fa-icon icon="chevron-up" fixedWidth=true}}</span>
+                    {{else}}
+                      <span class="p-action ml-1" {{action (toggle "__viewError" result)}}>View Error {{fa-icon icon="chevron-down" fixedWidth=true}}</span>
+                    {{/if}}
+                  </div>
+                {{/if}}                
                 {{#if result.__isOnExclusionList}}
                   <div>
-                    {{fa-icon icon="empty-set" fixedWidth=true class="p-orange"}}
+                    {{fa-icon icon="empty-set" fixedWidth=true class="p-orange button-width-icon"}}
                     {{bs-tooltip title="This indicator is contained on a system-wide exclusion list and cannot be submitted"}}
                   </div>                  
                 {{else}}
                   <div class="d-flex align-items-center justify-content-end">
                     {{#if result.__hasSubmissionError}}
-                      <div class="mr-1">
-                        {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red"}}
+                      <div>
+                        {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red button-width-icon"}}
                         {{bs-tooltip title="An error was encountered submitting this indicator"}}
                       </div>
-                    {{/if}}
-                    <button
-                      class="no-style-button p-action add"
-                      {{action (set result "__toBeSubmitted" true)}}
-                      title="Add IOC to Submission List"
-                      disabled={{interactionDisabled}}
-                    >
-                      {{fa-icon icon="plus" fixedWidth=true}}
-                    </button>
+                    {{else}}
+                      <button
+                              class="header-button add p-green"
+                        {{action (set result "__toBeSubmitted" true)}}
+                              disabled={{interactionDisabled}}
+                      >
+                        {{fa-icon icon="plus" fixedWidth=true}}
+                        {{bs-tooltip title="Add indicator to your organization"}}
+                      </button>  
+                    {{/if}}                    
                   </div>
-                {{/if}}                
-              </td>
-            </tr>     
+                {{/if}}
+              </div>
+            </div>
             {{#if result.__viewError}}
-              <tr>
-                <td colspan="3">
-                  <div class="alert alert-danger error-message">
-                    <div class="error-scrolling-container">
-                      <pre>{{result.__errorMessage}}</pre>
+              <div class="search-result-content">
+                <div class="alert alert-danger error-message mt-2">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="error-message-title">
+                      Error submitting indicator
+                    </div>
+                    <div>
+                      {{fa-icon icon="times" fixedWidth=true click=(pipe-action (set result "__errorMessage" "")(set result "__hasSubmissionError" false)(set result "__viewError" false)) class="close-icon"}}
                     </div>
                   </div>
-                </td>
-              </tr>
+                  <div class="error-scrolling-container">
+                    <pre>{{result.__errorMessage}}</pre>
+                  </div>
+                </div>
+              </div>  
             {{/if}}
-          {{/if}}
-        {{/each}}
-      </tbody>
-    </table>
+          </div>
+        {{/if}}
+      {{/each}}
+    </div>
     {{#if notInThreatConnectIsEmpty}}
-      <div class="note">
-        <span class="p-key"><em>NONE</em></span>
+      <div>
+        <span class="p-value">All indicators are selected for submission</span>
       </div>
     {{/if}}
   {{/if}}
   
   {{!-- Display entities that are to be submitted --}}
   {{#unless allIndicatorsInMyOwner}}
-    <div class="d-flex align-items-center justify-content-between">
-      <h1 class="p-title">
+    <div class="d-flex align-items-center justify-content-between mt-3 mb-1">
+      <h1 class="p-title my-0">
         Submit to ThreatConnect
       </h1>
       {{#if hasIndicatorToBeSubmitted}}
@@ -280,44 +289,47 @@
         </button>
       {{/if}}
     </div>
+    <div class="p-footnote mb-1">
+      Listed indicators will be submitted to the {{details.myOwner.name}} organization
+    </div>
     {{#if (not hasIndicatorToBeSubmitted)}}
-      <div class="note">
-          <span class="p-key"><em>NONE</em></span>
+      <div>
+          <span class="p-value">No indicators selected</span>
       </div>
     {{/if}}
-    <table class="w-100">
-      <tbody>
+    <div class="search-results">
       {{#each details.results as | result |}}
         {{#if result.__toBeSubmitted}}
-          <tr>
-            <td>
-              {{result.entity.value}}
-            </td>
-            <td class="type">
-              {{result.entity.displayType}}
-            </td>
-            <td class="icon">
-              <button 
-                class="no-style-button p-action"
-                title="Remove IOC from Submission List"
-                {{action (set result "__toBeSubmitted" false)}}
-                disabled={{interactionDisabled}}
-              >
-                {{fa-icon "minus" fixedWidth=true}}
-              </button>
-            </td>
-          </tr>
+          <div class="search-result-container">
+            <div class="search-result-header d-flex align-items-start justify-content-between">
+              <div>
+                {{result.entity.value}}
+              </div>
+              <div class="d-flex align-items-start justify-content-end">
+                <div class="p-footnote mr-1">
+                  {{result.displayType}}
+                </div>
+                <button
+                  class="header-button minus p-orange"
+                  {{action (set result "__toBeSubmitted" false)}}
+                  disabled={{interactionDisabled}}
+                >
+                  {{fa-icon icon="minus" fixedWidth=true}}
+                  {{bs-tooltip title="Remove indicator from submission list"}}
+                </button>
+              </div>
+            </div>
+          </div>
         {{/if}}
       {{/each}}
-      </tbody>
-    </table>
+    </div>
   {{/unless}}
   
   {{!-- Show submision options --}}
   {{#if hasIndicatorToBeSubmitted}}
-    <h1 class="p-title">
+    <h2 class="p-title">
       Submission Options
-    </h1>
+    </h2>
     {{!-- Owner Select --}}
     <div class="input-container">
       <label class="small ifta-label">
@@ -749,7 +761,10 @@
       {{/if}}
     </div>
   
-    <div class="d-flex flex-row-reverse justify-content-between align-items-center mt-2">
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <div>
+        <span class="p-footnote">{{numberOfIndicatorsToBeSubmitted}} indicator{{#if (gt numberOfIndicatorsToBeSubmitted 1)}}s{{/if}} selected for submission</span>
+      </div>
       <button
         class="btn btn-polarity p-btn"
         {{action "submitItems"}}
@@ -761,12 +776,6 @@
           Submit IOCs
         {{/if}}
       </button>
-  
-      {{#if createErrorMessage}}
-        <div class="create-message alert alert-danger m-0">
-          {{createErrorMessage}}
-        </div>
-      {{/if}}
     </div>  
   {{/if}}
 </div>

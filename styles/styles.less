@@ -1,3 +1,9 @@
+@search-result-border-color: #ddd;
+@red: #FF4559;
+@green: #7bc942;
+@orange: #ff8f00;
+@dark-green: #63a830;
+
 .modal-mask {
   position: absolute;
   top: 0;
@@ -17,7 +23,28 @@
   word-break: normal;
 }
 
+.button-width-icon {
+  width: 23px;
+}
+
 table {
+  tr {
+    background-color: transparent !important;
+    border: 1px solid @search-result-border-color;
+    border-bottom: none;
+
+    &:first-child {
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      border-bottom: 1px solid @search-result-border-color;
+    }
+  }
+  
   td.icon {
     &.addable {
       width: 46px;
@@ -46,12 +73,6 @@ table {
   }
 }
 
-.delete {
-  color: #ff2753;
-  font-size: 13px;
-}
-
-
 .header-button {
   font-size: 100%;
   font-family: inherit;
@@ -63,12 +84,21 @@ table {
   text-align: right;
   font-size: 10px;
 
+  &.delete {
+    color: #888;
+  }
+
   &.delete:hover {
-    background-color: lighten(#ff4559, 20%);
+    background-color: lighten(@red, 20%);
+    color: @red;
   }
 
   &.add:hover {
-    background-color: lighten(#7bc942, 20%);
+    background-color: lighten(@green, 20%);
+  }
+  
+  &.minus:hover{
+    background-color: lighten(@orange, 20%);
   }
 
   &:focus {
@@ -125,9 +155,14 @@ table {
   visibility: hidden;
 }
 
+.icon-small {
+  font-size: 10px !important;
+}
+
+
 .search-results {
   .search-result-container {
-    border: 1px solid #eee;
+    border: 1px solid @search-result-border-color;
     border-bottom: none;
 
     &:first-child {
@@ -138,7 +173,7 @@ table {
     &:last-child {
       border-bottom-left-radius: 4px;
       border-bottom-right-radius: 4px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid @search-result-border-color;
     }
 
     .search-result-header {
@@ -147,10 +182,28 @@ table {
       &:hover {
         background-color: #fafafa;
       }
+
+      .search-result-entity-value {
+        word-break: break-all;
+      }
+
+      .search-result-header-icons {
+        min-width: 45px;
+      }
     }
 
     .search-result-content {
       padding: 4px 8px;
+
+      .search-result-indicator-container {
+        padding: 5px 0px;
+        border-bottom: 1px solid lighten(@search-result-border-color, 5%);
+
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
     }
   }
 }
@@ -436,7 +489,7 @@ h3.p-title {
 
   &.btn-polarity.outline {
     background-color: transparent;
-    color: #7bc942;
+    color: @green;
   }
 
   &.btn-secondary.outline {
@@ -455,8 +508,8 @@ h3.p-title {
   border-radius: 4px;
   border: #cdcdcd 1px solid;
   top: 30px;
-  left: 30px;
-  width: calc(100% - 60px);
+  left: 20px;
+  width: calc(100% - 40px);
   z-index: 3 !important;
 
   .title {
@@ -600,8 +653,8 @@ h3.p-title {
 
 
 /* START OF IFTA FORM STYLING */
-@form-red: #FF4559;
-@form-green: #7bc942;
+@form-red: @red;
+@form-green: @green;
 @form-dark-green: #63a830;
 .form-container {
   .form-name {

@@ -47,11 +47,19 @@ const POLARITY_TYPE_TO_INDICATOR_VALUE_FIELD = {
  */
 async function createIndicator(entity, fields, options) {
   const Logger = getLogger();
-
-  throw new ApiRequestError(
-      `Unexpected status code 400 received when creating indicator via ThreatConnect API`
-  );
   
+  // throw new ApiRequestError(
+  //   `Unexpected status code 400 received when creating indicator via ThreatConnect API`,
+  //   {
+  //     responseBody: {
+  //       message: 'exclusion list'
+  //     }
+  //   }
+  // );
+
+  // throw new ApiRequestError(
+  //   `Unexpected status code 400 received when creating indicator via ThreatConnect API`
+  // );
   
   const body = {};
 
@@ -76,7 +84,7 @@ async function createIndicator(entity, fields, options) {
   const apiResponse = await polarityRequest.request(requestOptions, options);
 
   Logger.trace({ apiResponse }, 'Create indicator API Response');
-  
+
   if (
     !SUCCESS_CODES.includes(apiResponse.statusCode) ||
     (apiResponse.body && apiResponse.body.status && apiResponse.body.status !== 'Success')
@@ -182,7 +190,7 @@ function addAttributes(body, fields) {
   if (typeof fields.source === 'string' && fields.source.length > 0) {
     data.push({
       type: 'Source',
-      value: fields.source,
+      value: fields.source
       //default: true
     });
   }
@@ -190,7 +198,7 @@ function addAttributes(body, fields) {
   if (typeof fields.title === 'string' && fields.title.length > 0) {
     data.push({
       type: 'Title',
-      value: fields.title,
+      value: fields.title
       //default: true
     });
   }
@@ -198,7 +206,7 @@ function addAttributes(body, fields) {
   if (typeof fields.description === 'string' && fields.description.length > 0) {
     data.push({
       type: 'Description',
-      value: fields.description,
+      value: fields.description
       //default: true
     });
   }

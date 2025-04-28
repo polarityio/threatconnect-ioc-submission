@@ -33,24 +33,6 @@ const getLookupResults = async (entities, options) => {
   await async.eachLimit(entitiesPartition, 5, async (entity) => {
     const indicators = await searchIndicator(entity, options);
 
-    // Sort indicators by ownerId ensuring that indicators with an ownerId that matches myOwner.id is
-    // first in the list
-    indicators.sort((a, b) => {
-      if (a.ownerId === myOwner.id) {
-        return -1;
-      }
-      if (b.ownerId === myOwner.id) {
-        return -1;
-      }
-      if (a.type < b.type) {
-        return -1;
-      }
-      if (a.type > b.type) {
-        return 1;
-      }
-      return 0;
-    });
-
     if (indicators.length > 0) {
       entitiesFound = true;
     } else {
@@ -81,7 +63,7 @@ const getLookupResults = async (entities, options) => {
           myOwner,
           // Groups gets initialized via onMessage
           groups: [],
-          results,
+          results: sortResultsByOwner(results, myOwner),
           ownersWithCreatePermission
         }
       }
@@ -90,6 +72,27 @@ const getLookupResults = async (entities, options) => {
 
   return lookupResults.concat(ignoredIpLookupResults);
 };
+
+/**
+ * Sort indicators so that indicators in the requesting users organization come first.  Then do a secondary sort by indicator type.
+ * @param results
+ * @param myOwner
+ * @returns {*}
+ */
+function sortResultsByOwner(results, myOwner) {
+  getLogger().info({ results, myOwner }, 'Results');
+  results.sort((a, b) => {
+    // Primary rule: results where isInMyOwner is true comes before false items
+    if (a.isInMyOwner !== b.isInMyOwner) {
+      return a.isInMyOwner ? -1 : 1;
+    }
+
+    // Sort alphabetical by displayType when both results are in my owner or both results are not
+    return a.displayType.localeCompare(b.displayType, 'en', { sensitivity: 'base' });
+  });
+
+  return results;
+}
 
 function createFormattedSearchResult(entity, indicators, myOwner) {
   return {
