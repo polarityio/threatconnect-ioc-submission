@@ -13,7 +13,7 @@ const {
   createFormattedSearchResult
 } = require('./src/get-lookup-results');
 const { getMyOwnerCached } = require('./src/get-my-owner-cached');
-const {parseErrorToReadableJSON} = require("./src/errors");
+const { parseErrorToReadableJSON } = require('./src/errors');
 
 let Logger;
 let requestWithDefaults;
@@ -71,9 +71,16 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
   switch (action) {
     case 'deleteItem':
       try {
-        await deleteIndicator(actionParams.indicatorId, options);
-        cb(null, {
-          success: true
+        await deleteIndicator(actionParams.indicatorToDelete.id, options);
+        await doLookup([actionParams.entity], options, (err, lookupResults) => {
+          let results = lookupResults[0].data.details.results;
+          let result = null;
+          if (Array.isArray(results) && results.length > 0) {
+            result = results[0];
+          }
+          cb(null, {
+            result
+          });
         });
       } catch (deleteError) {
         Logger.error(deleteError, 'Delete Indicator Error');
@@ -91,15 +98,29 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
         5,
         async (searchResultObject) => {
           try {
-            const indicator = await createIndicator(
+            const newIndicator = await createIndicator(
               searchResultObject.entity,
               actionParams,
               options
             );
+
+            // We allow users to submit an indicator that already exists in the owner.  As a result, if we just
+            // concat our existing indicators with the newly created indicator we might have a duplicate (i.e.,
+            // the newly created indicator is really an update to an existing indicator).  As a result, we first
+            // need to check for a duplicate and remove the old indicator before replacing with the newly updated
+            // indicator
+            const duplicateIndex = searchResultObject.indicators.findIndex(
+              (existingIndicator) => existingIndicator.id === newIndicator.id
+            );
+            if (duplicateIndex >= 0) {
+              // we have a duplicate so remove it from our existing indicators
+              searchResultObject.indicators.splice(duplicateIndex, 1);
+            }
+
             const myOwner = await getMyOwnerCached(options);
             const formattedSearchResult = createFormattedSearchResult(
               searchResultObject.entity,
-              [indicator],
+              searchResultObject.indicators.concat(newIndicator),
               myOwner
             );
             results.push(formattedSearchResult);
@@ -112,7 +133,13 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
             ) {
               exclusionListEntities.push(searchResultObject.entity);
             } else {
-              Logger.error({ createError, parsedError: parseErrorToReadableJSON(createError) }, 'Create Indicator Error');
+              Logger.error(
+                {
+                  createError,
+                  parsedError: parseErrorToReadableJSON(createError)
+                },
+                'Create Indicator Error'
+              );
               errors.push({
                 entity: searchResultObject.entity,
                 error: createError

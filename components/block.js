@@ -71,16 +71,29 @@ polarity.export = PolarityComponent.extend({
       return this.get('details.results').every((result) => result.isInMyOwner);
     }
   ),
-  hasIndicatorsAvailableToSubmit: Ember.computed(
+  hasFoundInThreatConnectIndicatorsAvailableToSubmit: Ember.computed(
     'details.results.@each.__toBeSubmitted',
     'details.results.@each.__isOnExclusionList',
     'details.results.@each.foundInThreatConnect',
     function () {
-      return this.get('details.results').every(
+      return this.get('details.results').some(
         (result) =>
-          (result.__toBeSubmitted && !result.foundInThreatConnect) ||
-          result.foundInThreatConnect ||
-          result.__isOnExclusionList
+          result.foundInThreatConnect &&
+          !result.__toBeSubmitted &&
+          !result.__isOnExclusionlist
+      );
+    }
+  ),
+  hasNotInThreatConnectIndicatorsAvailableToSubmit: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    'details.results.@each.__isOnExclusionList',
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').some(
+        (result) =>
+          !result.foundInThreatConnect &&
+          !result.__toBeSubmitted &&
+          !result.__isOnExclusionList
       );
     }
   ),
@@ -97,6 +110,18 @@ polarity.export = PolarityComponent.extend({
         (result) =>
           (result.__toBeSubmitted && !result.foundInThreatConnect) ||
           result.foundInThreatConnect
+      );
+    }
+  ),
+  foundInThreatConnectIsEmpty: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    'details.results.@each.__isOnExclusionList',
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').every(
+        (result) =>
+          (result.__toBeSubmitted && result.foundInThreatConnect) ||
+          !result.foundInThreatConnect
       );
     }
   ),
@@ -282,23 +307,39 @@ polarity.export = PolarityComponent.extend({
     },
     confirmDelete: function () {
       this.set('isDeleting', true);
+      const payload = {
+        action: 'deleteItem',
+        entity: this.get('resultToDelete.entity'),
+        indicatorToDelete: this.get('resultToDelete.indicators').find(
+          (indicator) => indicator.ownerId === this.get('details.myOwner.id')
+        )
+      };
+
+      if (!payload.indicatorToDelete) {
+        this.flashMessage(
+          `Indicator does not exist in your default organization ${this.get(
+            'details.myOwner.name'
+          )} and cannot be deleted`,
+          'danger'
+        );
+        return;
+      }
 
       this.sendIntegrationMessage({
-        data: {
-          action: 'deleteItem',
-          indicatorId: this.get('resultToDelete.indicator.id')
-        }
+        data: payload
       })
-        .then(() => {
+        .then((deletionResult) => {
+          // `deletionResult` contains the updated search result after the deletion
+          // We find this value in our local results and replace the local result with the
+          // new post-deletion result.
+          console.info("Deletion result", deletionResult);
           this.get('details.results').forEach((result, index) => {
-            if (
-              result.indicator &&
-              result.indicator.id === this.get('resultToDelete.indicator.id')
-            ) {
-              this.set(`details.results.${index}.foundInThreatConnect`, false);
-              this.set(`details.results.${index}.indicator`, null);
+            if (result.entity.value == deletionResult.result.entity.value) {
+              this.set(`details.results.${index}`, deletionResult.result);
             }
           });
+          // We have to change the array reference here to trigger a template update
+          this.set('details.results', [...this.get('details.results')]);
           this.flashMessage('Successfully deleted indicator', 'success');
         })
         .catch((err) => {
@@ -316,12 +357,22 @@ polarity.export = PolarityComponent.extend({
     removeAllToBeSubmitted: function () {
       this.get('details.results').forEach((result, index) => {
         this.set(`details.results.${index}.__toBeSubmitted`, false);
+        this.set(`details.results.${index}.__deleteTooltipIsVisible`, false);
+      });
+    },
+    addAllNotInThreatConnectBeSubmitted: function () {
+      this.get('details.results').forEach((result, index) => {
+        if (!result.foundInThreatConnect && !result.__isOnExclusionList) {
+          this.set(`details.results.${index}.__toBeSubmitted`, true);
+          this.set(`details.results.${index}.__deleteTooltipIsVisible`, false);
+        }
       });
     },
     addAllCurrentlyInThreatConnectToBeSubmitted: function () {
       this.get('details.results').forEach((result, index) => {
-        if (!result.foundInThreatConnect && !result.__isOnExclusionList) {
+        if (result.foundInThreatConnect && !result.__isOnExclusionList) {
           this.set(`details.results.${index}.__toBeSubmitted`, true);
+          this.set(`details.results.${index}.__deleteTooltipIsVisible`, false);
         }
       });
     },
@@ -402,7 +453,7 @@ polarity.export = PolarityComponent.extend({
           let message = '';
           if (results.length > 0) {
             message = `${results.length} IOC${
-                results.length > 1 ? 's were' : ' was'
+              results.length > 1 ? 's were' : ' was'
             }created`;
           }
           if (exclusionListEntities.length > 0) {

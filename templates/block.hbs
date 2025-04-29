@@ -61,9 +61,21 @@
   
   {{!-- Display results that are found --}}
   {{#if hasIndicatorsInThreatConnect}}
-    <h1 class="p-title">
-      Found in ThreatConnect
-    </h1>
+    <div class="d-flex align-items-center justify-content-between mt-2 mb-1">
+      <h1 class="p-title my-0">
+        Found in ThreatConnect
+      </h1>
+      {{#if hasFoundInThreatConnectIndicatorsAvailableToSubmit}}
+        <button
+          class="no-style-button p-action"
+          {{action "addAllCurrentlyInThreatConnectToBeSubmitted"}}
+          title="Add all IOCs to Submission List"
+          disabled={{interactionDisabled}}
+        >
+          Add All
+        </button>
+      {{/if}}
+    </div>
     <div class="search-results">
     {{#each details.results as | result |}}
       {{#if (and result.foundInThreatConnect (not result.__toBeSubmitted))}}
@@ -81,7 +93,7 @@
                 {{result.entity.value}}
               </div>
             </div>
-            <div class="d-flex align-items-center justify-content-end">
+            <div class="d-flex align-items-start justify-content-end">
               <div class="mr-1">
                   <span class="p-footnote">{{result.displayType}}</span>
               </div>
@@ -93,16 +105,16 @@
                   {{fa-icon icon="house" fixedWidth=true class="fa-blank is-mine-icon icon-small"}}
                 {{/if}}
               </div>
-              <div>
+              <div class="d-flex align-items-start justify-content-end flex-shrink-0">
                 {{#if (and block.userOptions.allowDelete result.canDelete)}}
                   <button 
-                    class="header-button delete"
+                    class="header-button delete mr-1"
                     {{action (pipe-action (action "initiateItemDeletion" result)(action (set result "__deleteTooltipIsVisible" false))) bubbles=false}}
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="trash" fixedWidth=true}}
                     {{bs-tooltip 
-                            title="Delete indicator from your orgnization" 
+                            title="Delete indicator from your default organization" 
                             visible=result.__deleteTooltipIsVisible
                             onShow=(action (set result "__deleteTooltipIsVisible" true))
                     }}
@@ -118,14 +130,14 @@
                     {{fa-icon icon="empty-set" fixedWidth=true class="p-orange button-width-icon"}}
                     {{bs-tooltip title="This indicator is contained on a system-wide exclusion list and cannot be submitted"}}
                   </div>
-                {{else if (not result.isInMyOwner)}}
+                {{else}}
                   <button 
                     class="header-button add p-green"
                     {{action (set result "__toBeSubmitted" true) bubbles=false}}
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="plus" fixedWidth=true}}
-                    {{bs-tooltip title="Add indicator to your organization"}}
+                    {{bs-tooltip title="Add indicator to selected owner"}}
                   </button>
                 {{/if}}
               </div>
@@ -153,6 +165,12 @@
                   <div class="search-result-indicator-container">
                     <div class="d-flex align-items-start justify-content-between">
                       <div class="mr-1">
+                        {{#if (eq indicator.ownerId details.myOwner.id)}}
+                          <span>
+                            {{fa-icon icon="house" fixedWidth=true class="p-grey is-mine-icon icon-small"}}
+                            {{bs-tooltip title="This indicator is in your organization"}}
+                          </span>
+                        {{/if}}
                         <a href={{indicator.webLink}}>{{indicator.ownerName}} {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon"}}</a>
                       </div>
                       <div class="flex-shrink-0">
@@ -175,6 +193,11 @@
       {{/if}}
     {{/each}}
   </div>
+    {{#if foundInThreatConnectIsEmpty}}
+      <div>
+        <span class="p-value">All indicators are selected for submission</span>
+      </div>
+    {{/if}}
   {{/if}}
   
   {{!-- Display entities that are not in TC --}}
@@ -183,16 +206,16 @@
       <h1 class="p-title my-0">
         Not in ThreatConnect
       </h1>
-      {{#unless hasIndicatorsAvailableToSubmit}}
+      {{#if hasNotInThreatConnectIndicatorsAvailableToSubmit}}
         <button
           class="no-style-button p-action"
-          {{action "addAllCurrentlyInThreatConnectToBeSubmitted"}}
+          {{action "addAllNotInThreatConnectBeSubmitted"}}
           title="Add all IOCs to Submission List"
           disabled={{interactionDisabled}}
         >
           Add All
         </button>
-      {{/unless}}
+      {{/if}}
     </div>
     <div class="search-results">
       {{#each details.results as | result |}}
@@ -200,7 +223,7 @@
           <div class="search-result-container">
             <div class="search-result-header d-flex align-items-start justify-content-between">
               <div class="{{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
-                {{result.entity.value}}
+                <span class="search-result-entity-value">{{result.entity.value}}</span>
                 {{#if result.__isOnExclusionList}}
                   <span class="p-footnote">(exclusion listed)</span>
                 {{/if}}
@@ -237,7 +260,7 @@
                               disabled={{interactionDisabled}}
                       >
                         {{fa-icon icon="plus" fixedWidth=true}}
-                        {{bs-tooltip title="Add indicator to your organization"}}
+                        {{bs-tooltip title="Add indicator to selected owner"}}
                       </button>  
                     {{/if}}                    
                   </div>
@@ -290,7 +313,7 @@
       {{/if}}
     </div>
     <div class="p-footnote mb-1">
-      Listed indicators will be submitted to the {{details.myOwner.name}} organization
+      Listed indicators will be submitted to ThreatConnect and owned by {{details.myOwner.name}}
     </div>
     {{#if (not hasIndicatorToBeSubmitted)}}
       <div>
@@ -302,12 +325,20 @@
         {{#if result.__toBeSubmitted}}
           <div class="search-result-container">
             <div class="search-result-header d-flex align-items-start justify-content-between">
-              <div>
+              <div class="search-result-entity-value">
                 {{result.entity.value}}
               </div>
               <div class="d-flex align-items-start justify-content-end">
                 <div class="p-footnote mr-1">
                   {{result.displayType}}
+                </div>
+                <div class="mr-1">
+                  {{#if result.isInMyOwner}}
+                    {{fa-icon icon="house" fixedWidth=true class="p-grey is-mine-icon icon-small"}}
+                    {{bs-tooltip title="This indicator is already in your organization and will be updated"}}
+                  {{else}}
+                    {{fa-icon icon="house" fixedWidth=true class="fa-blank is-mine-icon icon-small"}}
+                  {{/if}}
                 </div>
                 <button
                   class="header-button minus p-orange"
