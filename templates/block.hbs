@@ -296,7 +296,7 @@
   {{/if}}
   
   {{!-- Display entities that are to be submitted --}}
-  {{#unless allIndicatorsInMyOwner}}
+  {{#if hasIndicatorToBeSubmitted}}
     <div class="d-flex align-items-center justify-content-between mt-3 mb-1">
       <h1 class="p-title my-0">
         Submit to ThreatConnect
@@ -354,7 +354,7 @@
         {{/if}}
       {{/each}}
     </div>
-  {{/unless}}
+  {{/if}}
   
   {{!-- Show submision options --}}
   {{#if hasIndicatorToBeSubmitted}}

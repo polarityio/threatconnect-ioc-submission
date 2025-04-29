@@ -62,15 +62,6 @@ polarity.export = PolarityComponent.extend({
 
     return interactionDisabled;
   }),
-  /**
-   * Returns true if all indicators are in ThreatConnect and are in the owner's organization
-   */
-  allIndicatorsInMyOwner: Ember.computed(
-    'details.results.@each.isInMyOwner',
-    function () {
-      return this.get('details.results').every((result) => result.isInMyOwner);
-    }
-  ),
   hasFoundInThreatConnectIndicatorsAvailableToSubmit: Ember.computed(
     'details.results.@each.__toBeSubmitted',
     'details.results.@each.__isOnExclusionList',
