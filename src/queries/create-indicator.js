@@ -103,8 +103,8 @@ async function createIndicator(entity, fields, options) {
 }
 
 function addOwner(body, fields) {
-  if (typeof fields.ownerId === 'number') {
-    body.ownerId = fields.ownerId;
+  if (typeof fields.owner === 'object' && typeof fields.owner.id === 'number') {
+    body.ownerId = fields.owner.id;
   }
 }
 
