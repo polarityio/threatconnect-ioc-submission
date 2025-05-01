@@ -14,14 +14,6 @@
       "file": "./templates/block.hbs"
     }
   },
-  "summary": {
-    "component": {
-      "file": "./components/summary.js"
-    },
-    "template": {
-      "file": "./templates/summary.hbs"
-    }
-  },
   "onDemandOnly": true,
   "request": {
     "cert": "",
@@ -31,7 +23,7 @@
     "proxy": ""
   },
   "logging": {
-    "level": "info"
+    "level": "trace"
   },
   "options": [
     {

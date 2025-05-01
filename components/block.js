@@ -1,11 +1,30 @@
 polarity.export = PolarityComponent.extend({
+  timezone: Ember.computed('Intl', function () {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }),
+  flashMessages: Ember.inject.service('flashMessages'),
   details: Ember.computed.alias('block.data.details'),
   maxUniqueKeyNumber: Ember.computed.alias('details.maxUniqueKeyNumber'),
   url: Ember.computed.alias('details.url'),
-  allOwners: Ember.computed.alias('details.allOwners'),
+  ownersWithCreatePermission: Ember.computed.alias('details.ownersWithCreatePermission'),
+  ownersWithGroupPermission: Ember.computed.alias('details.ownersWithGroupPermission'),
+  groupTypeNames: [
+    'Report',
+    'Event',
+    'Document',
+    'Threat',
+    'Adversary',
+    'Campaign',
+    'Email',
+    'Event',
+    'Incident',
+    'Instruction Set',
+    'Malware',
+    'Signature',
+    'Vulnerability'
+  ],
   description: '',
   groupType: '',
-  groupID: '',
   title: '',
   source: '',
   whoisActive: false,
@@ -15,23 +34,27 @@ polarity.export = PolarityComponent.extend({
   confidence: 0,
   confidenceHuman: 'Unassessed',
   foundEntities: [],
-  groups: [],
-  newIocs: [],
-  newIocsToSubmit: [],
+  groups: Ember.A(),
+  groupTypeFilter: [],
+  ownerFilter: [],
   selectedTags: [],
-  deleteMessage: '',
-  deleteErrorMessage: '',
-  deleteIsRunning: false,
+  selectedGroups: [],
   isDeleting: false,
-  entityToDelete: {},
+  resultToDelete: {},
   createMessage: '',
   createErrorMessage: '',
   createIsRunning: false,
   selectedTag: [],
   editingTags: false,
-  showOwnershipMessage: false,
-  maxTagsInBlock: 10,
-  isExpanded: true,
+  previousTagSearch: '',
+  entitiesToSubmitIncludeDomain: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    function () {
+      return this.get('details.results').some(
+        (result) => result.displayType === 'Host' && result.__toBeSubmitted
+      );
+    }
+  ),
   interactionDisabled: Ember.computed('isDeleting', 'createIsRunning', function () {
     const interactionDisabled =
       this.get('isDeleting') ||
@@ -40,80 +63,191 @@ polarity.export = PolarityComponent.extend({
 
     return interactionDisabled;
   }),
-  isInMyOwner: Ember.computed('foundEntities.@each.ownershipStatus', function () {
-    return this.foundEntities.some(
-      (foundEntity) => foundEntity.ownershipStatus === 'inMyOwner'
-    );
-  }),
-  isNotInMyOwner: Ember.computed('foundEntities.@each.ownershipStatus', function () {
-    return this.foundEntities.some(
-      (foundEntity) => foundEntity.ownershipStatus === 'notInMyOwner'
-    );
-  }),
+  hasFoundInThreatConnectIndicatorsAvailableToSubmit: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    'details.results.@each.__isOnExclusionList',
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').some(
+        (result) =>
+          result.foundInThreatConnect &&
+          !result.__toBeSubmitted &&
+          !result.__isOnExclusionlist
+      );
+    }
+  ),
+  hasNotInThreatConnectIndicatorsAvailableToSubmit: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    'details.results.@each.__isOnExclusionList',
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').some(
+        (result) =>
+          !result.foundInThreatConnect &&
+          !result.__toBeSubmitted &&
+          !result.__isOnExclusionList
+      );
+    }
+  ),
+  /**
+   * Returns true if all indicators that are not in ThreatConnect have been queued for submission
+   * not including indicators that are exclusion listed
+   */
+  notInThreatConnectIsEmpty: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    'details.results.@each.__isOnExclusionList',
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').every(
+        (result) =>
+          (result.__toBeSubmitted && !result.foundInThreatConnect) ||
+          result.foundInThreatConnect
+      );
+    }
+  ),
+  foundInThreatConnectIsEmpty: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    'details.results.@each.__isOnExclusionList',
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').every(
+        (result) =>
+          (result.__toBeSubmitted && result.foundInThreatConnect) ||
+          !result.foundInThreatConnect
+      );
+    }
+  ),
+  numberOfIndicatorsToBeSubmitted: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    function () {
+      return this.get('details.results').reduce((count, result) => {
+        return result.__toBeSubmitted ? count + 1 : count;
+      }, 0);
+    }
+  ),
+  /**
+   * Returns true if any indicators are marked to be submitted
+   */
+  hasIndicatorToBeSubmitted: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    function () {
+      return this.get('details.results').some((result) => result.__toBeSubmitted);
+    }
+  ),
+  /**
+   * Returns true if any indicators are not in ThreatConnect
+   */
+  hasIndicatorNotInThreatConnect: Ember.computed(
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').some((result) => !result.foundInThreatConnect);
+    }
+  ),
+  hasIndicatorsInThreatConnect: Ember.computed(
+    'details.results.@each.foundInThreatConnect',
+    function () {
+      return this.get('details.results').some((result) => result.foundInThreatConnect);
+    }
+  ),
+  /**
+   * Returns true if any indicators are in ThreatConnect but not the owner's organization.
+   */
+  hasIndicatorNotInMyOwner: Ember.computed(
+    'details.results.@each.foundInThreatConnect',
+    'details.results.@each.isInMyOwner',
+    function () {
+      return this.get('details.results').some(
+        (result) => !result.isInMyOwner && result.foundInThreatConnect
+      );
+    }
+  ),
+  /**
+   * Returns true if there is at least one indicator that is in the owner's organization
+   */
+  hasIndicatorInMyOwner: Ember.computed(
+    'details.results.@each.foundInThreatConnect',
+    'details.results.@each.isInMyOwner',
+    function () {
+      return this.get('details.results').some(
+        (result) => result.isInMyOwner && result.foundInThreatConnect
+      );
+    }
+  ),
   init() {
-    this.set(
-      'newIocs',
-      this.get(`details.notFoundEntities${this.get('maxUniqueKeyNumber')}`)
-    );
-
-    this.set(
-      'foundEntities',
-      this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
-    );
-    this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
-
+    this.set('groups', Ember.A(this.get('details.groups')));
     this.set('selectedTags', [
       {
         name: 'Submitted By Polarity'
       }
     ]);
 
+    if (this.get('state')) {
+      this.set('state', {});
+      this.set('state.errorMessage', '');
+      this.set('state.errorTitle', '');
+    }
+
+    // Default owners to the requesting user owner
+    const myOwner = this.get('ownersWithCreatePermission.0');
+    this.set('owner', myOwner);
+    this.set('ownerFilter', [myOwner]);
+
     this._super(...arguments);
   },
-  observer: Ember.on(
-    'willUpdate',
-    Ember.observer('details.maxUniqueKeyNumber', function () {
-      if (this.get('maxUniqueKeyNumber') !== this.get('_maxUniqueKeyNumber')) {
-        this.set('_maxUniqueKeyNumber', this.get('maxUniqueKeyNumber'));
+  searchGroups: function (term, resolve, reject) {
+    const groupTypeFilter = this.get('groupTypeFilter');
+    const ownerFilter = this.get('ownerFilter');
+    this.set('searchingGroups', true);
+    const payload = {
+      data: {
+        action: 'searchGroups',
+        term,
+        ownerIds: ownerFilter.map((owner) => owner.id),
+        groupTypes: groupTypeFilter
+      }
+    };
+    this.sendIntegrationMessage(payload)
+      .then((result) => {
+        this.set('groups', Ember.A(result.groups));
+      })
+      .catch((err) => {
+        console.error('Group Search Error', err);
+        this.flashMessage(`Failed to search groups`, 'danger');
+      })
+      .finally(() => {
+        this.set('searchingGroups', false);
+      });
+    if (typeof resolve === 'function') {
+      resolve();
+    }
+  },
+  searchTags: function (term, resolve, reject) {
+    this.set('createMessage', '');
+    this.set('createErrorMessage', '');
 
-        this.set(
-          'newIocs',
-          this.get(`details.notFoundEntities${this.get('maxUniqueKeyNumber')}`)
-        );
+    // Prevent running the same search twice in a row.  Can happen if the user opens and closes
+    // the tag search power select (which will run empty string searches repeatedly).
+    if (term === this.get('previousTagSearch') && this.get('existingTags.length') > 0) {
+      return;
+    }
 
-        this.set(
-          'foundEntities',
-          this.get(`details.foundEntities${this.get('maxUniqueKeyNumber')}`)
-        );
-
-        this.set('groups', this.get(`details.groups${this.get('maxUniqueKeyNumber')}`));
-
-        this.set('newIocsToSubmit', []);
+    this.sendIntegrationMessage({
+      data: {
+        action: 'searchTags',
+        term,
+        ownerId: this.get('details.owner.id'),
+        selectedTags: this.get('selectedTags')
       }
     })
-  ),
-  searchTags: function (term, resolve, reject) {
-    const outerThis = this;
-    outerThis.set('createMessage', '');
-    outerThis.set('createErrorMessage', '');
-    outerThis.get('block').notifyPropertyChange('data');
-
-    outerThis
-      .sendIntegrationMessage({
-        data: {
-          action: 'searchTags',
-          term,
-          selectedTags: this.get('selectedTags')
-        }
-      })
       .then(({ tags }) => {
-        outerThis.set(
+        this.set(
           'existingTags',
           [...(term ? [{ name: term, isNew: true }] : [])].concat(tags)
         );
+        this.set('previousTagSearch', term);
       })
       .catch((err) => {
-        outerThis.set(
+        this.set(
           'createErrorMessage',
           'Search Tags Failed: ' +
             (err &&
@@ -122,211 +256,232 @@ polarity.export = PolarityComponent.extend({
         );
       })
       .finally(() => {
-        outerThis.get('block').notifyPropertyChange('data');
         setTimeout(() => {
-          outerThis.set('createMessage', '');
-          outerThis.set('createErrorMessage', '');
-          outerThis.get('block').notifyPropertyChange('data');
+          if (!this.isDestroyed) {
+            this.set('createMessage', '');
+            this.set('createErrorMessage', '');
+          }
         }, 5000);
-        resolve();
+        if (typeof resolve === 'function') {
+          resolve();
+        }
       });
   },
+  /**
+   * Flash a message on the screen for a specific issue
+   * @param message
+   * @param type 'info', 'danger', or 'success'
+   */
+  flashMessage(message, type = 'info', duration = 3000) {
+    this.flashMessages.add({
+      message: `${this.block.acronym}: ${message}`,
+      type: `unv-${type}`,
+      icon:
+        type === 'success'
+          ? 'check-circle'
+          : type === 'danger'
+          ? 'exclamation-circle'
+          : 'info-circle',
+      timeout: duration
+    });
+  },
   actions: {
-    toggleIsExpanded(foundEntity) {
-      Ember.set(foundEntity, 'isExpanded', !foundEntity.isExpanded);
-    },
-    toggleOwnershipMessage: function () {
-      this.toggleProperty('showOwnershipMessage');
-    },
-    initiateItemDeletion: function (entity) {
-      this.set('isDeleting', true);
-      this.set('entityToDelete', entity);
+    initiateItemDeletion: function (result) {
+      this.set('resultToDelete', result);
+      this.set('showDeletionModal', true);
     },
     cancelItemDeletion: function () {
-      this.set('isDeleting', false);
-      this.set('entityToDelete', {});
+      this.set('showDeletionModal', false);
+      this.set('resultToDelete', {});
+    },
+    initializeGroupFilter: function () {
+      this.searchGroups('');
     },
     confirmDelete: function () {
-      const outerThis = this;
-      outerThis.set('deleteMessage', '');
-      outerThis.set('deleteErrorMessage', '');
-      outerThis.set('deleteIsRunning', true);
-      outerThis.get('block').notifyPropertyChange('data');
+      this.set('isDeleting', true);
+      const payload = {
+        action: 'deleteItem',
+        entity: this.get('resultToDelete.entity'),
+        indicatorToDelete: this.get('resultToDelete.indicators').find(
+          (indicator) => indicator.ownerId === this.get('details.myOwner.id')
+        )
+      };
 
-      outerThis
-        .sendIntegrationMessage({
-          data: {
-            action: 'deleteItem',
-            entity: outerThis.get('entityToDelete'),
-            newIocs: outerThis.get('newIocs'),
-            foundEntities: outerThis.get('foundEntities')
-          }
-        })
-        .then(({ newIocs, newList }) => {
-          outerThis.set('newIocs', newIocs);
-          outerThis.set('foundEntities', newList);
-          outerThis.set('deleteMessage', 'Successfully Deleted IOC');
-        })
-        .catch((err) => {
-          outerThis.set(
-            'deleteErrorMessage',
-            'Failed to Delete IOC: ' +
-              (err &&
-                (err.detail || err.err || err.message || err.title || err.description)) ||
-              'Unknown Reason'
-          );
-        })
-        .finally(() => {
-          this.set('isDeleting', false);
-          this.set('entityToDelete', {});
-          outerThis.set('deleteIsRunning', false);
-          outerThis.get('block').notifyPropertyChange('data');
-          setTimeout(() => {
-            outerThis.set('deleteMessage', '');
-            outerThis.set('deleteErrorMessage', '');
-            outerThis.get('block').notifyPropertyChange('data');
-          }, 5000);
-        });
-    },
-    removeAllSubmitItems: function () {
-      const foundIOCs = this.get('newIocsToSubmit').filter((ioc) => ioc.resultsFound);
-      const allFoundIOCs = this.get('foundEntities').concat(foundIOCs);
-      const newIOCs = this.get('newIocsToSubmit').filter((ioc) => !ioc.resultsFound);
-      const allNewIOCs = this.get('newIocs').concat(newIOCs);
-
-      this.set('newIocs', allNewIOCs);
-      this.set('foundEntities', allFoundIOCs);
-      this.set('newIocsToSubmit', []);
-
-      this.get('block').notifyPropertyChange('data');
-    },
-    addAllSubmitItems: function () {
-      const allIOCs = this.get('newIocs').concat(this.get('newIocsToSubmit'));
-
-      this.set('newIocs', []);
-      this.set('newIocsToSubmit', allIOCs);
-      this.get('block').notifyPropertyChange('data');
-    },
-    removeSubmitItem: function (entity) {
-      if (entity.resultsFound) {
-        this.set('foundEntities', this.get('foundEntities').concat(entity));
-      } else {
-        this.set('newIocs', this.get('newIocs').concat(entity));
-      }
-      this.set(
-        'newIocsToSubmit',
-        this.get('newIocsToSubmit').filter(({ value }) => value !== entity.value)
-      );
-
-      this.get('block').notifyPropertyChange('data');
-    },
-    addSubmitItem: function (entity) {
-      this.set(
-        'foundEntities',
-        this.get('foundEntities').filter(({ value }) => value !== entity.value)
-      );
-      this.set(
-        'newIocs',
-        this.get('newIocs').filter(({ value }) => value !== entity.value)
-      );
-      const updatedNewIocsToSubmit = this.get('newIocsToSubmit').concat(entity);
-      this.set('newIocsToSubmit', updatedNewIocsToSubmit);
-
-      this.get('block').notifyPropertyChange('data');
-    },
-    submitItems: function () {
-      const outerThis = this;
-      const possibleParamErrors = [
-        {
-          condition: () => !outerThis.get('newIocsToSubmit').length,
-          message: 'No Items to Submit...'
-        }
-      ];
-
-      const paramErrorMessages = possibleParamErrors.reduce(
-        (agg, possibleParamError) =>
-          possibleParamError.condition() ? agg.concat(possibleParamError.message) : agg,
-        []
-      );
-
-      if (paramErrorMessages.length) {
-        outerThis.set('createErrorMessage', paramErrorMessages[0]);
-        outerThis.get('block').notifyPropertyChange('data');
-        setTimeout(() => {
-          outerThis.set('createErrorMessage', '');
-          outerThis.get('block').notifyPropertyChange('data');
-        }, 5000);
+      if (!payload.indicatorToDelete) {
+        this.flashMessage(
+          `Indicator does not exist in your default organization ${this.get(
+            'details.myOwner.name'
+          )} and cannot be deleted`,
+          'danger'
+        );
         return;
       }
 
-      outerThis.set('createMessage', '');
-      outerThis.set('createErrorMessage', '');
-      outerThis.set('createIsRunning', true);
-      outerThis.get('block').notifyPropertyChange('data');
-      outerThis
-        .sendIntegrationMessage({
-          data: {
-            action: 'submitItems',
-            newIocsToSubmit: outerThis.get('newIocsToSubmit'),
-            description: outerThis.get('description'),
-            title: outerThis.get('title'),
-            source: outerThis.get('source'),
-            whoisActive: outerThis.get('whoisActive'),
-            dnsActive: outerThis.get('dnsActive'),
-            rating: outerThis.get('rating'),
-            confidence: outerThis.get('confidence'),
-            owner: outerThis.get('ownerName'),
-            foundEntities: outerThis.get('foundEntities'),
-            submitTags: outerThis.get('selectedTags'),
-            groupType: outerThis.get('groupType'),
-            groupID: outerThis.get('groupID')
-          }
-        })
-        .then(({ foundEntities, exclusionListEntities }) => {
-          const filteredFoundEntities = foundEntities.filter(
-            (entity) => !exclusionListEntities.includes(entity.value)
-          );
-          filteredFoundEntities.forEach((entity) => {
-            if (
-              outerThis.get('newIocsToSubmit').some((ioc) => ioc.value === entity.value)
-            ) {
-              entity.ownershipStatus = 'inMyOwner';
+      this.sendIntegrationMessage({
+        data: payload
+      })
+        .then((deletionResult) => {
+          // `deletionResult` contains the updated search result after the deletion
+          // We find this value in our local results and replace the local result with the
+          // new post-deletion result.
+          console.info('Deletion result', deletionResult);
+          this.get('details.results').forEach((result, index) => {
+            if (result.entity.value == deletionResult.result.entity.value) {
+              this.set(`details.results.${index}`, deletionResult.result);
             }
           });
-          outerThis.set('foundEntities', filteredFoundEntities);
-          outerThis.set('exclusionListEntities', exclusionListEntities, []);
-          outerThis.set('newIocsToSubmit', []);
-          outerThis.set('createMessage', 'Successfully Created IOCs');
-          outerThis.set('groupID', '');
+          // We have to change the array reference here to trigger a template update
+          this.set('details.results', [...this.get('details.results')]);
+          this.flashMessage('Successfully deleted indicator', 'success');
         })
-        .catch((error) => {
-          if (error.detail === 'warning') {
-            outerThis.set(
-              'createWarningMessage',
-              'Encountered errors while creating IOC: ' +
-                (error && error.title ? `"${error.title}"` : 'Unknown Reason')
-            );
-          } else {
-            outerThis.set(
-              'createErrorMessage',
-              'Failed to Create IOC: ' +
-                (error && error.title ? `"${error.title}"` : 'Unknown Reason')
-            );
-          }
+        .catch((err) => {
+          console.error('Error deleting indicator', err);
+          this.set('state.errorTitle', 'Failed to Delete Indicator');
+          this.set('state.errorMessage', JSON.stringify(err, null, 2));
+          this.flashMessage('Failed to delete indicator', 'danger');
         })
         .finally(() => {
-          outerThis.set('createIsRunning', false);
-          outerThis.get('block').notifyPropertyChange('data');
-          setTimeout(() => {
-            outerThis.set('createMessage', '');
-            outerThis.set('createErrorMessage', '');
-            outerThis.get('block').notifyPropertyChange('data');
-          }, 5000);
+          this.set('showDeletionModal', false);
+          this.set('resultToDelete', {});
+          this.set('isDeleting', false);
         });
     },
-    editTags: function () {
-      this.toggleProperty('editingTags');
-      this.get('block').notifyPropertyChange('data');
+    removeAllToBeSubmitted: function () {
+      this.get('details.results').forEach((result, index) => {
+        this.set(`details.results.${index}.__toBeSubmitted`, false);
+        this.set(`details.results.${index}.__deleteTooltipIsVisible`, false);
+      });
+    },
+    addAllNotInThreatConnectBeSubmitted: function () {
+      this.get('details.results').forEach((result, index) => {
+        if (!result.foundInThreatConnect && !result.__isOnExclusionList) {
+          this.set(`details.results.${index}.__toBeSubmitted`, true);
+          this.set(`details.results.${index}.__deleteTooltipIsVisible`, false);
+        }
+      });
+    },
+    addAllCurrentlyInThreatConnectToBeSubmitted: function () {
+      this.get('details.results').forEach((result, index) => {
+        if (result.foundInThreatConnect && !result.__isOnExclusionList) {
+          this.set(`details.results.${index}.__toBeSubmitted`, true);
+          this.set(`details.results.${index}.__deleteTooltipIsVisible`, false);
+        }
+      });
+    },
+    submitItems: function () {
+      if (!this.get('hasIndicatorToBeSubmitted')) {
+        this.flashMessage('No indicators selected for submission', 'info');
+        return;
+      }
+
+      this.set('createMessage', '');
+      this.set('createErrorMessage', '');
+      this.set('createIsRunning', true);
+
+      const payload = {
+        data: {
+          action: 'submitItems',
+          newIocsToSubmit: this.get('details.results').filter(
+            (result) => result.__toBeSubmitted
+          ),
+          description: this.get('description'),
+          title: this.get('title'),
+          source: this.get('source'),
+          whoisActive: this.get('whoisActive'),
+          dnsActive: this.get('dnsActive'),
+          rating: this.get('rating'),
+          confidence: this.get('confidence'),
+          owner: this.get('owner'),
+          tags: this.get('selectedTags'),
+          groups: this.get('selectedGroups')
+        }
+      };
+
+      this.sendIntegrationMessage(payload)
+        .then(({ results, exclusionListEntities, errors }) => {
+          results.forEach((result) => {
+            // Find the corresponding result in our existing results array and replace that
+            // result with our new result which is now in ThreatConnect
+            const indexToReplace = this.get('details.results').findIndex(
+              (existingResult) => existingResult.entity.value === result.entity.value
+            );
+
+            if (indexToReplace >= 0) {
+              this.set(`details.results.${indexToReplace}`, result);
+              this.set(`details.results.${indexToReplace}.__isNewlyAdded`, true);
+            }
+          });
+
+          exclusionListEntities.forEach((entity) => {
+            const indexToReplace = this.get('details.results').findIndex(
+              (existingResult) => existingResult.entity.value === entity.value
+            );
+
+            if (indexToReplace >= 0) {
+              this.set(`details.results.${indexToReplace}.__isOnExclusionList`, true);
+              this.set(`details.results.${indexToReplace}.__toBeSubmitted`, false);
+            }
+          });
+
+          errors.forEach((error) => {
+            const indexToReplace = this.get('details.results').findIndex(
+              (existingResult) => existingResult.entity.value === error.entity.value
+            );
+
+            if (indexToReplace >= 0) {
+              this.set(
+                `details.results.${indexToReplace}.__errorMessage`,
+                JSON.stringify(error.error, null, 2)
+              );
+              this.set(`details.results.${indexToReplace}.__hasSubmissionError`, true);
+              this.set(`details.results.${indexToReplace}.__toBeSubmitted`, false);
+              this.set(
+                `details.results.${indexToReplace}.__deleteTooltipIsVisible`,
+                false
+              );
+            }
+          });
+
+          // We have to change the array reference here to trigger a template update
+          this.set('details.results', [...this.get('details.results')]);
+
+          let messageType = 'success';
+          let message = '';
+          if (results.length > 0) {
+            message = `${results.length} IOC${
+              results.length > 1 ? 's were' : ' was'
+            } submitted`;
+          }
+          if (exclusionListEntities.length > 0) {
+            message += `${message.length > 0 ? ' | ' : ''}${
+              exclusionListEntities.length
+            } IOC${
+              exclusionListEntities.length > 1 ? 's were' : ' was'
+            } on the exclusion list and could not be submitted`;
+            messageType = 'warn';
+          }
+          if (errors.length > 0) {
+            message += `${message.length > 0 ? ' | ' : ''}${errors.length} indicator${
+              errors.length > 1 ? 's ' : ''
+            } encountered submission errors`;
+            messageType = 'danger';
+          }
+
+          this.flashMessage(
+            message,
+            messageType,
+            errors.length > 0 || exclusionListEntities.length > 0 ? 10000 : 3000
+          );
+        })
+        .catch((error) => {
+          console.error('Error creating indicators');
+          this.set('state.errorTitle', 'Indicator Creation Failed');
+          this.set('state.errorMessage', JSON.stringify(error, null, 2));
+          this.flashMessage('Failed to create indicators', 'danger');
+        })
+        .finally(() => {
+          this.set('createIsRunning', false);
+        });
     },
     deleteTag: function (tagToDelete) {
       this.set(
@@ -336,12 +491,47 @@ polarity.export = PolarityComponent.extend({
         )
       );
     },
+    searchGroups: function (term) {
+      return new Ember.RSVP.Promise((resolve, reject) => {
+        Ember.run.debounce(this, this.searchGroups, term, resolve, reject, 600);
+      });
+    },
     searchTags: function (term) {
       return new Ember.RSVP.Promise((resolve, reject) => {
         Ember.run.debounce(this, this.searchTags, term, resolve, reject, 600);
       });
     },
-    addTags: function (tags) {
+    removeGroup: function (targetGroup) {
+      const selectedGroups = this.get('selectedGroups');
+      const index = selectedGroups.findIndex((group) => group.id === targetGroup.id);
+      if (index >= 0) {
+        // Remove the group from selected groups
+        this.set('selectedGroups', [
+          ...selectedGroups.slice(0, index),
+          ...selectedGroups.slice(index + 1)
+        ]);
+
+        //Add the group back to all groups
+        this.get('groups').pushObject(targetGroup);
+      }
+    },
+    addGroup: function () {
+      const selectedGroup = this.get('selectedGroup');
+      const selectedGroups = this.get('selectedGroups');
+
+      if (selectedGroup) {
+        // Remove the group from the list of selectable groups
+        const groupToRemoveIndex = this.get('groups').findIndex(
+          (group) => group.id === selectedGroup.id
+        );
+        if (groupToRemoveIndex >= 0) {
+          this.get('groups').removeAt(groupToRemoveIndex);
+        }
+        this.set('selectedGroups', selectedGroups.concat(selectedGroup));
+        this.set('selectedGroup', '');
+      }
+    },
+    addTags: function () {
       const selectedTag = this.get('selectedTag');
       const selectedTags = this.get('selectedTags');
 
@@ -387,6 +577,21 @@ polarity.export = PolarityComponent.extend({
 
       this.set('confidence', confidence);
       this.set('confidenceHuman', CONFIDENCE_TO_TEXT);
+    },
+    resetSubmissionOptions: function () {
+      this.set('description', '');
+      this.set('source', '');
+      this.set('title', '');
+      this.set('rating', 0);
+      this.set('confidence', 0);
+      this.set('selectedGroups', []);
+      this.set('selectedTags', [
+        {
+          name: 'Submitted By Polarity'
+        }
+      ]);
+      const myOwner = this.get('ownersWithCreatePermission.0');
+      this.set('owner', myOwner);
     }
   }
 });
