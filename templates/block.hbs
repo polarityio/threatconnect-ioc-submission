@@ -222,7 +222,7 @@
         {{#if (and (not result.foundInThreatConnect) (not result.__toBeSubmitted))}}
           <div class="search-result-container">
             <div class="search-result-header d-flex align-items-start justify-content-between">
-              <div class="{{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
+              <div class="{{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}} mr-1">
                 <span class="search-result-entity-value">{{result.entity.value}}</span>
                 {{#if result.__isOnExclusionList}}
                   <span class="p-footnote">(exclusion listed)</span>
@@ -325,7 +325,7 @@
         {{#if result.__toBeSubmitted}}
           <div class="search-result-container">
             <div class="search-result-header d-flex align-items-start justify-content-between">
-              <div class="search-result-entity-value">
+              <div class="search-result-entity-value mr-1">
                 {{result.entity.value}}
               </div>
               <div class="d-flex align-items-start justify-content-end">
@@ -553,7 +553,7 @@
                         options=ownersWithGroupPermission
                         searchEnabled=true
                         placeholder="No owner filter applied"
-                        closeOnSelect=true
+                        closeOnSelect=false
                         disabled=interactionDisabled
                         onChange=(action (mut ownerFilter))
                 as |owner|
@@ -575,7 +575,7 @@
                         options=groupTypeNames
                         searchEnabled=true
                         placeholder="No group type filter applied"
-                        closeOnSelect=true
+                        closeOnSelect=false
                         disabled=interactionDisabled
                         onChange=(action (mut groupTypeFilter))
                 as |groupType|
@@ -609,7 +609,7 @@
                     options=groups
                     searchField="name"
                     placeholder="Select associated group"
-                    closeOnSelect=true
+                    closeOnSelect=false
                     disabled=interactionDisabled
                     onOpen=(action "initializeGroupFilter")
                     onChange=(action (mut selectedGroup))
