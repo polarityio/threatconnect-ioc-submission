@@ -359,7 +359,7 @@
                 </div>
                 <button
                   class="header-button minus p-orange"
-                  {{action (set result "__toBeSubmitted" false)}}
+                  {{action (pipe-action (set result "__toBeSubmitted" false)(set result "__deleteTooltipIsVisible" false))}}
                   disabled={{interactionDisabled}}
                 >
                   {{fa-icon icon="minus" fixedWidth=true}}
