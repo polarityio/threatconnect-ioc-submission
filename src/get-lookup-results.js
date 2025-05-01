@@ -6,6 +6,9 @@ const { getMyOwnerCached } = require('./get-my-owner-cached');
 const {
   getOwnersWithIndicatorPermissionCached
 } = require('./get-owners-with-indicator-perm-cached');
+const {
+  getOwnersWithGroupPermissionCached
+} = require('./get-owners-with-group-perm-cached');
 const { searchIndicator } = require('./queries/search-indicator');
 const { getThreatConnectDisplayTypeFromEntityType } = require('./tc-request-utils');
 
@@ -25,6 +28,9 @@ const getLookupResults = async (entities, options) => {
   // Get owners that the requesting user has permission to add indicators to
   let ownersWithCreatePermission = await getOwnersWithIndicatorPermissionCached(options);
   ownersWithCreatePermission = moveOwnerToFront(ownersWithCreatePermission, myOwner.id);
+
+  let ownersWithGroupPermission = await getOwnersWithGroupPermissionCached(options);
+  ownersWithGroupPermission = moveOwnerToFront(ownersWithGroupPermission, myOwner.id);
 
   const results = [];
   let newEntities = false;
@@ -64,7 +70,8 @@ const getLookupResults = async (entities, options) => {
           // Groups gets initialized via onMessage
           groups: [],
           results: sortResultsByOwner(results, myOwner),
-          ownersWithCreatePermission
+          ownersWithCreatePermission,
+          ownersWithGroupPermission
         }
       }
     }

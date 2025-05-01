@@ -7,6 +7,7 @@ polarity.export = PolarityComponent.extend({
   maxUniqueKeyNumber: Ember.computed.alias('details.maxUniqueKeyNumber'),
   url: Ember.computed.alias('details.url'),
   ownersWithCreatePermission: Ember.computed.alias('details.ownersWithCreatePermission'),
+  ownersWithGroupPermission: Ember.computed.alias('details.ownersWithGroupPermission'),
   groupTypeNames: [
     'Report',
     'Event',
@@ -323,7 +324,7 @@ polarity.export = PolarityComponent.extend({
           // `deletionResult` contains the updated search result after the deletion
           // We find this value in our local results and replace the local result with the
           // new post-deletion result.
-          console.info("Deletion result", deletionResult);
+          console.info('Deletion result', deletionResult);
           this.get('details.results').forEach((result, index) => {
             if (result.entity.value == deletionResult.result.entity.value) {
               this.set(`details.results.${index}`, deletionResult.result);
