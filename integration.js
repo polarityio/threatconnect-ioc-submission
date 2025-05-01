@@ -6,6 +6,7 @@ const createRequestWithDefaults = require('./src/createRequestWithDefaults');
 const { searchTags } = require('./src/queries/search-tags');
 const { searchGroups } = require('./src/queries/search-groups');
 const { createIndicator } = require('./src/queries/create-indicator');
+const { updateIndicator } = require('./src/queries/update-indicator');
 const { deleteIndicator } = require('./src/queries/delete-indicator');
 const { setLogger } = require('./src/logger');
 const {
@@ -98,11 +99,28 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
         5,
         async (searchResultObject) => {
           try {
-            const newIndicator = await createIndicator(
-              searchResultObject.entity,
-              actionParams,
-              options
+            let newOrUpdatedIndicator;
+
+            const indicatorToUpdate = searchResultObject.indicators.find(
+              (indicator) => indicator.ownerId === actionParams.owner.id
             );
+
+            if (indicatorToUpdate) {
+              // This indicator already exists in the owner so instead of creating a new indicator
+              // we run the update logic
+              newOrUpdatedIndicator = await updateIndicator(
+                indicatorToUpdate,
+                searchResultObject.entity,
+                actionParams,
+                options
+              );
+            } else {
+              newOrUpdatedIndicator = await createIndicator(
+                searchResultObject.entity,
+                actionParams,
+                options
+              );
+            }
 
             // We allow users to submit an indicator that already exists in the owner.  As a result, if we just
             // concat our existing indicators with the newly created indicator we might have a duplicate (i.e.,
@@ -110,7 +128,7 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
             // need to check for a duplicate and remove the old indicator before replacing with the newly updated
             // indicator
             const duplicateIndex = searchResultObject.indicators.findIndex(
-              (existingIndicator) => existingIndicator.id === newIndicator.id
+              (existingIndicator) => existingIndicator.id === newOrUpdatedIndicator.id
             );
             if (duplicateIndex >= 0) {
               // we have a duplicate so remove it from our existing indicators
@@ -120,7 +138,7 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
             const myOwner = await getMyOwnerCached(options);
             const formattedSearchResult = createFormattedSearchResult(
               searchResultObject.entity,
-              searchResultObject.indicators.concat(newIndicator),
+              searchResultObject.indicators.concat(newOrUpdatedIndicator),
               myOwner
             );
             results.push(formattedSearchResult);

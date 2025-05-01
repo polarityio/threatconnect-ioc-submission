@@ -349,6 +349,15 @@
                 <div class="p-footnote mr-1">
                   {{result.displayType}}
                 </div>
+                {{!-- show icon if this indicator will be updated rather than created --}}
+                {{#each result.indicators as | indicator | }}
+                  {{#if (eq indicator.ownerId owner.id)}}
+                    <div class="mr-1">
+                      {{fa-icon icon="pencil" fixedWidth=true class="icon-small p-grey"}}
+                      {{bs-tooltip title=(concat "This indicator already exists in " owner.name " and will be updated")}}
+                    </div>
+                  {{/if}}
+                {{/each}}
                 <div class="mr-1">
                   {{#if result.isInMyOwner}}
                     {{fa-icon icon="house" fixedWidth=true class="p-grey is-mine-icon icon-small"}}
@@ -668,9 +677,10 @@
       <div class="checkbox-container">
         <label class="d-flex align-items-center">
           <input
-                  type="checkbox"
+            checked={{whoisActive}}
+            type="checkbox"
             {{on "change" (action (mut whoisActive) value="target.checked")}}
-                  disabled={{interactionDisabled}}
+            disabled={{interactionDisabled}}
           />
           <span class="p-value ml-1">Enable Whois Lookups</span>
         </label>
@@ -678,9 +688,10 @@
       <div class="checkbox-container">
         <label class="d-flex align-items-center">
           <input
-                  type="checkbox"
+            checked={{dnsActive}}
+            type="checkbox"
             {{on "change" (action (mut dnsActive) value="target.checked")}}
-                  disabled={{interactionDisabled}}
+            disabled={{interactionDisabled}}
           />
           <span class="p-value ml-1">Enable DNS Tracking</span>
         </label>

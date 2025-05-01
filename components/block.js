@@ -450,7 +450,7 @@ polarity.export = PolarityComponent.extend({
           if (results.length > 0) {
             message = `${results.length} IOC${
               results.length > 1 ? 's were' : ' was'
-            } created`;
+            } submitted`;
           }
           if (exclusionListEntities.length > 0) {
             message += `${message.length > 0 ? ' | ' : ''}${
