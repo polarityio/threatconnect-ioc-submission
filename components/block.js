@@ -435,6 +435,10 @@ polarity.export = PolarityComponent.extend({
               );
               this.set(`details.results.${indexToReplace}.__hasSubmissionError`, true);
               this.set(`details.results.${indexToReplace}.__toBeSubmitted`, false);
+              this.set(
+                `details.results.${indexToReplace}.__deleteTooltipIsVisible`,
+                false
+              );
             }
           });
 
@@ -446,7 +450,7 @@ polarity.export = PolarityComponent.extend({
           if (results.length > 0) {
             message = `${results.length} IOC${
               results.length > 1 ? 's were' : ' was'
-            }created`;
+            } created`;
           }
           if (exclusionListEntities.length > 0) {
             message += `${message.length > 0 ? ' | ' : ''}${
@@ -573,6 +577,21 @@ polarity.export = PolarityComponent.extend({
 
       this.set('confidence', confidence);
       this.set('confidenceHuman', CONFIDENCE_TO_TEXT);
+    },
+    resetSubmissionOptions: function () {
+      this.set('description', '');
+      this.set('source', '');
+      this.set('title', '');
+      this.set('rating', 0);
+      this.set('confidence', 0);
+      this.set('selectedGroups', []);
+      this.set('selectedTags', [
+        {
+          name: 'Submitted By Polarity'
+        }
+      ]);
+      const myOwner = this.get('ownersWithCreatePermission.0');
+      this.set('owner', myOwner);
     }
   }
 });

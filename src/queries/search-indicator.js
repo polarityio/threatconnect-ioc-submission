@@ -10,7 +10,8 @@ async function searchIndicator(entity, options) {
   const requestOptions = {
     uri: `${options.url}/v3/indicators`,
     qs: {
-      tql: createTqlQuery(entity, options)
+      tql: createTqlQuery(entity, options),
+      fields: 'threatAssess'
     },
     method: 'GET',
     useQuerystring: true
@@ -57,7 +58,7 @@ function createTqlQuery(entity, options) {
   }
 
   query += `) and typeName="${indicatorType}" and (indicatorActive=true or indicatorActive=false)`;
-    
+
   return query;
 }
 

@@ -75,6 +75,9 @@ async function createIndicator(entity, fields, options) {
   const requestOptions = {
     uri: `${options.url}/v3/indicators`,
     method: 'POST',
+    qs: {
+      fields: 'threatAssess'
+    },
     useQuerystring: true,
     body
   };

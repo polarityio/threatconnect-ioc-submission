@@ -12,7 +12,7 @@
       <div class="content">
         <span class="p-key">
           <div>
-            {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red"}} You are about to delete the indicator <b>{{resultToDelete.entity.value}}</b> from the organization <b>{{details.myOwner.name}}</b>
+            {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red"}} You are about to delete the indicator <b class="p-value-break-all">{{resultToDelete.entity.value}}</b> from the organization <b>{{details.myOwner.name}}</b>
           </div>
           <div class="mt-2">
              Deleting an indicator cannot be undone and will remove all data for the indicator from the ThreatConnect platform.
@@ -180,6 +180,23 @@
                           {{fa-icon icon="minus-circle" fixedWidth=true class="p-red icon-small"}} Inactive
                         {{/if}} 
                       </div>
+                    </div>
+                    <div>
+                      <span class="p-key">Threat Rating: </span>
+                      <span>
+                        {{#if (eq indicator.rating 0)}}
+                          Unknown
+                        {{/if}}
+                        {{#each (repeat 5) as |empty ratingIndex|}}
+                          {{#if (lt ratingIndex indicator.rating)}}
+                            {{fa-icon icon="skull" class="icon-small p-grey"}}
+                          {{/if}}
+                        {{/each}}
+                      </span>
+                      <span class="p-key ml-2">ThreatAssess: </span> 
+                      <span class="p-value">
+                        {{indicator.threatAssessScore}}
+                      </span>
                     </div>
                     <div>
                       <span class="p-key">Added:</span> <span class="p-value">{{moment-format indicator.dateAdded "YYYY-MM-DD" timeZone=timezone}}</span>
@@ -358,9 +375,14 @@
   
   {{!-- Show submision options --}}
   {{#if hasIndicatorToBeSubmitted}}
-    <h2 class="p-title">
-      Submission Options
-    </h2>
+    <div class="d-flex align-items-center justify-content-between mt-2 mb-1">
+      <h2 class="p-title my-0">
+        Submission Options
+      </h2>
+      <div>
+        <span class="p-action" {{action "resetSubmissionOptions"}}>Reset Options</span>
+      </div>
+    </div>
     {{!-- Owner Select --}}
     <div class="input-container">
       <label class="small ifta-label">
@@ -609,7 +631,7 @@
                     options=groups
                     searchField="name"
                     placeholder="Select associated group"
-                    closeOnSelect=false
+                    closeOnSelect=true
                     disabled=interactionDisabled
                     onOpen=(action "initializeGroupFilter")
                     onChange=(action (mut selectedGroup))
