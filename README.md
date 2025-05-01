@@ -2,9 +2,9 @@
 
 The Polarity ThreatConnect integration allows Polarity to search your instance of ThreatConnect to return found domains, IPs, hashes, and emails. The integration also allows you to Create and Delete Indicators (IOCs) in bulk from ThreatConnect.
 
-<div>
-  <img width="400" alt="Integration Example" src="./assets/integration-example.png">
-</div>
+| ![](assets/search-results.png) | ![](assets/submit.png) | ![](assets/group-filter.png) 
+|--------------------------------|------------------------|------------------------------|
+| *Search Results*               | *Submit Indicators*    | *Add Group Associations*     |
 
 ## ThreatConnect Integration Options
 
@@ -22,9 +22,9 @@ The API (secret) Key associated with the provided Access ID
 
 ### Allow IOC Deletion
 
-If checked, users will be able to delete an Indicator from ThreatConnect. (this setting must be set to `User can view only`).
+If checked, users will be able to delete an Indicator from their default Organization in ThreatConnect. (this setting must be set to `User can view only`).
 
-> **_NOTE_**: When you delete an Indicator you are doing a deletion of the Indicator from the entire system.
+> **_NOTE_**: You can only delete indicators from your own default organization. You cannot delete indicators from other organizations.
 
 ### Allow Group Association
 
