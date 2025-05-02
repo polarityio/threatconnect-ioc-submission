@@ -2,7 +2,6 @@
 
 const async = require('async');
 const validateOptions = require('./src/validateOptions');
-const createRequestWithDefaults = require('./src/createRequestWithDefaults');
 const { searchTags } = require('./src/queries/search-tags');
 const { searchGroups } = require('./src/queries/search-groups');
 const { createIndicator } = require('./src/queries/create-indicator');
@@ -17,11 +16,9 @@ const { getMyOwnerCached } = require('./src/get-my-owner-cached');
 const { parseErrorToReadableJSON } = require('./src/errors');
 
 let Logger;
-let requestWithDefaults;
 const startup = (logger) => {
   Logger = logger;
   setLogger(logger);
-  requestWithDefaults = createRequestWithDefaults(Logger);
 };
 
 /**
@@ -71,6 +68,11 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
 const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => {
   switch (action) {
     case 'deleteItem':
+      if (!options.allowDelete) {
+        return cb({
+          detail: 'Invalid operation'
+        });
+      }
       try {
         await deleteIndicator(actionParams.indicatorToDelete.id, options);
         await doLookup([actionParams.entity], options, (err, lookupResults) => {
@@ -187,6 +189,11 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
       }
       break;
     case 'searchGroups':
+      if (!options.allowAssociation) {
+        return cb({
+          detail: 'Invalid operation'
+        });
+      }
       const groups = await searchGroups(
         actionParams.term,
         actionParams.groupTypes,
