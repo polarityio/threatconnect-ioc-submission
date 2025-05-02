@@ -20,11 +20,15 @@ Account Identifier that is associated with the API Key
 
 The API (secret) Key associated with the provided Access ID
 
+> **_NOTE_**: You will only be able to submit indicators to owners that your API key has `FULL` indicator permissions on
+
 ### Allow IOC Deletion
 
 If checked, users will be able to delete an Indicator from their default Organization in ThreatConnect. (this setting must be set to `User can view only`).
 
 > **_NOTE_**: You can only delete indicators from your own default organization. You cannot delete indicators from other organizations.
+
+> **_NOTE_**: The provided API key must have `FULL` permissions on indicators in your organization in order to be able to delete them.
 
 ### Allow Group Association
 
