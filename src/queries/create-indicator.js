@@ -47,7 +47,7 @@ const POLARITY_TYPE_TO_INDICATOR_VALUE_FIELD = {
  */
 async function createIndicator(entity, fields, options) {
   const Logger = getLogger();
-  
+
   // throw new ApiRequestError(
   //   `Unexpected status code 400 received when creating indicator via ThreatConnect API`,
   //   {
@@ -60,7 +60,7 @@ async function createIndicator(entity, fields, options) {
   // throw new ApiRequestError(
   //   `Unexpected status code 400 received when creating indicator via ThreatConnect API`
   // );
-  
+
   const body = {};
 
   // Update `body` to include all the relevant indicator fields
@@ -193,24 +193,16 @@ function addAttributes(body, fields) {
   if (typeof fields.source === 'string' && fields.source.length > 0) {
     data.push({
       type: 'Source',
-      value: fields.source
-      //default: true
+      value: fields.source,
+      default: true
     });
   }
-
-  if (typeof fields.title === 'string' && fields.title.length > 0) {
-    data.push({
-      type: 'Title',
-      value: fields.title
-      //default: true
-    });
-  }
-
+  
   if (typeof fields.description === 'string' && fields.description.length > 0) {
     data.push({
       type: 'Description',
-      value: fields.description
-      //default: true
+      value: fields.description,
+      default: true
     });
   }
 

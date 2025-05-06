@@ -170,24 +170,16 @@ function addAttributes(body, fields) {
   if (typeof fields.source === 'string' && fields.source.length > 0) {
     data.push({
       type: 'Source',
-      value: fields.source
-      //default: true
-    });
-  }
-
-  if (typeof fields.title === 'string' && fields.title.length > 0) {
-    data.push({
-      type: 'Title',
-      value: fields.title
-      //default: true
+      value: fields.source,
+      default: true
     });
   }
 
   if (typeof fields.description === 'string' && fields.description.length > 0) {
     data.push({
       type: 'Description',
-      value: fields.description
-      //default: true
+      value: fields.description,
+      default: true
     });
   }
 

@@ -89,6 +89,12 @@
                   {{fa-icon icon="chevron-down" fixedWidth=true class="p-grey"}}
                 {{/if}}
               </div>
+              {{#if result.__isNewlyAdded}}
+                <div class="ml-1">
+                  {{fa-icon icon="check-circle" fixedWidth=true class="p-green icon-small"}}
+                  {{bs-tooltip title="Indicator was successfully submitted to ThreatConnect"}}
+                </div>
+              {{/if}}
               <div class="ml-1 search-result-entity-value {{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
                 {{result.entity.value}}
               </div>
@@ -416,20 +422,6 @@
           {{owner.name}} ({{owner.type}})
         {{/power-select}}
       {{/if}}
-    </div>
-  
-    {{!-- Title Input --}}
-    <div class="input-container">
-      <label class="small ifta-label">
-        Title
-      </label>
-      {{input
-              class=(concat "ifta-field" (if uiElement.error " error"))
-              value=title
-              placeholder="Enter a title"
-              disabled=interactionDisabled
-              required=true
-      }}
     </div>
   
     {{!-- Description Input --}}
