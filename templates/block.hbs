@@ -418,20 +418,6 @@
       {{/if}}
     </div>
   
-    {{!-- Title Input --}}
-    <div class="input-container">
-      <label class="small ifta-label">
-        Title
-      </label>
-      {{input
-              class=(concat "ifta-field" (if uiElement.error " error"))
-              value=title
-              placeholder="Enter a title"
-              disabled=interactionDisabled
-              required=true
-      }}
-    </div>
-  
     {{!-- Description Input --}}
     <div class="input-container text-area-container {{if interactionDisabled "disabled"}} {{if uiElement.error "error"}}">
       <label class="small">
