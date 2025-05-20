@@ -18,7 +18,7 @@ polarity.export = PolarityComponent.extend({
     'Email',
     'Event',
     'Incident',
-    'Instruction Set',
+    'Intrusion Set',
     'Malware',
     'Signature',
     'Vulnerability'
