@@ -6,16 +6,28 @@
     <div class="integration-modal">
       <div class="title">
         <div class="content">
-          Delete IOC
+          Delete Entity
         </div>      
       </div>
       <div class="content">
         <span class="p-key">
           <div>
-            {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red"}} You are about to delete the indicator <b class="p-value-break-all">{{resultToDelete.entity.value}}</b> from the organization <b>{{details.myOwner.name}}</b>
+            {{fa-icon icon="exclamation-triangle" fixedWidth=true class="p-red"}} You are about to delete the entity <b class="p-value-break-all">{{resultToDelete.entity.value}}</b> from OpenCTI. 
           </div>
           <div class="mt-2">
-             Deleting an indicator cannot be undone and will remove all data for the indicator from the ThreatConnect platform.
+            <label class="d-flex align-items-center justify-content-start">
+              {{input type="checkbox" class="mr-1"}}
+              Delete Observable
+            </label>
+          </div>
+          <div>
+            <label class="mb-0 d-flex align-items-center justify-content-start">
+              {{input type="checkbox" class="mr-1"}}
+              Delete Indicator
+            </label>
+          </div>
+          <div class="mt-2">
+             Deleting an entity cannot be undone and will remove all data for the entity from OpenCTI.
           </div>
         </span>
       </div>
@@ -63,7 +75,7 @@
   {{#if hasIndicatorsInThreatConnect}}
     <div class="d-flex align-items-center justify-content-between mt-2 mb-1">
       <h1 class="p-title my-0">
-        Found in ThreatConnect
+        Found in OpenCTI
       </h1>
       {{#if hasFoundInThreatConnectIndicatorsAvailableToSubmit}}
         <button
@@ -77,7 +89,7 @@
       {{/if}}
     </div>
     <div class="search-results">
-    {{#each details.results as | result |}}
+    {{#each details.results as | result index |}}
       {{#if (and result.foundInThreatConnect (not result.__toBeSubmitted))}}
         <div class="search-result-container">
           <div class="search-result-header d-flex align-items-start justify-content-between" {{action (toggle "__viewIndicatorDetails" result)}}>
@@ -95,13 +107,27 @@
                   {{bs-tooltip title="Indicator was successfully submitted to ThreatConnect"}}
                 </div>
               {{/if}}
-              <div class="ml-1 search-result-entity-value {{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
+              <div class="ml-1 mr-1 search-result-entity-value {{if result.__isOnExclusionList "p-orange"}} {{if result.__hasSubmissionError "p-red"}}">
                 {{result.entity.value}}
               </div>
             </div>
             <div class="d-flex align-items-start justify-content-end">
               <div class="mr-1">
-                  <span class="p-footnote">{{result.displayType}}</span>
+                {{#if (or (eq index 1)(eq index 2))}}
+                  {{fa-icon icon="binoculars" fixedWidth=true class="gray-icon"}}
+                {{else}}
+                  {{fa-icon icon="binoculars" fixedWidth=true class="fa-blank"}}
+                {{/if}}
+                {{bs-tooltip title="Observable"}}
+              </div>
+             
+              <div class="mr-1">
+                {{#if (or (eq index 1)(eq index 3))}}
+                  {{fa-icon icon="fingerprint" fixedWidth=true class="gray-icon"}}
+                {{else}}
+                  {{fa-icon icon="fingerprint" fixedWidth=true class="fa-blank"}}
+                {{/if}}
+                  {{bs-tooltip title="Indicator"}}
               </div>
               <div class="mr-1">
                 {{#if result.isInMyOwner}}
@@ -112,7 +138,7 @@
                 {{/if}}
               </div>
               <div class="d-flex align-items-start justify-content-end flex-shrink-0">
-                {{#if (and block.userOptions.allowDelete result.canDelete)}}
+                {{#if block.userOptions.allowDelete}}
                   <button 
                     class="header-button delete mr-1"
                     {{action (pipe-action (action "initiateItemDeletion" result)(action (set result "__deleteTooltipIsVisible" false))) bubbles=false}}
@@ -138,12 +164,14 @@
                   </div>
                 {{else}}
                   <button 
-                    class="header-button add p-green"
+                    class="header-button add p-green {{if (eq index 1) "fa-blank"}}"
                     {{action (set result "__toBeSubmitted" true) bubbles=false}}
                     disabled={{interactionDisabled}}
                   >
                     {{fa-icon icon="plus" fixedWidth=true}}
-                    {{bs-tooltip title="Add indicator to selected owner"}}
+                    
+                    {{bs-tooltip title="Add entity as an Indicator"}}
+                      
                   </button>
                 {{/if}}
               </div>
@@ -166,7 +194,22 @@
                   </div>
                 </div>
               {{/if}}
-              <h2 class="p-title mt-0">Owners</h2>
+              <div class="mt-0 mb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex mt-1 align-items-center justify-content-between">
+                  <h2 class="p-title my-0">
+                  Observable
+                  </h2>
+                  <button class="header-button edit ml-1">
+                    {{fa-icon icon="pencil" fixedWidth=true}}
+                    {{bs-tooltip
+                            title="Edit observable"
+                    }}
+                  </button>
+                </div>
+                <div class="flex-shrink-0">
+                  <a href={{indicator.webLink}}>View in OpenCTI {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon p-link"}}</a>
+                </div>
+              </div>
                 {{#each result.indicators as | indicator |}}
                   <div class="search-result-indicator-container">
                     <div class="d-flex align-items-start justify-content-between">
@@ -177,39 +220,97 @@
                             {{bs-tooltip title="This indicator is in your organization"}}
                           </span>
                         {{/if}}
-                        <a href={{indicator.webLink}}>{{indicator.ownerName}} {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon"}}</a>
+                        IPv4 Address
                       </div>
-                      <div class="flex-shrink-0">
-                        {{#if indicator.active}}
-                          {{fa-icon icon="check" fixedWidth=true class="p-green icon-small"}} Active
-                        {{else}}
-                          {{fa-icon icon="minus-circle" fixedWidth=true class="p-red icon-small"}} Inactive
-                        {{/if}} 
+                      <div class="flex-shrink-0 score-box">
+                        50 / 100
                       </div>
                     </div>
                     <div>
-                      <span class="p-key">Threat Rating: </span>
+                      <span class="p-key">Author: </span>
                       <span>
-                        {{#if (eq indicator.rating 0)}}
-                          Unknown
-                        {{/if}}
-                        {{#each (repeat 5) as |empty ratingIndex|}}
-                          {{#if (lt ratingIndex indicator.rating)}}
-                            {{fa-icon icon="skull" class="icon-small p-grey"}}
-                          {{/if}}
-                        {{/each}}
-                      </span>
-                      <span class="p-key ml-2">ThreatAssess: </span> 
-                      <span class="p-value">
-                        {{indicator.threatAssessScore}}
+                        Ed Dorsey
                       </span>
                     </div>
                     <div>
-                      <span class="p-key">Added:</span> <span class="p-value">{{moment-format indicator.dateAdded "YYYY-MM-DD" timeZone=timezone}}</span>
-                      <span class="p-key ml-1">Modified:</span> <span class="p-value">{{moment-format indicator.lastModified "YYYY-MM-DD" timeZone=timezone}}</span>
+                      <span class="p-key">Creators: </span> 
+                      <span class="p-value">
+                        Ed Dorsey, Joe Miller, Jon Penwood
+                      </span>
+                    </div>
+                    <div>
+                      <span class="p-key">Created:</span> <span class="p-value">{{moment-format indicator.dateAdded "YYYY-MM-DD" timeZone=timezone}}</span>
+                      <span class="p-key ml-1">Marking:</span> <span class="p-value">TLP: Clear</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="p-tag">botnet</span>
+                      <span class="p-tag">infrastructure</span>
+                      <span class="p-tag">ddos</span>
+                      <span class="p-tag">telnet</span>
+                    </div>
+                    <div class="mt-1">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
                     </div>
                   </div>
                 {{/each}}
+              <div class="mt-1 mb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center mt-1 justify-content-between">
+                  <h2 class="p-title my-0">
+                    Indicator
+                  </h2>
+                  <button class="header-button edit ml-1">
+                    {{fa-icon icon="pencil" fixedWidth=true}}
+                    {{bs-tooltip
+                            title="Edit indicator"
+                    }}
+                  </button>
+                </div>
+                <div class="flex-shrink-0">
+                  <a href={{indicator.webLink}}>View in OpenCTI {{fa-icon icon="external-link-square" fixedWidth=true class="external-link-icon p-link"}}</a>
+                </div>
+              </div>
+              {{#each result.indicators as | indicator |}}
+                <div class="search-result-indicator-container">
+                  <div class="d-flex align-items-start justify-content-between">
+                    <div class="mr-1">
+                      {{#if (eq indicator.ownerId details.myOwner.id)}}
+                        <span>
+                            {{fa-icon icon="house" fixedWidth=true class="p-grey is-mine-icon icon-small"}}
+                          {{bs-tooltip title="This indicator is in your organization"}}
+                          </span>
+                      {{/if}}
+                      Stix
+                    </div>
+                    <div class="flex-shrink-0 score-box">
+                      50 / 100
+                    </div>
+                  </div>
+                  <div>
+                    <span class="p-key">Author: </span>
+                    <span>
+                        Ed Dorsey
+                      </span>
+                  </div>
+                  <div>
+                    <span class="p-key">Creators: </span>
+                    <span class="p-value">
+                        Ed Dorsey, Jon Penwood
+                      </span>
+                  </div>
+                  <div>
+                    <span class="p-key">Created:</span> <span class="p-value">{{moment-format indicator.dateAdded "YYYY-MM-DD" timeZone=timezone}}</span>
+                    <span class="p-key ml-1">Marking:</span> <span class="p-value">TLP: Red</span>
+                  </div>
+                  <div class="mt-1">
+                    <span class="p-tag">cobalt strike</span>
+                    <span class="p-tag">jquery</span>
+                    <span class="p-tag">dridex</span>
+                  </div>
+                  <div class="mt-1">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+                  </div>
+                </div>
+              {{/each}}
             </div>
           {{/if}}
         </div>
@@ -227,7 +328,7 @@
   {{#if hasIndicatorNotInThreatConnect}}
     <div class="d-flex align-items-center justify-content-between mt-2 mb-1">
       <h1 class="p-title my-0">
-        Not in ThreatConnect
+        Not in OpenCTI
       </h1>
       {{#if hasNotInThreatConnectIndicatorsAvailableToSubmit}}
         <button
@@ -253,7 +354,7 @@
               </div>
               <div class="d-flex align-items-start justify-content-end">
                 <div class="mr-1">
-                  <span class="p-footnote">{{result.displayType}}</span>
+                  <span class="p-footnote">IPv4</span>
                 </div>
                 {{#if result.__hasSubmissionError}}
                   <div>
@@ -283,7 +384,7 @@
                               disabled={{interactionDisabled}}
                       >
                         {{fa-icon icon="plus" fixedWidth=true}}
-                        {{bs-tooltip title="Add indicator to selected owner"}}
+                        {{bs-tooltip title="Add entity as an Observable and/or Indicator"}}
                       </button>  
                     {{/if}}                    
                   </div>
@@ -322,7 +423,7 @@
   {{#if hasIndicatorToBeSubmitted}}
     <div class="d-flex align-items-center justify-content-between mt-3 mb-1">
       <h1 class="p-title my-0">
-        Submit to ThreatConnect
+        Submit to OpenCTI
       </h1>
       {{#if hasIndicatorToBeSubmitted}}
         <button 
@@ -336,7 +437,7 @@
       {{/if}}
     </div>
     <div class="p-footnote mb-1">
-      Listed indicators will be submitted to ThreatConnect and owned by {{owner.name}}
+      Listed entities will be submitted to OpenCTI
     </div>
     {{#if (not hasIndicatorToBeSubmitted)}}
       <div>
@@ -344,7 +445,7 @@
       </div>
     {{/if}}
     <div class="search-results">
-      {{#each details.results as | result |}}
+      {{#each details.results as | result index |}}
         {{#if result.__toBeSubmitted}}
           <div class="search-result-container">
             <div class="search-result-header d-flex align-items-start justify-content-between">
@@ -355,6 +456,20 @@
                 <div class="p-footnote mr-1">
                   {{result.displayType}}
                 </div>
+                <label class="mr-1 d-flex align-items-center justify-content-between submit-checkbox {{if (eq index 2) "disabled"}}">
+                  {{fa-icon icon="binoculars" fixedWidth=true class=(if (eq index 2) "disabled")}}
+                  {{input type="checkbox" disabled=(if (eq index 2) true)}}
+                    {{#if (eq index 2)}}
+                      {{bs-tooltip title="Entity is already an Observable"}}
+                    {{else}}
+                      {{bs-tooltip title="Submit entity as a new Observable"}}
+                    {{/if}}
+                </label>
+                <label class="mr-1 d-flex align-items-center justify-content-between submit-checkbox">
+                  {{fa-icon icon="fingerprint" fixedWidth=true}}
+                  {{input type="checkbox" checked=(if (eq index 2) true) disabled=(if (eq index 2) true)}}
+                  {{bs-tooltip title="Submit entity as a new Indicator"}}
+                </label>
                 {{!-- show icon if this indicator will be updated rather than created --}}
                 {{#each result.indicators as | indicator | }}
                   {{#if (eq indicator.ownerId owner.id)}}
@@ -364,21 +479,13 @@
                     </div>
                   {{/if}}
                 {{/each}}
-                <div class="mr-1">
-                  {{#if result.isInMyOwner}}
-                    {{fa-icon icon="house" fixedWidth=true class="p-grey is-mine-icon icon-small"}}
-                    {{bs-tooltip title="This indicator is already in your organization and will be updated"}}
-                  {{else}}
-                    {{fa-icon icon="house" fixedWidth=true class="fa-blank is-mine-icon icon-small"}}
-                  {{/if}}
-                </div>
                 <button
                   class="header-button minus p-orange"
                   {{action (pipe-action (set result "__toBeSubmitted" false)(set result "__deleteTooltipIsVisible" false))}}
                   disabled={{interactionDisabled}}
                 >
                   {{fa-icon icon="minus" fixedWidth=true}}
-                  {{bs-tooltip title="Remove indicator from submission list"}}
+                  {{bs-tooltip title="Remove entity from submission list"}}
                 </button>
               </div>
             </div>
@@ -398,30 +505,19 @@
         <span class="p-action" {{action "resetSubmissionOptions"}}>Reset Options</span>
       </div>
     </div>
-    {{!-- Owner Select --}}
+
+    {{!-- Source Input --}}
     <div class="input-container">
       <label class="small ifta-label">
-        Owner
+        Score
       </label>
-      {{#if ownersWithCreatePermission.length}}
-        {{#power-select
-                eventType="click"
-                rootEventType="click"
-                triggerClass="ifta-field p-power-select-trigger"
-                dropdownClass="p-power-select-dropdown"
-                selected=owner
-                options=ownersWithCreatePermission
-                searchEnabled=true
-                searchField="name"
-                placeholder="Select owner"
-                closeOnSelect=true
-                disabled=interactionDisabled
-                onChange=(action (mut owner))
-        as |owner|
-        }}
-          {{owner.name}} ({{owner.type}})
-        {{/power-select}}
-      {{/if}}
+      {{input
+              class=(concat "ifta-field" (if uiElement.error " error"))
+              value=source
+              placeholder="Enter a Score"
+              disabled=interactionDisabled
+              required=false
+      }}
     </div>
   
     {{!-- Description Input --}}
@@ -438,268 +534,16 @@
               required=false
       }}
     </div>
-  
-    {{!-- Source Input --}}
-    <div class="input-container">
-      <label class="small ifta-label">
-        Source
-      </label>
-      {{input
-              class=(concat "ifta-field" (if uiElement.error " error"))
-              value=source
-              placeholder="Enter a source"
-              disabled=interactionDisabled
-              required=false
-      }}
-    </div>
-  
-    {{!-- Rating --}}
-    <div class="mb-2">
-      <div class="p-key">Rating &nbsp;</div>
-      <div>
-        {{fa-icon "ban" click=(action "setRating" 0) class="rating-icon"}}
-        {{#each (repeat 5) as |empty ratingIndex|}}
-          {{fa-icon
-                  "skull"
-                  class=(if
-                          (lt ratingIndex rating)
-                          "rating-icon rating-icon-filled"
-                          "rating-icon rating-icon-empty"
-                  )
-                  click=(action "setRating" (inc ratingIndex))
-          }}
-        {{/each}}
-        {{ratingHuman}}
-      </div>
-    </div>
-  
-    {{!-- Confidence Slider --}}
-    <div class="confidence">
-      <span class="p-key">Confidence: &nbsp;</span>
-      <span class="p-value">{{confidence}} - {{confidenceHuman}}</span>
-      <div>
-        <input
-                type="range"
-                oninput={{action "setConfidence" value="target.value"}}
-                min="0"
-                max="100"
-                value={{confidence}}
-                steps="1"
-        />
-      </div>
-    </div>
-  
-    {{!-- Associated Groups --}}
-    {{#if block.userOptions.allowAssociation}}
-      <div class="d-flex align-items-center justify-content-start">
-        <h1 class="p-title align-self-baseline">
-          Associated Groups
-        </h1>
-        {{#unless (or editingGroups interactionDisabled)}}
-          <button class="btn icon-btn p-action align-self-baseline" {{action (pipe-action (action "initializeGroupFilter")(toggle "editingGroups" this))}} title="Edit Groups">
-            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Groups
-          </button>
-        {{/unless}}
-      </div>
-      {{#if (eq selectedGroups.length 0)}}
-        <div class="p-footnote">
-          No Associated Groups
-        </div>
-      {{else}}
-        {{#each selectedGroups as |group groupIndex|}}
-          <div class="associated-group-container">
-            <div class="d-flex align-items-start justify-content-between">
-              <div class="mr-1">
-                {{group.name}}
-              </div>
-              {{#if (not interactionDisabled)}}
-                <div class="remove-icon" {{action "removeGroup" group}}>
-                  {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
-                </div>
-              {{/if}}
-            </div>
-            <div class="p-footnote">
-              <div>Owner: {{group.ownerName}}</div>
-              <div>Type: {{group.type}}</div>
-            </div>
-          </div>
-        {{/each}}
-      {{/if}}
-      {{#if editingGroups}}
-        <div class="add-container mt-2">
-          <div class="d-flex align-items-center justify-content-between mb-1 mt-1">
-            <h2 class="p-title m-0">
-              Add Associated Groups
-            </h2>
-            <div class="p-action mr-1" {{action (toggle "viewGroupFilters" this)}}>
-              {{#if viewGroupFilters}}
-                Hide filters
-                {{fa-icon icon="chevron-up" fixedWidth=true}}
-              {{else}}
-                View filters
-                {{fa-icon icon="chevron-down" fixedWidth=true}}
-              {{/if}}
-            </div>
-          </div>
-          <div class="d-flex align-items-center justify-content-start mb-2">
-            <div class="p-footnote">
-              {{#if (gt ownerFilter.length 0)}}
-                {{ownerFilter.length}} owner {{pluralize ownerFilter.length "filter" without-count=true}}
-              {{else}}
-                No owner filters applied
-              {{/if}}
-            </div>
-            <div class="p-footnote ml-1 mr-1">|</div>
-            <div class="p-footnote">
-              {{#if (gt groupTypeFilter.length 0)}}
-                {{groupTypeFilter.length}} group type {{pluralize groupTypeFilter.length "filter" without-count=true}}
-              {{else}}
-                No group type filters applied
-              {{/if}}
-            </div>
-          </div>
-          {{#if viewGroupFilters}}
-            <div class="group-filter-container mb-2">
-              <h3 class="p-title mb-2 mt-1">
-                Group Search Filters
-              </h3>
-              <div class="input-container mb-2">
-                <label class="small ifta-label">
-                  Owner Filter
-                </label>
-                {{#power-select-multiple
-                        eventType="click"
-                        rootEventType="click"
-                        triggerClass="p-power-select-multiple-trigger"
-                        dropdownClass="p-power-select-dropdown"
-                        selected=ownerFilter
-                        options=ownersWithGroupPermission
-                        searchEnabled=true
-                        searchField="name"
-                        placeholder="No owner filter applied"
-                        closeOnSelect=false
-                        disabled=interactionDisabled
-                        onChange=(action (mut ownerFilter))
-                as |owner|
-                }}
-                  {{owner.name}} ({{owner.type}})
-                {{/power-select-multiple}}
-              </div>
-  
-              <div class="input-container mb-2">
-                <label class="small ifta-label">
-                  Group Type Filter
-                </label>
-                {{#power-select-multiple
-                        eventType="click"
-                        rootEventType="click"
-                        triggerClass="p-power-select-multiple-trigger"
-                        dropdownClass="p-power-select-dropdown"
-                        selected=groupTypeFilter
-                        options=groupTypeNames
-                        searchEnabled=true
-                        placeholder="No group type filter applied"
-                        closeOnSelect=false
-                        disabled=interactionDisabled
-                        onChange=(action (mut groupTypeFilter))
-                as |groupType|
-                }}
-                  {{groupType}}
-                {{/power-select-multiple}}
-              </div>
-            </div>
-          {{/if}}
-          <div class="input-container">
-            <label class="small ifta-label">
-              Associated Group
-            </label>
-            {{#if searchingGroups}}
-              <div class="p-power-select-searching-icon-container">
-                {{fa-icon icon="spinner-third" spin=true fixedWidth=true class="p-power-select-searching-icon"}}
-                loading
-              </div>
-            {{/if}}
-  
-            {{#power-select
-                    eventType="click"
-                    rootEventType="click"
-                    triggerClass="ifta-field p-power-select-trigger"
-                    dropdownClass="p-power-select-dropdown"
-                    searchEnabled=true
-                    search=(action "searchGroups")
-                    searchMessage="No groups match filter criteria"
-                    loadingMessage="Loading groups ..."
-                    selected=selectedGroup
-                    options=groups
-                    searchField="name"
-                    placeholder="Select associated group"
-                    closeOnSelect=true
-                    disabled=interactionDisabled
-                    onOpen=(action "initializeGroupFilter")
-                    onChange=(action (mut selectedGroup))
-            as |group|
-            }}
-              {{group.name}} ({{group.ownerName}})
-            {{/power-select}}
-          </div>
-          <div class="d-flex align-items-center justify-content-end mb-1">
-            <button
-                    class="btn btn-naked p-btn short outline"
-              {{action (toggle "editingGroups" this)}}
-                    disabled={{interactionDisabled}}
-            >
-              Close
-            </button>
-            <button
-                    class="btn btn-polarity p-btn short outline"
-              {{action "addGroup"}}
-                    disabled={{interactionDisabled}}
-            >
-              Add Group
-            </button>
-          </div>
-        </div>
-      {{/if}}
-    {{/if}}
-  
-    {{!-- Host Specific Options --}}
-    {{#if entitiesToSubmitIncludeDomain}}
-      <h1 class="p-title">
-        Host Specific Options
-      </h1>
-      <div class="checkbox-container">
-        <label class="d-flex align-items-center">
-          <input
-            checked={{whoisActive}}
-            type="checkbox"
-            {{on "change" (action (mut whoisActive) value="target.checked")}}
-            disabled={{interactionDisabled}}
-          />
-          <span class="p-value ml-1">Enable Whois Lookups</span>
-        </label>
-      </div>
-      <div class="checkbox-container">
-        <label class="d-flex align-items-center">
-          <input
-            checked={{dnsActive}}
-            type="checkbox"
-            {{on "change" (action (mut dnsActive) value="target.checked")}}
-            disabled={{interactionDisabled}}
-          />
-          <span class="p-value ml-1">Enable DNS Tracking</span>
-        </label>
-      </div>
-    {{/if}}
-  
-    {{!-- Associated Tags --}}
+
+    {{!-- Associated Labels --}}
     <div>
       <div class="d-flex align-items-center justify-content-start">
         <h1 class="p-title align-self-baseline">
-          Associated Tags
+          Labels
         </h1>
         {{#unless (or editingTags interactionDisabled)}}
           <button class="btn icon-btn p-action align-self-baseline" {{action (toggle "editingTags" this)}} title="Edit Tags">
-            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Tags
+            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Labels
           </button>
         {{/unless}}
       </div>
@@ -712,7 +556,7 @@
           {{#if tag.isNew}}
             <span class="tag link-tag d-inline-flex align-items-center">
               <span
-                class="text-container threatconnect-summary-tag
+                      class="text-container threatconnect-summary-tag
                 {{unless interactionDisabled ' rounded-borders'}}"
               >
                 {{#if tag.techniqueId}}
@@ -730,35 +574,35 @@
             </span>
           {{else}}
             <a
-              href="{{details.uiUrl}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}"
-              class="tag link-tag d-inline-flex align-items-center"
+                    href="{{details.uiUrl}}/auth/tags/tag.xhtml?tag={{tag.name}}&owner={{details.owner.name}}"
+            class="tag link-tag d-inline-flex align-items-center"
             >
-              <span
-                class="text-container threatconnect-summary-tag
+            <span
+                    class="text-container threatconnect-summary-tag
                 {{unless interactionDisabled ' rounded-borders'}}"
-              >
+            >
                 {{#if tag.techniqueId}}
                   <span class="attack-tag">&#38;</span>
                   {{tag.techniqueId}}
                   -
                 {{/if}}
-                {{tag.name}}
-                {{#if (not interactionDisabled)}}
-                  <span class="remove-icon-container" {{action "deleteTag" tag}}>
-                    {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
-                  </span>
-                {{/if}}
+              {{tag.name}}
+              {{#if (not interactionDisabled)}}
+                <span class="remove-icon-container" {{action "deleteTag" tag}}>
+                  {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
+                </span>
+              {{/if}}
               </span>
             </a>
           {{/if}}
         {{/each}}
       {{/if}}
-  
+
       {{#if editingTags}}
         <div class="add-container mt-2">
           <div class="input-container mb-2">
             <label class="small ifta-label">
-              Select Tags to Add
+              Select Labels to Add
             </label>
             {{#power-select-multiple
                     eventType="click"
@@ -809,18 +653,18 @@
           </div>
           <div class="d-flex align-items-center justify-content-end mb-1 mt-2">
             <button
-              class="btn btn-naked p-btn short outline"
+                    class="btn btn-naked p-btn short outline"
               {{action (toggle "editingTags" this)}}
-              disabled={{interactionDisabled}}
+                    disabled={{interactionDisabled}}
             >
               Cancel
             </button>
             <button
-              class="btn btn-polarity p-btn short outline"
+                    class="btn btn-polarity p-btn short outline"
               {{action "addTags"}}
-              disabled={{interactionDisabled}}
+                    disabled={{interactionDisabled}}
             >
-              Add Tags
+              Add Labels
             </button>
           </div>
         </div>
@@ -829,7 +673,7 @@
   
     <div class="d-flex justify-content-between align-items-center mt-2">
       <div>
-        <span class="p-footnote">{{numberOfIndicatorsToBeSubmitted}} indicator{{#if (gt numberOfIndicatorsToBeSubmitted 1)}}s{{/if}} selected for submission</span>
+        <span class="p-footnote">{{numberOfIndicatorsToBeSubmitted}} entities {{#if (gt numberOfIndicatorsToBeSubmitted 1)}}s{{/if}} selected for submission</span>
       </div>
       <button
         class="btn btn-polarity p-btn"
@@ -839,7 +683,7 @@
         {{#if createIsRunning}}
           {{fa-icon icon="spinner-third" spin=true fixedWidth=true}}
         {{else}}
-          Submit IOCs
+          Submit
         {{/if}}
       </button>
     </div>  

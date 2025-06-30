@@ -55,9 +55,9 @@ const getLookupResults = async (entities, options) => {
     {
       entity: {
         ...entities[0],
-        value: 'ThreatConnect IOC Submission'
+        value: 'OpenCTI IOC Submission'
       },
-      displayValue: 'ThreatConnect IOC Submission',
+      displayValue: 'OpenCTI IOC Submission',
       isVolatile: true,
       data: {
         summary: [

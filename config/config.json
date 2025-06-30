@@ -1,7 +1,7 @@
 {
   "polarityIntegrationUuid": "e7d2e760-cce1-11ed-aeee-075d3490155d",
-  "name": "ThreatConnect IOC Submission",
-  "acronym": "TC+",
+  "name": "OpenCTI IOC Submission",
+  "acronym": "OCTI+",
   "description": "Polarity integration that connects to the ThreatConnect threat intelligence platform using the IOC Submission interface format.",
   "entityTypes": ["domain", "IPv4", "IPv6", "MD5", "SHA1", "SHA256", "email", "url"],
   "defaultColor": "light-pink",

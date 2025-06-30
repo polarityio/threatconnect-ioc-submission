@@ -88,7 +88,7 @@ table {
   text-align: right;
   font-size: 10px;
 
-  &.delete {
+  &.delete, &.edit {
     color: #888;
   }
 
@@ -98,6 +98,10 @@ table {
   }
 
   &.add:hover {
+    background-color: lighten(@green, 20%);
+  }
+
+  &.edit:hover {
     background-color: lighten(@green, 20%);
   }
 
@@ -340,6 +344,10 @@ a.tag {
   padding: 4px;
 }
 
+.gray-icon {
+  color: #666;
+}
+
 h2.p-title {
   font-size: 12px;
   font-weight: 500;
@@ -364,13 +372,38 @@ h3.p-title {
   line-height: 1.2em;
   font-size: 12px;
   background-color: #fff;
-  border: 1px solid #f97b06;
+  border: 1px solid #666;
   padding: 1px 5px 2px 7px;
   border-radius: 16px;
   color: #07213a;
 
   .attack-tag {
     font-weight: 500;
+  }
+}
+
+.score-box {
+  border: 1px solid #5cb85c;
+  padding: 0px 3px;
+  font-size: 10px;
+}
+
+.submit-checkbox {
+  border: 1px solid #eee;
+  padding: 2px 3px;
+  border-radius: 4px;
+  margin: 0px;
+  
+  svg {
+    margin-right: 2px;
+  }
+  
+  &.disabled {
+    background-color: #eee;
+  }
+  
+  .disabled {
+    color: #888;
   }
 }
 
