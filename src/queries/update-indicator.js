@@ -65,7 +65,7 @@ async function updateIndicator(indicatorToUpdate, entity, fields, options) {
   const body = {};
 
   // Update `body` to include all the relevant indicator fields
-  addAttributes(body, entity, fields);
+  addDescriptionAndSource(body, entity, fields);
   addAssociatedGroups(body, fields);
   addAssociatedTags(body, fields);
   addDomainSpecificFields(body, entity, fields);
@@ -93,6 +93,47 @@ async function updateIndicator(indicatorToUpdate, entity, fields, options) {
   ) {
     throw new ApiRequestError(
       `Unexpected status code ${apiResponse.statusCode} received when updating indicator via ThreatConnect API`,
+      {
+        statusCode: apiResponse.statusCode,
+        requestOptions: apiResponse.requestOptions,
+        responseBody: apiResponse.body
+      }
+    );
+  }
+
+  return await updateIndicatorAttributes(indicatorToUpdate, entity, fields, options);
+}
+
+async function updateIndicatorAttributes(indicatorToUpdate, entity, fields, options) {
+  const Logger = getLogger();
+
+  const body = {};
+
+  // Update `body` to include all the relevant indicator fields
+  addAttributes(body, entity, fields);
+
+  const requestOptions = {
+    uri: `${options.url}/v3/indicators/${indicatorToUpdate.id}`,
+    method: 'PUT',
+    qs: {
+      fields: 'threatAssess'
+    },
+    useQuerystring: true,
+    body
+  };
+
+  Logger.trace({ requestOptions }, 'Update Indicator Attributes Request Options');
+
+  const apiResponse = await polarityRequest.request(requestOptions, options);
+
+  Logger.trace({ apiResponse }, 'Update indicator API Response');
+
+  if (
+    !SUCCESS_CODES.includes(apiResponse.statusCode) ||
+    (apiResponse.body && apiResponse.body.status && apiResponse.body.status !== 'Success')
+  ) {
+    throw new ApiRequestError(
+      `Unexpected status code ${apiResponse.statusCode} received when updating indicator attributes via ThreatConnect API`,
       {
         statusCode: apiResponse.statusCode,
         requestOptions: apiResponse.requestOptions,
@@ -220,7 +261,7 @@ function addAttributes(body, entity, fields) {
   if (data.length > 0) {
     body.attributes = {
       data,
-      mode: 'replace'
+      mode: 'append'
     };
   }
 }
