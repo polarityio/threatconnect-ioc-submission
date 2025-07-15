@@ -39,6 +39,7 @@ polarity.export = PolarityComponent.extend({
   ownerFilter: [],
   selectedTags: [],
   selectedGroups: [],
+  selectedAttributes: Ember.A(),
   isDeleting: false,
   resultToDelete: {},
   createMessage: '',
@@ -123,6 +124,19 @@ polarity.export = PolarityComponent.extend({
       return this.get('details.results').reduce((count, result) => {
         return result.__toBeSubmitted ? count + 1 : count;
       }, 0);
+    }
+  ),
+  indicatorTypesToSubmit: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    function () {
+      return Array.from(
+        this.get('details.results').reduce((typeSet, result) => {
+          if (result.__toBeSubmitted) {
+            typeSet.add(result.displayType);
+          }
+          return typeSet;
+        }, new Set())
+      );
     }
   ),
   /**
@@ -297,6 +311,7 @@ polarity.export = PolarityComponent.extend({
     initializeGroupFilter: function () {
       this.searchGroups('');
     },
+    initializeAttributeFilter: function () {},
     confirmDelete: function () {
       this.set('isDeleting', true);
       const payload = {
@@ -393,7 +408,8 @@ polarity.export = PolarityComponent.extend({
           confidence: this.get('confidence'),
           owner: this.get('owner'),
           tags: this.get('selectedTags'),
-          groups: this.get('selectedGroups')
+          groups: this.get('selectedGroups'),
+          attributes: this.get('selectedAttributes')
         }
       };
 
@@ -585,6 +601,7 @@ polarity.export = PolarityComponent.extend({
       this.set('rating', 0);
       this.set('confidence', 0);
       this.set('selectedGroups', []);
+      this.set('selectedAttributes', Ember.A());
       this.set('selectedTags', [
         {
           name: 'Submitted By Polarity'
@@ -592,6 +609,50 @@ polarity.export = PolarityComponent.extend({
       ]);
       const myOwner = this.get('ownersWithCreatePermission.0');
       this.set('owner', myOwner);
+    },
+    getAttributesForSelectedType: function () {
+      this.set('loadingAttributes', true);
+      const payload = {
+        data: {
+          action: 'getAttributesForType',
+          attributeType: this.get('selectedIndicatorType')
+        }
+      };
+      this.sendIntegrationMessage(payload)
+        .then((result) => {
+          this.set('attributes', result.attributes);
+        })
+        .finally(() => {
+          this.set('loadingAttributes', false);
+        });
+    },
+    addAttribute: function () {
+      const attributeValue = this.get('attributeValue');
+      const attributeName = this.get('selectedAttribute.name');
+      const attributeId = this.get('selectedAttribute.id');
+      const indicatorType = this.get('selectedIndicatorType');
+      const attributeIsPinned = this.get('attributeIsPinned');
+      
+      this.get('selectedAttributes').pushObject({
+        id: attributeId,
+        type: attributeName,
+        value: attributeValue,
+        indicatorType: indicatorType,
+        pinned: attributeIsPinned
+      });
+    },
+    removeAttribute: function (targetAttribute) {
+      const selectedAttributes = this.get('selectedAttributes');
+      const index = selectedAttributes.findIndex(
+        (attribute) => attribute.id === targetAttribute.id
+      );
+      if (index >= 0) {
+        // Remove the group from selected groups
+        this.set('selectedAttributes', [
+          ...selectedAttributes.slice(0, index),
+          ...selectedAttributes.slice(index + 1)
+        ]);
+      }
     }
   }
 });

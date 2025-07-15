@@ -1,6 +1,8 @@
 const polarityRequest = require('../polarity-request');
 const { ApiRequestError } = require('../errors');
 const { getLogger } = require('../logger');
+const { convertPolarityTypeToThreatConnectSingular } = require('../tc-request-utils');
+
 const SUCCESS_CODES = [201];
 
 const POLARITY_TYPE_TO_THREATCONNECT_TYPE = {
@@ -66,7 +68,7 @@ async function createIndicator(entity, fields, options) {
   // Update `body` to include all the relevant indicator fields
   addType(body, entity);
   addOwner(body, fields);
-  addAttributes(body, fields);
+  addAttributes(body, entity, fields);
   addAssociatedGroups(body, fields);
   addAssociatedTags(body, fields);
   addDomainSpecificFields(body, entity, fields);
@@ -188,8 +190,9 @@ function addAssociatedGroups(body, fields) {
  * Mutates, the provided `body` property
  * @param fields
  */
-function addAttributes(body, fields) {
+function addAttributes(body, entity, fields) {
   const data = [];
+
   if (typeof fields.source === 'string' && fields.source.length > 0) {
     data.push({
       type: 'Source',
@@ -197,12 +200,28 @@ function addAttributes(body, fields) {
       default: true
     });
   }
-  
+
   if (typeof fields.description === 'string' && fields.description.length > 0) {
     data.push({
       type: 'Description',
       value: fields.description,
       default: true
+    });
+  }
+
+  if (Array.isArray(fields.attributes)) {
+    fields.attributes.forEach((attribute) => {
+      const entityTcType = convertPolarityTypeToThreatConnectSingular(entity.type);
+
+      // Need to make sure that the attribute applies to this entity
+      if (entityTcType === attribute.indicatorType.toLowerCase()) {
+        data.push({
+          type: attribute.type,
+          value: attribute.value,
+          default: false,
+          pinned: attribute.pinned
+        });
+      }
     });
   }
 
