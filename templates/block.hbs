@@ -742,7 +742,8 @@
               {{type}}
             {{/power-select}}
           </div>
-          <div class="input-container">
+          {{#if selectedIndicatorType}}
+            <div class="input-container">
             <label class="small ifta-label">
               {{selectedIndicatorType}} Attributes
             </label>
@@ -773,16 +774,17 @@
               {{attribute.name}}
             {{/power-select}}
           </div>
+          {{/if}}
           {{#if selectedAttribute}}
             {{#if (gt selectedAttribute.description.length 0)}}
               <div class="mb-2 attribute-description p-footnote">
                 {{selectedAttribute.description}}
               </div>
             {{/if}}
-            {{#unless selectedAttribute.validationRule}}
+            {{#if (or (not selectedAttribute.validationRule)(eq selectedAttribute.validationRule.type "Regex"))}}
               {{!-- No Validation Rule Attribute --}}
               {{#if (gt selectedAttribute.maxSize 50)}}
-                <div class="input-container text-area-container {{if interactionDisabled "disabled"}} {{if uiElement.error "error"}}">
+                <div class="input-container mb-1 text-area-container {{if interactionDisabled "disabled"}} {{if attributeValidationError "error"}}">
                   <label class="small">
                     Value
                   </label>
@@ -802,7 +804,7 @@
                     Value
                   </label>
                   {{input
-                    class=(concat "ifta-field" (if uiElement.error " error"))
+                    class=(concat "mb-1 ifta-field" (if attributeValidationError " error"))
                     value=attributeValue
                     placeholder="Enter value"
                     disabled=interactionDisabled
@@ -811,7 +813,7 @@
                   }}
                 </div>
               {{/if}}
-            {{/unless}}
+            {{/if}}
             {{#if (or (eq selectedAttribute.validationRule.type "SelectOne")(eq selectedAttribute.validationRule.type "SelectRadio"))}}
               {{!-- Attribute Value Select --}}
               <div class="input-container">
@@ -842,9 +844,9 @@
                 </label>
                 {{input
                     type="number"
-                    class=(concat "ifta-field" (if uiElement.error " error"))
+                    class=(concat "mb-1 ifta-field" (if uiElement.error " error"))
                     value=attributeValue
-                    placeholder="Enter value"
+                    placeholder=selectedAttribute.validationRule.description
                     disabled=interactionDisabled
                     required=true
                     maxlength=selectedAttribute.maxSize
@@ -852,19 +854,52 @@
                     max=selectedAttribute.validationRule.__max
                 }}
               </div>
+            {{else if (eq selectedAttribute.validationRule.type "DateTime")}}
+              <div class="ifta-datetime">
+                {{p-input/date
+                    class="ifta-datetime"
+                    allowInput=false
+                    date=attributeValue
+                    dateFormat="M/D/Y"
+                    placeholder="Select Date"
+                    onChange=(action (mut attributeValue))
+                    onClear=(action (mut attributeValue undefined))
+                }}
+              </div>
             {{/if}}
           {{/if}}
-          <div class="checkbox-container ml-1">
-            <label class="d-flex align-items-center">
-              <input
-                checked={{attributeIsPinned}}
-                type="checkbox"
-                {{on "change" (action (mut attributeIsPinned) value="target.checked")}}
-                disabled={{interactionDisabled}}
-              />
-              <span class="p-value ml-1">Set as Pinned Attribute</span>
-            </label>
+          <div class="d-flex align-items-start justify-content-between">
+            {{#if attributeValidationError}}
+              <div class="p-footnote error-message-text">
+                {{attributeValidationError}}
+              </div>
+            {{else}}
+              <div></div>
+            {{/if}}
+            {{#if (and 
+              (gt selectedAttribute.maxSize 0)
+              (not-eq selectedAttribute.validationRule.type "Integer")
+              (not-eq selectedAttribute.validationRule.type "SelectOne")
+              (not-eq selectedAttribute.validationRule.type "SelectRadio"))
+            }}
+              <div class="p-footnote d-flex align-items-center justify-content-end flex-shrink-0">
+                <div>Length: {{if attributeValue.length attributeValue.length 0}} / {{selectedAttribute.maxSize}}</div>
+              </div>
+            {{/if}}
           </div>
+          {{#if selectedIndicatorType}}
+            <div class="checkbox-container ml-1 mt-1">
+              <label class="d-flex align-items-center">
+                <input
+                  checked={{attributeIsPinned}}
+                  type="checkbox"
+                  {{on "change" (action (mut attributeIsPinned) value="target.checked")}}
+                  disabled={{interactionDisabled}}
+                />
+                <span class="p-value ml-1">Set as Pinned Attribute</span>
+              </label>
+            </div>
+          {{/if}}
           <div class="d-flex align-items-center justify-content-end mb-1">
             <button
                     class="btn btn-naked p-btn short outline"

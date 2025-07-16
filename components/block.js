@@ -299,6 +299,35 @@ polarity.export = PolarityComponent.extend({
       timeout: duration
     });
   },
+  // Returns a validation error message if the attributeValue does not validate
+  validateAttribute() {
+    const attributeValue = this.get('attributeValue');
+    const selectedAttribute = this.get('selectedAttribute');
+
+    if (typeof attributeValue === 'undefined' || attributeValue.length === 0) {
+      return 'You must provide a value';
+    }
+
+    if (
+      selectedAttribute &&
+      selectedAttribute.validationRule &&
+      selectedAttribute.validationRule.type === 'Regex' &&
+      selectedAttribute.validationRule.text
+    ) {
+      try {
+        const validationRegexString = selectedAttribute.validationRule.text;
+        const regex = new RegExp(validationRegexString);
+        const isMatch = regex.test(attributeValue);
+        if (!isMatch) {
+          return `Provided value does not match regular expression ${validationRegexString}`;
+        }
+      } catch (err) {
+        // Ignore regex creation errors
+        console.error('Failed to validate attribute regex', err);
+      }
+    }
+    return '';
+  },
   actions: {
     initiateItemDeletion: function (result) {
       this.set('resultToDelete', result);
@@ -632,7 +661,18 @@ polarity.export = PolarityComponent.extend({
       const attributeId = this.get('selectedAttribute.id');
       const indicatorType = this.get('selectedIndicatorType');
       const attributeIsPinned = this.get('attributeIsPinned');
-      
+
+      let validationError = this.validateAttribute();
+      if (validationError) {
+        this.set('attributeValidationError', validationError);
+        return;
+      } else {
+        this.set('attributeValidationError', '');
+      }
+
+      this.set('attributeValue', '');
+      this.set('editingAttributes', false);
+
       this.get('selectedAttributes').pushObject({
         id: attributeId,
         type: attributeName,
