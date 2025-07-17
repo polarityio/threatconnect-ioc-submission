@@ -1,6 +1,7 @@
 const polarityRequest = require('../polarity-request');
 const { ApiRequestError } = require('../errors');
 const { getLogger } = require('../logger');
+const { convertPolarityTypeToThreatConnectSingular } = require('../tc-request-utils');
 const SUCCESS_CODES = [200];
 
 const POLARITY_TYPE_TO_THREATCONNECT_TYPE = {
@@ -64,7 +65,7 @@ async function updateIndicator(indicatorToUpdate, entity, fields, options) {
   const body = {};
 
   // Update `body` to include all the relevant indicator fields
-  addAttributes(body, fields);
+  addDescriptionAndSource(body, entity, fields);
   addAssociatedGroups(body, fields);
   addAssociatedTags(body, fields);
   addDomainSpecificFields(body, entity, fields);
@@ -92,6 +93,47 @@ async function updateIndicator(indicatorToUpdate, entity, fields, options) {
   ) {
     throw new ApiRequestError(
       `Unexpected status code ${apiResponse.statusCode} received when updating indicator via ThreatConnect API`,
+      {
+        statusCode: apiResponse.statusCode,
+        requestOptions: apiResponse.requestOptions,
+        responseBody: apiResponse.body
+      }
+    );
+  }
+
+  return await updateIndicatorAttributes(indicatorToUpdate, entity, fields, options);
+}
+
+async function updateIndicatorAttributes(indicatorToUpdate, entity, fields, options) {
+  const Logger = getLogger();
+
+  const body = {};
+
+  // Update `body` to include all the relevant indicator fields
+  addAttributes(body, entity, fields);
+
+  const requestOptions = {
+    uri: `${options.url}/v3/indicators/${indicatorToUpdate.id}`,
+    method: 'PUT',
+    qs: {
+      fields: 'threatAssess'
+    },
+    useQuerystring: true,
+    body
+  };
+
+  Logger.trace({ requestOptions }, 'Update Indicator Attributes Request Options');
+
+  const apiResponse = await polarityRequest.request(requestOptions, options);
+
+  Logger.trace({ apiResponse }, 'Update indicator API Response');
+
+  if (
+    !SUCCESS_CODES.includes(apiResponse.statusCode) ||
+    (apiResponse.body && apiResponse.body.status && apiResponse.body.status !== 'Success')
+  ) {
+    throw new ApiRequestError(
+      `Unexpected status code ${apiResponse.statusCode} received when updating indicator attributes via ThreatConnect API`,
       {
         statusCode: apiResponse.statusCode,
         requestOptions: apiResponse.requestOptions,
@@ -160,12 +202,12 @@ function addAssociatedGroups(body, fields) {
 }
 
 /**
- * Adds attributes data to the body the create payload which include
+ * Adds descriptiona and source data to the body the create payload which include
  * "title", "description", and "source"
  * Mutates, the provided `body` property
  * @param fields
  */
-function addAttributes(body, fields) {
+function addDescriptionAndSource(body, entity, fields) {
   const data = [];
   if (typeof fields.source === 'string' && fields.source.length > 0) {
     data.push({
@@ -187,6 +229,39 @@ function addAttributes(body, fields) {
     body.attributes = {
       data,
       mode: 'replace'
+    };
+  }
+}
+
+/**
+ * Adds attributes data to the body the create payload which include
+ * "title", "description", and "source"
+ * Mutates, the provided `body` property
+ * @param fields
+ */
+function addAttributes(body, entity, fields) {
+  const data = [];
+
+  if (Array.isArray(fields.attributes)) {
+    fields.attributes.forEach((attribute) => {
+      const entityTcType = convertPolarityTypeToThreatConnectSingular(entity.type);
+
+      // Need to make sure that the attribute applies to this entity
+      if (entityTcType === attribute.indicatorType.toLowerCase()) {
+        data.push({
+          type: attribute.type,
+          value: attribute.value,
+          default: false,
+          pinned: attribute.pinned
+        });
+      }
+    });
+  }
+
+  if (data.length > 0) {
+    body.attributes = {
+      data,
+      mode: 'append'
     };
   }
 }

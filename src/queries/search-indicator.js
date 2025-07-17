@@ -11,7 +11,7 @@ async function searchIndicator(entity, options) {
     uri: `${options.url}/v3/indicators`,
     qs: {
       tql: createTqlQuery(entity, options),
-      fields: 'threatAssess'
+      fields: 'threatAssess,attributes'
     },
     method: 'GET',
     useQuerystring: true
