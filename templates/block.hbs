@@ -496,8 +496,8 @@
           Associated Groups
         </h1>
         {{#unless (or editingGroups interactionDisabled)}}
-          <button class="btn icon-btn p-action align-self-baseline" {{action (pipe-action (action "initializeGroupFilter")(toggle "editingGroups" this))}} title="Edit Groups">
-            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Groups
+          <button class="btn icon-btn p-action align-self-baseline" {{action (pipe-action (action "initializeGroupFilter")(toggle "editingGroups" this))}} title="Add Groups">
+            {{fa-icon icon="plus-circle" fixedWidth=true}} Add Groups
           </button>
         {{/unless}}
       </div>
@@ -661,6 +661,263 @@
         </div>
       {{/if}}
     {{/if}}
+
+    {{!-- Associated Attributes --}}
+    {{#if block.userOptions.allowAssociation}}
+      <div class="d-flex align-items-center justify-content-start">
+        <h1 class="p-title align-self-baseline">
+          Associated Attributes
+        </h1>
+        {{#unless (or editingAttributes interactionDisabled)}}
+          <button class="btn icon-btn p-action align-self-baseline" {{action (pipe-action (action "initializeAttributeFilter")(toggle "editingAttributes" this))}} title="Add Attributes">
+            {{fa-icon icon="plus-circle" fixedWidth=true}} Add Attributes
+          </button>
+        {{/unless}}
+      </div>
+      {{#if (eq selectedAttributes.length 0)}}
+        <div class="p-footnote">
+          No Associated Attributes
+        </div>
+      {{else}}
+        {{!-- attributes go here --}}
+        {{#each selectedAttributes as |attribute attributeIndex|}}
+          <div class="associated-group-container">
+            <div class="d-flex align-items-start justify-content-between">
+              <h2 class="p-title my-0 mr-1">
+                {{attribute.type}}
+              </h2>
+              {{#if (not interactionDisabled)}}
+                <div class="remove-icon" {{action "removeAttribute" attribute}}>
+                  {{fa-icon "times" class="tag-close-icon" fixedWidth=true}}
+                </div>
+              {{/if}}
+            </div>
+            <div class="mt-1">
+              {{attribute.value}}
+            </div>
+            <div class="d-flex align-items-center justify-content-between mt-1">
+              <div class="checkbox-container">
+                <label class="d-flex align-items-center my-0">
+                  <input
+                    checked={{attribute.pinned}}
+                    type="checkbox"
+                    {{on "change" (action (mut attribute.pinned) value="target.checked")}}
+                          disabled={{interactionDisabled}}
+                  />
+                  <span class="p-value ml-1">Pinned</span>
+                </label>
+              </div>
+              <div>
+                <span class="p-footnote">Applies to <strong>{{pluralize attribute.indicatorType}}</strong></span>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      {{/if}}
+      {{#if editingAttributes}}
+        <div class="add-container mt-2">
+          <div class="d-flex align-items-center justify-content-between mb-1 mt-1">
+            <h2 class="p-title m-0">
+              Add Associated Attributes
+            </h2>
+          </div>
+          <div class="input-container">
+            <label class="small ifta-label">
+              Indicator Type
+            </label>
+
+            {{#power-select
+                eventType="click"
+                rootEventType="click"
+                triggerClass="ifta-field p-power-select-trigger"
+                dropdownClass="p-power-select-dropdown"
+                selected=selectedIndicatorType
+                options=indicatorTypesToSubmit
+                placeholder="Select indicator type"
+                closeOnSelect=true
+                disabled=interactionDisabled
+                onChange=(pipe-action (action (mut selectedIndicatorType))(action "getAttributesForSelectedType"))
+            as |type|
+            }}
+              {{type}}
+            {{/power-select}}
+          </div>
+          {{#if selectedIndicatorType}}
+            <div class="input-container">
+            <label class="small ifta-label">
+              {{selectedIndicatorType}} Attributes
+            </label>
+            {{#if loadingAttributes}}
+              <div class="p-power-select-searching-icon-container">
+                {{fa-icon icon="spinner-third" spin=true fixedWidth=true class="p-power-select-searching-icon"}}
+                loading
+              </div>
+            {{/if}}
+
+            {{#power-select
+                eventType="click"
+                rootEventType="click"
+                triggerClass="ifta-field p-power-select-trigger"
+                dropdownClass="p-power-select-dropdown"
+                searchEnabled=true
+                searchMessage="No attributes"
+                loadingMessage="Loading attributes ..."
+                selected=selectedAttribute
+                options=attributes
+                searchField="name"
+                placeholder="Select attribute"
+                closeOnSelect=true
+                disabled=interactionDisabled
+                onChange=(pipe-action (action (mut selectedAttribute))(action (mut attributeValue "")))
+            as |attribute|
+            }}
+              {{attribute.name}}
+            {{/power-select}}
+          </div>
+          {{/if}}
+          {{#if selectedAttribute}}
+            {{#if (gt selectedAttribute.description.length 0)}}
+              <div class="mb-2 attribute-description p-footnote">
+                {{selectedAttribute.description}}
+              </div>
+            {{/if}}
+            {{#if (or (not selectedAttribute.validationRule)(eq selectedAttribute.validationRule.type "Regex"))}}
+              {{!-- No Validation Rule Attribute --}}
+              {{#if (gt selectedAttribute.maxSize 50)}}
+                <div class="input-container mb-1 text-area-container {{if interactionDisabled "disabled"}} {{if attributeValidationError "error"}}">
+                  <label class="small">
+                    Value
+                  </label>
+                  {{textarea
+                    class="ifta-field"
+                    rows=5
+                    placeholder="Enter a description"
+                    value=attributeValue
+                    disabled=interactionDisabled
+                    required=false
+                    maxlength=selectedAttribute.maxSize
+                  }}
+                </div>
+              {{else}}
+                <div class="input-container">
+                  <label class="small ifta-label">
+                    Value
+                  </label>
+                  {{input
+                    class=(concat "mb-1 ifta-field" (if attributeValidationError " error"))
+                    value=attributeValue
+                    placeholder="Enter value"
+                    disabled=interactionDisabled
+                    required=true
+                    maxlength=selectedAttribute.maxSize
+                  }}
+                </div>
+              {{/if}}
+            {{/if}}
+            {{#if (or (eq selectedAttribute.validationRule.type "SelectOne")(eq selectedAttribute.validationRule.type "SelectRadio"))}}
+              {{!-- Attribute Value Select --}}
+              <div class="input-container">
+                <label class="small ifta-label">
+                  Value
+                </label>
+                {{#power-select
+                    eventType="click"
+                    rootEventType="click"
+                    triggerClass="ifta-field p-power-select-trigger"
+                    dropdownClass="p-power-select-dropdown"
+                    selected=attributeValue
+                    options=selectedAttribute.validationRule.__values
+                    searchEnabled=true
+                    placeholder="Select values"
+                    closeOnSelect=true
+                    disabled=interactionDisabled
+                    onChange=(action (mut attributeValue))
+                as |value|
+                }}
+                  {{value}}
+                {{/power-select}}
+              </div>
+            {{else if (eq selectedAttribute.validationRule.type "Integer")}}
+              <div class="input-container">
+                <label class="small ifta-label">
+                  Value
+                </label>
+                {{input
+                    type="number"
+                    class=(concat "mb-1 ifta-field" (if uiElement.error " error"))
+                    value=attributeValue
+                    placeholder=selectedAttribute.validationRule.description
+                    disabled=interactionDisabled
+                    required=true
+                    maxlength=selectedAttribute.maxSize
+                    min=selectedAttribute.validationRule.__min
+                    max=selectedAttribute.validationRule.__max
+                }}
+              </div>
+            {{else if (eq selectedAttribute.validationRule.type "DateTime")}}
+              <div class="ifta-datetime">
+                {{p-input/date
+                    class="ifta-datetime"
+                    allowInput=false
+                    date=attributeValue
+                    dateFormat="M/D/Y"
+                    placeholder="Select Date"
+                    onChange=(action (mut attributeValue))
+                    onClear=(action (mut attributeValue undefined))
+                }}
+              </div>
+            {{/if}}
+          {{/if}}
+          <div class="d-flex align-items-start justify-content-between">
+            {{#if attributeValidationError}}
+              <div class="p-footnote error-message-text">
+                {{attributeValidationError}}
+              </div>
+            {{else}}
+              <div></div>
+            {{/if}}
+            {{#if (and 
+              (gt selectedAttribute.maxSize 0)
+              (not-eq selectedAttribute.validationRule.type "Integer")
+              (not-eq selectedAttribute.validationRule.type "SelectOne")
+              (not-eq selectedAttribute.validationRule.type "SelectRadio"))
+            }}
+              <div class="p-footnote d-flex align-items-center justify-content-end flex-shrink-0">
+                <div>Length: {{if attributeValue.length attributeValue.length 0}} / {{selectedAttribute.maxSize}}</div>
+              </div>
+            {{/if}}
+          </div>
+          {{#if selectedIndicatorType}}
+            <div class="checkbox-container ml-1 mt-1">
+              <label class="d-flex align-items-center">
+                <input
+                  checked={{attributeIsPinned}}
+                  type="checkbox"
+                  {{on "change" (action (mut attributeIsPinned) value="target.checked")}}
+                  disabled={{interactionDisabled}}
+                />
+                <span class="p-value ml-1">Set as Pinned Attribute</span>
+              </label>
+            </div>
+          {{/if}}
+          <div class="d-flex align-items-center justify-content-end mb-1">
+            <button
+                    class="btn btn-naked p-btn short outline"
+              {{action (toggle "editingAttributes" this)}}
+                    disabled={{interactionDisabled}}
+            >
+              Close
+            </button>
+            <button class="btn btn-polarity p-btn short outline"
+              {{action "addAttribute"}}
+                    disabled={{interactionDisabled}}
+            >
+              Add Attribute
+            </button>
+          </div>
+        </div>
+      {{/if}}
+    {{/if}}
   
     {{!-- Host Specific Options --}}
     {{#if entitiesToSubmitIncludeDomain}}
@@ -698,8 +955,8 @@
           Associated Tags
         </h1>
         {{#unless (or editingTags interactionDisabled)}}
-          <button class="btn icon-btn p-action align-self-baseline" {{action (toggle "editingTags" this)}} title="Edit Tags">
-            {{fa-icon icon="plus-circle" fixedWidth=true}} Edit Tags
+          <button class="btn icon-btn p-action align-self-baseline" {{action (toggle "editingTags" this)}} title="Add Tags">
+            {{fa-icon icon="plus-circle" fixedWidth=true}} Add Tags
           </button>
         {{/unless}}
       </div>

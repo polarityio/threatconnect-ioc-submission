@@ -39,6 +39,7 @@ polarity.export = PolarityComponent.extend({
   ownerFilter: [],
   selectedTags: [],
   selectedGroups: [],
+  selectedAttributes: Ember.A(),
   isDeleting: false,
   resultToDelete: {},
   createMessage: '',
@@ -123,6 +124,19 @@ polarity.export = PolarityComponent.extend({
       return this.get('details.results').reduce((count, result) => {
         return result.__toBeSubmitted ? count + 1 : count;
       }, 0);
+    }
+  ),
+  indicatorTypesToSubmit: Ember.computed(
+    'details.results.@each.__toBeSubmitted',
+    function () {
+      return Array.from(
+        this.get('details.results').reduce((typeSet, result) => {
+          if (result.__toBeSubmitted) {
+            typeSet.add(result.displayType);
+          }
+          return typeSet;
+        }, new Set())
+      );
     }
   ),
   /**
@@ -285,6 +299,35 @@ polarity.export = PolarityComponent.extend({
       timeout: duration
     });
   },
+  // Returns a validation error message if the attributeValue does not validate
+  validateAttribute() {
+    const attributeValue = this.get('attributeValue');
+    const selectedAttribute = this.get('selectedAttribute');
+
+    if (typeof attributeValue === 'undefined' || attributeValue.length === 0) {
+      return 'You must provide a value';
+    }
+
+    if (
+      selectedAttribute &&
+      selectedAttribute.validationRule &&
+      selectedAttribute.validationRule.type === 'Regex' &&
+      selectedAttribute.validationRule.text
+    ) {
+      try {
+        const validationRegexString = selectedAttribute.validationRule.text;
+        const regex = new RegExp(validationRegexString);
+        const isMatch = regex.test(attributeValue);
+        if (!isMatch) {
+          return `Provided value does not match regular expression ${validationRegexString}`;
+        }
+      } catch (err) {
+        // Ignore regex creation errors
+        console.error('Failed to validate attribute regex', err);
+      }
+    }
+    return '';
+  },
   actions: {
     initiateItemDeletion: function (result) {
       this.set('resultToDelete', result);
@@ -297,6 +340,7 @@ polarity.export = PolarityComponent.extend({
     initializeGroupFilter: function () {
       this.searchGroups('');
     },
+    initializeAttributeFilter: function () {},
     confirmDelete: function () {
       this.set('isDeleting', true);
       const payload = {
@@ -393,7 +437,8 @@ polarity.export = PolarityComponent.extend({
           confidence: this.get('confidence'),
           owner: this.get('owner'),
           tags: this.get('selectedTags'),
-          groups: this.get('selectedGroups')
+          groups: this.get('selectedGroups'),
+          attributes: this.get('selectedAttributes')
         }
       };
 
@@ -585,6 +630,7 @@ polarity.export = PolarityComponent.extend({
       this.set('rating', 0);
       this.set('confidence', 0);
       this.set('selectedGroups', []);
+      this.set('selectedAttributes', Ember.A());
       this.set('selectedTags', [
         {
           name: 'Submitted By Polarity'
@@ -592,6 +638,61 @@ polarity.export = PolarityComponent.extend({
       ]);
       const myOwner = this.get('ownersWithCreatePermission.0');
       this.set('owner', myOwner);
+    },
+    getAttributesForSelectedType: function () {
+      this.set('loadingAttributes', true);
+      const payload = {
+        data: {
+          action: 'getAttributesForType',
+          attributeType: this.get('selectedIndicatorType')
+        }
+      };
+      this.sendIntegrationMessage(payload)
+        .then((result) => {
+          this.set('attributes', result.attributes);
+        })
+        .finally(() => {
+          this.set('loadingAttributes', false);
+        });
+    },
+    addAttribute: function () {
+      const attributeValue = this.get('attributeValue');
+      const attributeName = this.get('selectedAttribute.name');
+      const attributeId = this.get('selectedAttribute.id');
+      const indicatorType = this.get('selectedIndicatorType');
+      const attributeIsPinned = this.get('attributeIsPinned');
+
+      let validationError = this.validateAttribute();
+      if (validationError) {
+        this.set('attributeValidationError', validationError);
+        return;
+      } else {
+        this.set('attributeValidationError', '');
+      }
+
+      this.set('attributeValue', '');
+      this.set('editingAttributes', false);
+
+      this.get('selectedAttributes').pushObject({
+        id: attributeId,
+        type: attributeName,
+        value: attributeValue,
+        indicatorType: indicatorType,
+        pinned: attributeIsPinned
+      });
+    },
+    removeAttribute: function (targetAttribute) {
+      const selectedAttributes = this.get('selectedAttributes');
+      const index = selectedAttributes.findIndex(
+        (attribute) => attribute.id === targetAttribute.id
+      );
+      if (index >= 0) {
+        // Remove the group from selected groups
+        this.set('selectedAttributes', [
+          ...selectedAttributes.slice(0, index),
+          ...selectedAttributes.slice(index + 1)
+        ]);
+      }
     }
   }
 });

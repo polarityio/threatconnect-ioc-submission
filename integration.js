@@ -13,6 +13,7 @@ const {
   createFormattedSearchResult
 } = require('./src/get-lookup-results');
 const { getMyOwnerCached } = require('./src/get-my-owner-cached');
+const { getAttributesForTypeCached } = require('./src/get-attributes-for-type-cached');
 const { parseErrorToReadableJSON } = require('./src/errors');
 
 let Logger;
@@ -66,6 +67,7 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
 };
 
 const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => {
+  Logger.trace({action, actionParams}, 'onMessage called');
   switch (action) {
     case 'deleteItem':
       if (!options.allowDelete) {
@@ -177,6 +179,16 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
         errors,
         exclusionListEntities
       });
+      break;
+    case 'getAttributesForType':
+      try {
+        const attributes = await getAttributesForTypeCached(actionParams.attributeType, options);
+        cb(null, {
+          attributes
+        });
+      } catch (getAttributesError) {
+        cb(getAttributesError);
+      }
       break;
     case 'searchTags':
       try {
