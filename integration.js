@@ -67,7 +67,7 @@ const doLookup = async (entities, { url, ..._options }, cb) => {
 };
 
 const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => {
-  Logger.trace({action, actionParams}, 'onMessage called');
+  Logger.trace({ action, actionParams }, 'onMessage called');
   switch (action) {
     case 'deleteItem':
       if (!options.allowDelete) {
@@ -181,8 +181,17 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
       });
       break;
     case 'getAttributesForType':
+      if (!options.allowAttributes) {
+        return cb({
+          detail: 'Invalid operation'
+        });
+      }
+      
       try {
-        const attributes = await getAttributesForTypeCached(actionParams.attributeType, options);
+        const attributes = await getAttributesForTypeCached(
+          actionParams.attributeType,
+          options
+        );
         cb(null, {
           attributes
         });

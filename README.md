@@ -34,6 +34,10 @@ If checked, users will be able to delete an Indicator from their default Organiz
 
 If checked, users will be able to Associate Indicators with Groups from ThreatConnect.
 
+### Allow Adding Attributes
+
+If checked, users will be able to Add Attributes to Indicators when submitting indicators to ThreatConnect.
+
 ## Installation Instructions
 
 Installation instructions for integrations are provided on the [PolarityIO GitHub Page](https://polarityio.github.io/).
