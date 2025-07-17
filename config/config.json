@@ -70,6 +70,15 @@
       "type": "boolean",
       "userCanEdit": false,
       "adminOnly": false
+    },
+    {
+      "key": "allowAttributes",
+      "name": "Allow Adding Attributes",
+      "description": "If checked, users will be able to Add Attributes to Indicators when submitting indicators to ThreatConnect.",
+      "default": false,
+      "type": "boolean",
+      "userCanEdit": false,
+      "adminOnly": false
     }
   ]
 }
