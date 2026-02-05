@@ -1,0 +1,134 @@
+{
+  "uiUrl": "https://app.threatconnect.com",
+  "myOwner": {
+    "id": 123,
+    "name": "My Organization",
+    "type": "Organization"
+  },
+  "groups": [
+    {
+      "id": 456789,
+      "name": "Phishing Campaign Q1 2024",
+      "type": "Adversary",
+      "ownerId": 123,
+      "ownerName": "My Organization"
+    },
+    {
+      "id": 456790,
+      "name": "APT29 Activity",
+      "type": "Threat",
+      "ownerId": 123,
+      "ownerName": "My Organization"
+    }
+  ],
+  "results": [
+    {
+      "entity": {
+        "value": "malicious-domain.com",
+        "type": "domain",
+        "types": ["domain"]
+      },
+      "displayType": "Host",
+      "indicators": [
+        {
+          "id": 9876543,
+          "summary": "malicious-domain.com",
+          "type": "Host",
+          "ownerId": 123,
+          "ownerName": "My Organization",
+          "dateAdded": "2024-01-10T14:23:45Z",
+          "lastModified": "2024-01-15T09:12:33Z",
+          "rating": 4.5,
+          "confidence": 85,
+          "threatAssess": {
+            "score": 750,
+            "rating": 4.5,
+            "confidence": 85
+          },
+          "attributes": [
+            {
+              "id": 12345,
+              "type": "Description",
+              "value": "Known C2 domain for banking trojan",
+              "dateAdded": "2024-01-10T14:25:00Z"
+            }
+          ]
+        }
+      ],
+      "foundInThreatConnect": true,
+      "isInMyOwner": true,
+      "canDelete": true
+    },
+    {
+      "entity": {
+        "value": "198.51.100.42",
+        "type": "IPv4",
+        "types": ["IPv4"]
+      },
+      "displayType": "Address",
+      "indicators": [
+        {
+          "id": 9876544,
+          "summary": "198.51.100.42",
+          "type": "Address",
+          "ownerId": 456,
+          "ownerName": "Partner Organization",
+          "dateAdded": "2024-01-12T10:15:20Z",
+          "lastModified": "2024-01-12T10:15:20Z",
+          "rating": 3.0,
+          "confidence": 60,
+          "threatAssess": {
+            "score": 450,
+            "rating": 3.0,
+            "confidence": 60
+          },
+          "attributes": []
+        }
+      ],
+      "foundInThreatConnect": true,
+      "isInMyOwner": false,
+      "canDelete": false
+    },
+    {
+      "entity": {
+        "value": "new-suspicious-domain.org",
+        "type": "domain",
+        "types": ["domain"]
+      },
+      "displayType": "Host",
+      "indicators": [],
+      "foundInThreatConnect": false,
+      "isInMyOwner": false,
+      "canDelete": false
+    }
+  ],
+  "ownersWithCreatePermission": [
+    {
+      "id": 123,
+      "name": "My Organization",
+      "type": "Organization"
+    },
+    {
+      "id": 789,
+      "name": "Shared Threat Intel",
+      "type": "Community"
+    }
+  ],
+  "ownersWithGroupPermission": [
+    {
+      "id": 123,
+      "name": "My Organization",
+      "type": "Organization"
+    },
+    {
+      "id": 789,
+      "name": "Shared Threat Intel",
+      "type": "Community"
+    },
+    {
+      "id": 234,
+      "name": "ISAC Partner Group",
+      "type": "Organization"
+    }
+  ]
+}
