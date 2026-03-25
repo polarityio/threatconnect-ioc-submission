@@ -40,6 +40,10 @@ polarity.export = PolarityComponent.extend({
   selectedTags: [],
   selectedGroups: [],
   selectedAttributes: Ember.A(),
+  tlpLabels: [],
+  selectedTlpLabel: null,
+  tlpLabelsLoading: false,
+  tlpLabelsError: false,
   isDeleting: false,
   resultToDelete: {},
   createMessage: '',
@@ -207,6 +211,26 @@ polarity.export = PolarityComponent.extend({
     this.set('ownerFilter', [myOwner]);
 
     this._super(...arguments);
+
+    // Load TLP security labels asynchronously — failures are non-blocking
+    this._loadTlpLabels();
+  },
+  _loadTlpLabels() {
+    this.set('tlpLabelsLoading', true);
+    this.set('tlpLabelsError', false);
+    this.sendIntegrationMessage({ data: { action: 'getTlpLabels' } })
+      .then((result) => {
+        const labels = result.securityLabels || [];
+        this.set('tlpLabels', labels);
+      })
+      .catch((err) => {
+        console.error('Failed to load TLP labels', err);
+        this.set('tlpLabelsError', true);
+        this.set('tlpLabels', []);
+      })
+      .finally(() => {
+        this.set('tlpLabelsLoading', false);
+      });
   },
   searchGroups: function (term, resolve, reject) {
     const groupTypeFilter = this.get('groupTypeFilter');
@@ -329,6 +353,10 @@ polarity.export = PolarityComponent.extend({
     return '';
   },
   actions: {
+    setTlpLabel: function (label) {
+      // label is null when "None" is selected — clears existing selection
+      this.set('selectedTlpLabel', label);
+    },
     initiateItemDeletion: function (result) {
       this.set('resultToDelete', result);
       this.set('showDeletionModal', true);
@@ -438,7 +466,8 @@ polarity.export = PolarityComponent.extend({
           owner: this.get('owner'),
           tags: this.get('selectedTags'),
           groups: this.get('selectedGroups'),
-          attributes: this.get('selectedAttributes')
+          attributes: this.get('selectedAttributes'),
+          tlpLabel: this.get('selectedTlpLabel.name') || null
         }
       };
 
@@ -631,6 +660,7 @@ polarity.export = PolarityComponent.extend({
       this.set('confidence', 0);
       this.set('selectedGroups', []);
       this.set('selectedAttributes', Ember.A());
+      this.set('selectedTlpLabel', null);
       this.set('selectedTags', [
         {
           name: 'Submitted By Polarity'
