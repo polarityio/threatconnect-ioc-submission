@@ -188,14 +188,14 @@ function addAssociatedGroups(body, fields) {
 /**
  * Adds a single TLP security label to the create payload.
  * Only applied when fields.tlpLabel is a non-empty string.
- * On create, securityLabels is a flat array (not wrapped with mode).
+ * On create, securityLabels uses the { data: [...] } wrapper (same as tags/associatedGroups; no mode needed).
  *
  * @param {Object} body - Request body being built (mutated in place)
  * @param {Object} fields - Submission fields from the frontend
  */
 function addSecurityLabels(body, fields) {
   if (typeof fields.tlpLabel === 'string' && fields.tlpLabel.length > 0) {
-    body.securityLabels = [{ name: fields.tlpLabel }];
+    body.securityLabels = { data: [{ name: fields.tlpLabel }] };
   }
 }
 

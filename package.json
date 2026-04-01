@@ -1,6 +1,6 @@
 {
   "name": "threatconnect-ioc-submission",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "main": "./integration.js",
   "private": true,
   "license": "MIT",
