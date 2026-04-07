@@ -1,0 +1,41 @@
+{
+  "root": {
+    "path": "",
+    "on_null": "return_empty"
+  },
+  "pipeline": [
+    {
+      "op": "copy",
+      "from": "uiUrl",
+      "to": "reduced_results.uiUrl"
+    },
+    {
+      "op": "copy",
+      "from": "myOwner",
+      "to": "reduced_results.myOwner"
+    },
+    {
+      "op": "copy",
+      "from": "groups",
+      "to": "reduced_results.groups"
+    },
+    {
+      "op": "copy",
+      "from": "results",
+      "to": "reduced_results.results"
+    },
+    {
+      "op": "copy",
+      "from": "ownersWithCreatePermission",
+      "to": "reduced_results.ownersWithCreatePermission"
+    },
+    {
+      "op": "copy",
+      "from": "ownersWithGroupPermission",
+      "to": "reduced_results.ownersWithGroupPermission"
+    }
+  ],
+  "output": {
+    "result": "$working.reduced_results"
+  }
+}
