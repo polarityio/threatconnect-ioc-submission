@@ -232,8 +232,7 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
         cb(null, { securityLabels });
       } catch (getTlpLabelsError) {
         Logger.error({ getTlpLabelsError }, 'Failed to fetch TLP labels');
-        // Return empty array so the form remains usable (non-blocking)
-        cb(null, { securityLabels: [] });
+        cb(getTlpLabelsError);
       }
       break;
     default:

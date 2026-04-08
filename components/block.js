@@ -199,7 +199,7 @@ polarity.export = PolarityComponent.extend({
       }
     ]);
 
-    if (this.get('state')) {
+    if (!this.get('state')) {
       this.set('state', {});
       this.set('state.errorMessage', '');
       this.set('state.errorTitle', '');
@@ -212,24 +212,25 @@ polarity.export = PolarityComponent.extend({
 
     this._super(...arguments);
 
-    // Load TLP security labels asynchronously — failures are non-blocking
-    this._loadTlpLabels();
+    // Load TLP security labels — skip if already loaded and cached on state
+    if (!this.get('state.tlpLabels')) {
+      this._loadTlpLabels();
+    }
   },
   _loadTlpLabels() {
-    this.set('tlpLabelsLoading', true);
-    this.set('tlpLabelsError', false);
+    this.set('state.tlpLabelsLoading', true);
+    this.set('state.tlpLabelsError', false);
     this.sendIntegrationMessage({ data: { action: 'getTlpLabels' } })
       .then((result) => {
         const labels = result.securityLabels || [];
-        this.set('tlpLabels', labels);
+        this.set('state.tlpLabels', labels);
       })
       .catch((err) => {
         console.error('Failed to load TLP labels', err);
-        this.set('tlpLabelsError', true);
-        this.set('tlpLabels', []);
+        this.set('state.tlpLabelsError', true);
       })
       .finally(() => {
-        this.set('tlpLabelsLoading', false);
+        this.set('state.tlpLabelsLoading', false);
       });
   },
   searchGroups: function (term, resolve, reject) {

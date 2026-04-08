@@ -1086,52 +1086,42 @@
 
     {{!-- TLP Security Label (INT-1740) --}}
     <div class="tlp-section mt-2">
-      <div class="d-flex align-items-center justify-content-start mb-1">
-        <h1 class="p-title align-self-baseline my-0">
-          TLP Security Label
-        </h1>
-      </div>
-
-      {{#if tlpLabelsLoading}}
+      {{#if state.tlpLabelsLoading}}
         <div class="tlp-loading">
           {{fa-icon icon="spinner-third" spin=true fixedWidth=true}}
           <span class="ml-1">Loading labels&hellip;</span>
         </div>
-      {{else if tlpLabelsError}}
+      {{else if state.tlpLabelsError}}
         <div class="tlp-error">
           {{fa-icon icon="exclamation-triangle" fixedWidth=true}}
           Could not load TLP labels. Submission will proceed without a security label.
         </div>
       {{else}}
-        {{#power-select
-            eventType="click"
-            rootEventType="click"
-            triggerClass="ifta-field p-power-select-trigger"
-            dropdownClass="p-power-select-dropdown"
-            selected=selectedTlpLabel
-            options=tlpLabels
-            searchEnabled=false
-            placeholder="None (no label)"
-            closeOnSelect=true
-            disabled=interactionDisabled
-            allowClear=true
-            onChange=(action "setTlpLabel")
-        as |label|
-        }}
-          <span class="tlp-option-row">
-            <span class="tlp-color-swatch" style="background-color: #{{label.color}};"></span>
-            {{label.name}}
-          </span>
-        {{/power-select}}
-        {{#if selectedTlpLabel}}
-          <div class="tlp-selected-preview mt-1">
-            <span class="p-key">Selected:</span>
-            <span class="p-value">
-              <span class="tlp-color-swatch tlp-color-swatch--inline" style="background-color: #{{selectedTlpLabel.color}};"></span>
-              {{selectedTlpLabel.name}}
+        <div class="input-container">
+          <label class="small ifta-label">
+            TLP
+          </label>
+          {{#power-select
+              eventType="click"
+              rootEventType="click"
+              triggerClass="ifta-field p-power-select-trigger"
+              dropdownClass="p-power-select-dropdown"
+              selected=selectedTlpLabel
+              options=state.tlpLabels
+              searchEnabled=false
+              placeholder="None (no label)"
+              closeOnSelect=true
+              disabled=interactionDisabled
+              allowClear=true
+              onChange=(action "setTlpLabel")
+          as |label|
+          }}
+            <span class="tlp-option-row">
+              <span class="tlp-color-swatch" style="background-color: #{{label.color}};"></span>
+              {{label.name}}
             </span>
-          </div>
-        {{/if}}
+          {{/power-select}}
+        </div>
       {{/if}}
     </div>
   
