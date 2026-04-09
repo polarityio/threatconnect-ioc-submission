@@ -71,6 +71,7 @@ async function createIndicator(entity, fields, options) {
   addAttributes(body, entity, fields);
   addAssociatedGroups(body, fields);
   addAssociatedTags(body, fields);
+  addSecurityLabels(body, fields);
   addDomainSpecificFields(body, entity, fields);
   addOther(body, fields);
 
@@ -181,6 +182,20 @@ function addAssociatedGroups(body, fields) {
         };
       })
     };
+  }
+}
+
+/**
+ * Adds a single TLP security label to the create payload.
+ * Only applied when fields.tlpLabel is a non-empty string.
+ * On create, securityLabels uses the { data: [...] } wrapper (same as tags/associatedGroups; no mode needed).
+ *
+ * @param {Object} body - Request body being built (mutated in place)
+ * @param {Object} fields - Submission fields from the frontend
+ */
+function addSecurityLabels(body, fields) {
+  if (typeof fields.tlpLabel === 'string' && fields.tlpLabel.length > 0) {
+    body.securityLabels = { data: [{ name: fields.tlpLabel }] };
   }
 }
 
