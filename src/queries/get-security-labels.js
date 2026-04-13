@@ -23,24 +23,7 @@ async function getSecurityLabels(options) {
 
   Logger.trace({ requestOptions }, 'Get Security Labels Request Options');
 
-  let apiResponse;
-  try {
-    apiResponse = await polarityRequest.request(requestOptions, options);
-  } catch (err) {
-    Logger.error({ err }, 'Failed to fetch security labels from ThreatConnect — TLP selector will be hidden');
-    return [];
-  }
-
-  if (
-    !SUCCESS_CODES.includes(apiResponse.statusCode) ||
-    (apiResponse.body && apiResponse.body.status && apiResponse.body.status !== 'Success')
-  ) {
-    Logger.warn(
-      { statusCode: apiResponse.statusCode, body: apiResponse.body },
-      'Unexpected status fetching security labels — TLP selector will be hidden'
-    );
-    return [];
-  }
+  let apiResponse = await polarityRequest.request(requestOptions, options);
 
   const labels = (apiResponse.body && apiResponse.body.data) || [];
   Logger.trace({ labelCount: labels.length }, 'Security labels fetched successfully');
