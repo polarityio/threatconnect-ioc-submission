@@ -4,6 +4,7 @@ const async = require('async');
 const validateOptions = require('./src/validateOptions');
 const { searchTags } = require('./src/queries/search-tags');
 const { searchGroups } = require('./src/queries/search-groups');
+const { getSecurityLabels } = require('./src/queries/get-security-labels');
 const { createIndicator } = require('./src/queries/create-indicator');
 const { updateIndicator } = require('./src/queries/update-indicator');
 const { deleteIndicator } = require('./src/queries/delete-indicator');
@@ -224,6 +225,15 @@ const onMessage = async ({ data: { action, ...actionParams } }, options, cb) => 
       cb(null, {
         groups
       });
+      break;
+    case 'getTlpLabels':
+      try {
+        const securityLabels = await getSecurityLabels(options);
+        cb(null, { securityLabels });
+      } catch (getTlpLabelsError) {
+        Logger.error({ getTlpLabelsError }, 'Failed to fetch TLP labels');
+        cb(getTlpLabelsError);
+      }
       break;
     default:
       cb(null, {});

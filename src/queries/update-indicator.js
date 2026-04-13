@@ -68,6 +68,7 @@ async function updateIndicator(indicatorToUpdate, entity, fields, options) {
   addDescriptionAndSource(body, entity, fields);
   addAssociatedGroups(body, fields);
   addAssociatedTags(body, fields);
+  addSecurityLabels(body, fields);
   addDomainSpecificFields(body, entity, fields);
   addOther(body, fields);
 
@@ -197,6 +198,24 @@ function addAssociatedGroups(body, fields) {
         };
       }),
       mode: 'append'
+    };
+  }
+}
+
+/**
+ * Replaces the security label on an existing indicator with the selected TLP label.
+ * Only applied when fields.tlpLabel is a non-empty string.
+ * Uses mode: 'replace' to overwrite any existing security label on the indicator.
+ * If no TLP label is selected, the existing label is left unchanged.
+ *
+ * @param {Object} body - Request body being built (mutated in place)
+ * @param {Object} fields - Submission fields from the frontend
+ */
+function addSecurityLabels(body, fields) {
+  if (typeof fields.tlpLabel === 'string' && fields.tlpLabel.length > 0) {
+    body.securityLabels = {
+      data: [{ name: fields.tlpLabel }],
+      mode: 'replace'
     };
   }
 }

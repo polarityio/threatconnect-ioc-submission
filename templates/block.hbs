@@ -1083,6 +1083,47 @@
         </div>
       {{/if}}
     </div>
+
+    {{!-- TLP Security Label (INT-1740) --}}
+    <div class="tlp-section mt-2">
+      {{#if state.tlpLabelsLoading}}
+        <div class="tlp-loading">
+          {{fa-icon icon="spinner-third" spin=true fixedWidth=true}}
+          <span class="ml-1">Loading labels&hellip;</span>
+        </div>
+      {{else if state.tlpLabelsError}}
+        <div class="tlp-error">
+          {{fa-icon icon="exclamation-triangle" fixedWidth=true}}
+          Could not load TLP labels. Submission will proceed without a security label.
+        </div>
+      {{else}}
+        <div class="input-container">
+          <label class="small ifta-label">
+            Security Label
+          </label>
+          {{#power-select
+              eventType="click"
+              rootEventType="click"
+              triggerClass="ifta-field p-power-select-trigger"
+              dropdownClass="p-power-select-dropdown"
+              selected=selectedTlpLabel
+              options=state.tlpLabels
+              searchEnabled=false
+              placeholder="None (no label)"
+              closeOnSelect=true
+              disabled=interactionDisabled
+              allowClear=true
+              onChange=(action "setTlpLabel")
+          as |label|
+          }}
+            <span class="tlp-option-row">
+              <span class="tlp-color-swatch" style="background-color: #{{label.color}};"></span>
+              {{label.name}}
+            </span>
+          {{/power-select}}
+        </div>
+      {{/if}}
+    </div>
   
     <div class="d-flex justify-content-between align-items-center mt-2">
       <div>
